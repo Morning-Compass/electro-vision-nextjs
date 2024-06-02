@@ -1,0 +1,38 @@
+import React from "react";
+
+type InputProps = {
+  type: string;
+  placeholder: string;
+  name: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  className?: string;
+};
+
+const Input = ({
+  type,
+  placeholder,
+  name,
+  value,
+  onChange,
+  className = undefined,
+  ...props
+}: InputProps) => {
+  return (
+    <input
+      {...props}
+      type={type}
+      placeholder={placeholder}
+      name={name}
+      value={value}
+      onChange={onChange}
+      required
+      className={
+        className ??
+        "border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-30 w-[50vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
+      }
+    />
+  );
+};
+
+export default Input;
