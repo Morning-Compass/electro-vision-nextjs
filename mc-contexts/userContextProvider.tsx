@@ -11,10 +11,10 @@ type UserContextProviderProps = {
 type StateType<T> = React.Dispatch<React.SetStateAction<T>>;
 
 type UserType = UserEntityType & {
-  setUsername: StateType<UserType["username"] | null>;
-  setProfilePicture: StateType<UserType["profilePicture"] | null>;
-  setTheme: StateType<UserType["theme"]>;
-  setUserId: StateType<UserType["userId"] | null>;
+  setUsername: StateType<UserEntityType["username"] | null>;
+  setProfilePicture: StateType<UserEntityType["profilePicture"] | null>;
+  setTheme: StateType<UserEntityType["theme"]>;
+  setUserId: StateType<UserEntityType["userId"] | null>;
 };
 
 type UserContextType = {

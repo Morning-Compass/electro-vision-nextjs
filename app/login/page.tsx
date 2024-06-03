@@ -10,6 +10,7 @@ import { Navbar } from "@/components/navbar";
 import NavbarTemplate from "@/components/templates/NavbarTemplate";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
+import { FooterSmall } from "@/components/templates/FooterSmall";
 
 export default function Login() {
   type formProps = {
@@ -101,6 +102,7 @@ export default function Login() {
           </figure>
         </article>
       </section>
+      <FooterSmall />
     </PageTemplate>
   );
 }

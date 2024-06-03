@@ -10,6 +10,7 @@ import Input from "@/components/Input";
 import Button from "@/components/Button";
 import FormError from "@/components/FormError";
 import Regex from "@/mc-const/regex";
+import { FooterSmall } from "@/components/templates/FooterSmall";
 
 export default function Login() {
   type formProps = {
@@ -84,7 +85,7 @@ export default function Login() {
   return (
     <PageTemplate>
       <NavbarTemplate />
-      <section className="flex flex-col items-center justify-center text-mc-text bg-mc-primary w-[40vw] min-w-72 opacity-95 rounded-[3rem] mt-auto mb-auto">
+      <section className="flex flex-col items-center justify-center text-mc-text bg-mc-primary w-[40vw] min-w-72 opacity-95 rounded-[3rem] mt-auto mb-auto mc-blur border-mc-text border-solid border-2">
         <article className="flex flex-col items-center justify-center mt-12 mb-12">
           <header className="text-3xl font-bold mb-8 mt-8 mr-2 ml-2 text-center">
             Create Morning Compass account
@@ -148,6 +149,7 @@ export default function Login() {
           ) : null}
         </article>
       </section>
+      <FooterSmall />
     </PageTemplate>
   );
 }
