@@ -84,9 +84,9 @@ export default function Login() {
   return (
     <PageTemplate>
       <NavbarTemplate />
-      <section className="flex flex-col items-center justify-center text-mc-text bg-mc-primary w-[40vw] opacity-95 rounded-[3rem] mt-auto mb-auto">
+      <section className="flex flex-col items-center justify-center text-mc-text bg-mc-primary w-[40vw] min-w-72 opacity-95 rounded-[3rem] mt-auto mb-auto">
         <article className="flex flex-col items-center justify-center mt-12 mb-12">
-          <header className="text-3xl font-bold mb-8 mt-8 mr-2 ml-2">
+          <header className="text-3xl font-bold mb-8 mt-8 mr-2 ml-2 text-center">
             Create Morning Compass account
           </header>
           <form
@@ -129,17 +129,17 @@ export default function Login() {
             <Button type="submit" value="Register" />
             {/* <div onClick={() => setShowPassword(p => !p)} className="w-4 h-4 text-center border-solid border-black rounded-[100%] cursor-pointer">x</div> */}
           </form>
-          <figure className="flex items-center justify-center p-6">
-            <p className="flex flex-row items-center justify-center gap-6 select-none">
-              Already have account?{" "}
-              <Link
-                href={"/login"}
-                className="text-mc-text font-medium hover:scale-110 duration-300"
-                font-bold
-              >
-                <p className="mr-4 ml-4">Login here</p>
-              </Link>
+          <figure className="flex flex-row items-center justify-center m-6">
+            <p className="select-none ml-4 mr-4 text-center">
+              Already have account?
             </p>
+            <Link
+              href={"/login"}
+              className="text-mc-text font-medium hover:scale-110 duration-300 ml-4 mr-4"
+              font-bold
+            >
+              Login here
+            </Link>
           </figure>
           {message ? (
             <article className="mt-4 ">

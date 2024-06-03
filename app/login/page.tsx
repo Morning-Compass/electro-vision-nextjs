@@ -61,7 +61,7 @@ export default function Login() {
   return (
     <PageTemplate>
       <NavbarTemplate />
-      <section className="text-mc-text bg-mc-primary w-[40vw] opacity-95 rounded-[3rem] mt-auto mb-auto">
+      <section className="text-mc-text bg-mc-primary w-[40vw] min-w-72 opacity-95 rounded-[3rem] mt-auto mb-auto">
         <article className="flex flex-col items-center justify-center mt-12 mb-12">
           <header className="text-3xl font-bold mt-8 mb-8 mr-6 ml-6 text-center">
             Login to your Morning Compass account
@@ -87,17 +87,17 @@ export default function Login() {
             />
             <Button type="submit" value="Login" />
           </form>
-          <figure className="flex items-center justify-center p-6">
-            <p className="flex flex-row items-center justify-center gap-6 select-none">
-              Don't have account?{" "}
-              <Link
-                href={"/register"}
-                className="text-mc-text font-medium hover:scale-110 duration-300"
-                font-bold
-              >
-                <p className="mr-4 ml-4 text-center">Register here</p>
-              </Link>
+          <figure className="flex items-center justify-evenly p-6">
+            <p className="select-none mr-4 ml-4 text-center">
+              Don't have account?
             </p>
+            <Link
+              href={"/register"}
+              className="text-mc-text font-medium hover:scale-110 duration-300 ml-4 mr-4"
+              font-bold
+            >
+              Register here
+            </Link>
           </figure>
         </article>
       </section>
