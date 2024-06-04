@@ -6,6 +6,7 @@ import { FooterSmall } from "@/components/templates/FooterSmall";
 import NavbarTemplate from "@/components/templates/NavbarTemplate";
 import PageTemplate from "@/components/templates/PageTemplate";
 import useUserContext from "@/mc-contexts/userContextProvider";
+import Image from "next/image";
 import { useState } from "react";
 
 const AccountPage = () => {
@@ -23,7 +24,7 @@ const AccountPage = () => {
               Morning Compass Settings
             </header>
             <figure>
-              <form className="flex flex-row items-start justify-center gap-4">
+              <form className="flex flex-row items-start justify-center gap-2">
                 <Input
                   type="text"
                   name="username"
@@ -31,16 +32,13 @@ const AccountPage = () => {
                   onChange={() => console.log("monk")}
                   disabled={!usernameEditEnabled}
                 />
-                <Button
-                  type="button"
-                  value="E"
-                  customWidth="w-14"
-                  onclick={() => {
-                    console.log(usernameEditEnabled);
-                    setUsernameEditEnabled((p) => !p);
-                  }}
-                />
-                {!usernameEditEnabled ? (
+                <div
+                  className="max-h-12 min-h-8 h-[10vh] aspect-square grid place-items-center"
+                  onClick={() => setUsernameEditEnabled((p) => !p)}
+                >
+                  <Image src={"/settings.png"} width={32} height={32} alt="E" />
+                </div>
+                {usernameEditEnabled ? (
                   <Button type="submit" value="OK" customWidth="w-14" />
                 ) : null}
               </form>
