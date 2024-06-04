@@ -10,9 +10,11 @@ import Image from "next/image";
 import { useState } from "react";
 
 const AccountPage = () => {
-  const [usernameEditEnabled, setUsernameEditEnabled] = useState(false);
-
   const { User } = useUserContext();
+  const [changedUsername, setChangedUsername] = useState<string>(
+    User.username ?? "",
+  );
+  const [usernameEditEnabled, setUsernameEditEnabled] = useState(false);
 
   return (
     <PageTemplate>
@@ -28,8 +30,8 @@ const AccountPage = () => {
                 <Input
                   type="text"
                   name="username"
-                  value={User.username}
-                  onChange={() => console.log("monk")}
+                  value={changedUsername}
+                  onChange={(e) => setChangedUsername(e.target.value)}
                   disabled={!usernameEditEnabled}
                 />
                 <div
