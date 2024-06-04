@@ -7,12 +7,53 @@ import NavbarTemplate from "@/components/templates/NavbarTemplate";
 import PageTemplate from "@/components/templates/PageTemplate";
 import useUserContext from "@/mc-contexts/userContextProvider";
 import Image from "next/image";
-import { useState } from "react";
+import { useReducer, useState } from "react";
+
+enum changeCredentialTypes {
+  changeUsername = "changeUsername",
+}
+
+type changeCredentialAction = {
+  type: changeCredentialTypes;
+  payload: string;
+};
+
+type changeCredentialState = {
+  newUsername: string;
+  newEmail: string;
+};
+
+const changeCredentialReducer = (
+  state: changeCredentialState,
+  action: changeCredentialAction,
+) => {
+  const { type, payload } = action;
+  switch (type) {
+    case changeCredentialTypes.changeUsername:
+      return {
+        ...state,
+        newUsername: payload,
+      };
+    default:
+      return state;
+  }
+};
 
 const AccountPage = () => {
-  const [usernameEditEnabled, setUsernameEditEnabled] = useState(false);
-
   const { User } = useUserContext();
+  const [usernameEditEnabled, setUsernameEditEnabled] = useState(false);
+  const [newCredentials, redispatch] = useReducer(changeCredentialReducer, {
+    newUsername: User.username ?? "",
+    newEmail: "email",
+  });
+
+  // Example dispatch usage
+  const handleChangeUsername = (newUsername: string) => {
+    redispatch({
+      type: changeCredentialTypes.changeUsername,
+      payload: newUsername,
+    });
+  };
 
   return (
     <PageTemplate>
@@ -28,8 +69,10 @@ const AccountPage = () => {
                 <Input
                   type="text"
                   name="username"
-                  value={User.username}
-                  onChange={() => console.log("monk")}
+                  value={newCredentials.newUsername}
+                  onChange={(e) => {
+                    handleChangeUsername(e.target.value);
+                  }}
                   disabled={!usernameEditEnabled}
                 />
                 <div
