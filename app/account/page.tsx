@@ -1,7 +1,6 @@
 "use client";
 
 import Button from "@/components/Button";
-import Input from "@/components/Input";
 import { FooterSmall } from "@/components/templates/FooterSmall";
 import NavbarTemplate from "@/components/templates/NavbarTemplate";
 import PageTemplate from "@/components/templates/PageTemplate";
@@ -43,24 +42,21 @@ const changeCredentialReducer = (
 };
 
 type NewUserCredentials = UserEntityType & {};
-
-type ChangeCredentialsValues = {
-  newUsername: string;
-  newEmail: string;
-};
+type ChangeCredentialsValues = NewUserCredentials;
 
 const resolver: Resolver<ChangeCredentialsValues> = async (values) => {
   return {
-    values: values.newUsername ? values : {},
-    errors: !values.newUsername.match(Regex.usernameModification)
-      ? {
-          newUsername: {
-            type: "validate",
-            message:
-              "Username must consist of letters, numbers, underscores, be maximum 20 chars long",
-          },
-        }
-      : {},
+    values: values.username ? values : {},
+    errors:
+      !values.username || !values.username.match(Regex.usernameModification)
+        ? {
+            username: {
+              type: "validate",
+              message:
+                "Username must consist of letters, numbers, underscores, be maximum 20 chars long",
+            },
+          }
+        : {},
   };
 };
 
@@ -102,12 +98,12 @@ const AccountPage = () => {
               >
                 <div className="flex flex-row items-center justify-center">
                   <input
-                    {...register("newUsername")}
+                    {...register("username")}
                     placeholder="Change Username"
                     disabled={!usernameEditEnabled}
                     className="border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
                   />
-                  {errors?.newUsername && <p>{errors.newUsername.message}</p>}
+                  {errors?.username && <p>{errors.username.message}</p>}
                   <div
                     className="max-h-12 min-h-8 h-[10vh] aspect-square grid place-items-center"
                     onClick={() => setUsernameEditEnabled((p) => !p)}
