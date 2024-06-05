@@ -4,11 +4,20 @@ import { FooterSmall } from "@/components/templates/FooterSmall";
 import NavbarTemplate from "@/components/templates/NavbarTemplate";
 import PageTemplate from "@/components/templates/PageTemplate";
 import useUserContext from "@/mc-contexts/userContextProvider";
+import { useEffect } from "react";
 
 export default function Home() {
-  const { User } = useUserContext();
-  User.setUsername("Tomek");
-  User.setUserId("apdw-421n-f0bn-123o");
+  const { User, UserDispatch } = useUserContext();
+  useEffect(() => {
+    UserDispatch({
+      type: "setUsername",
+      username: "username",
+    });
+    UserDispatch({
+      type: "setId",
+      userId: "aoch-123h-b978y",
+    });
+  }, []);
 
   return (
     <PageTemplate>

@@ -5,7 +5,7 @@ export type User = {
   userId: string | number | null;
   email: string | null;
   accountVerified: boolean | null;
-  passwordLength: number;
+  passwordLength: number | null;
   authorities: string | string[] | null;
   accountNonExpired: boolean | null;
   accountNonLocked: boolean | null;

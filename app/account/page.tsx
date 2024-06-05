@@ -61,7 +61,7 @@ const resolver: Resolver<ChangeCredentialsValues> = async (values) => {
 };
 
 const AccountPage = () => {
-  const { User } = useUserContext();
+  const { User, UserDispatch } = useUserContext();
   const [usernameEditEnabled, setUsernameEditEnabled] = useState(false);
   const [newCredentials, dispatch] = useReducer(changeCredentialReducer, {
     newUsername: User.username ?? "",
@@ -73,7 +73,6 @@ const AccountPage = () => {
     formState: { errors },
   } = useForm<ChangeCredentialsValues>({ resolver });
   const onSubmit = handleSubmit((data) => console.log(data));
-
   // Example dispatch usage
   const handleChangeUsername = (newUsername: string) => {
     dispatch({
