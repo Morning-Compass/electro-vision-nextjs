@@ -41,7 +41,7 @@ const changeCredentialReducer = (
   }
 };
 
-type NewUserCredentials = UserEntityType & {};
+type NewUserCredentials = Pick<UserEntityType, "username" | "email">;
 type ChangeCredentialsValues = NewUserCredentials;
 
 const resolver: Resolver<ChangeCredentialsValues> = async (values) => {
@@ -63,7 +63,7 @@ const resolver: Resolver<ChangeCredentialsValues> = async (values) => {
 const AccountPage = () => {
   const { User } = useUserContext();
   const [usernameEditEnabled, setUsernameEditEnabled] = useState(false);
-  const [newCredentials, redispatch] = useReducer(changeCredentialReducer, {
+  const [newCredentials, dispatch] = useReducer(changeCredentialReducer, {
     newUsername: User.username ?? "",
     newEmail: "email",
   });
@@ -76,7 +76,7 @@ const AccountPage = () => {
 
   // Example dispatch usage
   const handleChangeUsername = (newUsername: string) => {
-    redispatch({
+    dispatch({
       type: changeCredentialTypes.changeUsername,
       payload: newUsername,
     });
@@ -99,11 +99,30 @@ const AccountPage = () => {
                 <div className="flex flex-row items-center justify-center">
                   <input
                     {...register("username")}
-                    placeholder="Change Username"
+                    placeholder={newCredentials.newUsername}
                     disabled={!usernameEditEnabled}
                     className="border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
                   />
                   {errors?.username && <p>{errors.username.message}</p>}
+                  <div
+                    className="max-h-12 min-h-8 h-[10vh] aspect-square grid place-items-center"
+                    onClick={() => setUsernameEditEnabled((p) => !p)}
+                  >
+                    <Image
+                      src={"/settings.png"}
+                      width={32}
+                      height={32}
+                      alt="E"
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-row items-center justify-center">
+                  <input
+                    {...register("email")}
+                    placeholder={newCredentials.newEmail}
+                    disabled={!usernameEditEnabled}
+                    className="border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
+                  />
                   <div
                     className="max-h-12 min-h-8 h-[10vh] aspect-square grid place-items-center"
                     onClick={() => setUsernameEditEnabled((p) => !p)}
