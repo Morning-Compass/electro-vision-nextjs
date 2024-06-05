@@ -11,23 +11,23 @@ type UserContextProviderProps = {
 type UserAction =
   | {
       type: "setUsername";
-      username: string;
+      value: string;
     }
   | {
       type: "setTheme";
-      theme: "light" | "dark";
+      value: "light" | "dark";
     }
   | {
       type: "setProfilePicture";
-      profilePicture: string;
+      value: string;
     }
   | {
       type: "setEmail";
-      email: string;
+      value: string;
     }
   | {
       type: "setId";
-      userId: string;
+      value: string;
     };
 
 const UserReducer = (
@@ -36,15 +36,15 @@ const UserReducer = (
 ): UserEntityType => {
   switch (action.type) {
     case "setUsername":
-      return { ...state, username: action.username };
+      return { ...state, username: action.value };
     case "setTheme":
-      return { ...state, theme: action.theme };
+      return { ...state, theme: action.value };
     case "setProfilePicture":
-      return { ...state, profilePicture: action.profilePicture };
+      return { ...state, profilePicture: action.value };
     case "setEmail":
-      return { ...state, email: action.email };
+      return { ...state, email: action.value };
     case "setId":
-      return { ...state, userId: action.userId };
+      return { ...state, userId: action.value };
     default:
       return state;
   }

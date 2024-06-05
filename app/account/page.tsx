@@ -11,40 +11,49 @@ import Image from "next/image";
 import { useReducer, useState } from "react";
 import { useForm, SubmitHandler, Resolver } from "react-hook-form";
 
-enum changeCredentialTypes {
-  changeUsername = "changeUsername",
-}
-
-type changeCredentialAction = {
-  type: changeCredentialTypes;
-  payload: string;
+type Action = {
+  type: string;
+  value: string;
 };
 
-type changeCredentialState = {
-  newUsername: string;
-  newEmail: string;
-};
+type ChangeCredentialAction =
+  | {
+      type: "setNewUsername";
+      value: string;
+    }
+  | {
+      type: "setNewEmail";
+      value: string;
+    }
+  | {
+      type: "setProfilePicture";
+      value: string;
+    };
+
+type ChangeCredentialUser = Pick<
+  UserEntityType,
+  "username" | "email" | "profilePicture"
+>;
 
 const changeCredentialReducer = (
-  state: changeCredentialState,
-  action: changeCredentialAction,
-) => {
-  const { type, payload } = action;
-  switch (type) {
-    case changeCredentialTypes.changeUsername:
-      return {
-        ...state,
-        newUsername: payload,
-      };
-    default:
-      return state;
+  state: ChangeCredentialUser,
+  action: ChangeCredentialAction,
+): ChangeCredentialUser => {
+  switch (action.type) {
+    case "setNewUsername":
+      return { ...state, username: action.value };
+    case "setNewEmail":
+      return { ...state, email: action.value };
+    case "setProfilePicture":
+      return { ...state, profilePicture: action.value };
   }
 };
+type ChangeCredentialUserForm = Pick<
+  ChangeCredentialUser,
+  "username" | "email"
+>;
 
-type NewUserCredentials = Pick<UserEntityType, "username" | "email">;
-type ChangeCredentialsValues = NewUserCredentials;
-
-const resolver: Resolver<ChangeCredentialsValues> = async (values) => {
+const resolver: Resolver<ChangeCredentialUserForm> = async (values) => {
   return {
     values: values.username ? values : {},
     errors:
@@ -64,28 +73,24 @@ const AccountPage = () => {
   const { User, UserDispatch } = useUserContext();
   const [usernameEditEnabled, setUsernameEditEnabled] = useState(false);
   const [newCredentials, dispatch] = useReducer(changeCredentialReducer, {
-    newUsername: User.username ?? "",
-    newEmail: "email",
-  });
+    username: User.username ?? "",
+    email: User.email ?? "",
+    profilePicture: User.profilePicture ?? "",
+  } as ChangeCredentialUser);
+
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<ChangeCredentialsValues>({ resolver });
+  } = useForm<ChangeCredentialUserForm>({ resolver });
+
   const onSubmit = handleSubmit((data) => console.log(data));
-  // Example dispatch usage
-  const handleChangeUsername = (newUsername: string) => {
-    dispatch({
-      type: changeCredentialTypes.changeUsername,
-      payload: newUsername,
-    });
-  };
 
   return (
     <PageTemplate>
       <NavbarTemplate />
       <section className="text-mc-text bg-mc-primary w-[40vw] min-w-72 opacity-95 rounded-[3rem] mt-auto mb-auto">
-        {User.username && User.userId ? (
+        {User.username && User.userId && User.email ? (
           <article className="flex flex-col items-center justify-center mt-12 mb-12">
             <header className="text-3xl font-bold mt-8 mb-8 mr-6 ml-6 text-center">
               Morning Compass Settings
@@ -98,7 +103,7 @@ const AccountPage = () => {
                 <div className="flex flex-row items-center justify-center">
                   <input
                     {...register("username")}
-                    placeholder={newCredentials.newUsername}
+                    placeholder={newCredentials.username ?? User.username}
                     disabled={!usernameEditEnabled}
                     className="border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
                   />
@@ -118,7 +123,7 @@ const AccountPage = () => {
                 <div className="flex flex-row items-center justify-center">
                   <input
                     {...register("email")}
-                    placeholder={newCredentials.newEmail}
+                    placeholder={newCredentials.email ?? User.email}
                     disabled={!usernameEditEnabled}
                     className="border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
                   />
