@@ -2,46 +2,80 @@
 
 import Themes from "@/mc-const/themes";
 import { User as UserEntityType } from "@/mc-types/user-types";
-import React, { ReactNode, createContext, useContext, useState } from "react";
+import React, { ReactNode, createContext, useContext, useReducer } from "react";
 
 type UserContextProviderProps = {
   children: ReactNode;
 };
 
-type StateType<T> = React.Dispatch<React.SetStateAction<T>>;
+type UserAction =
+  | {
+      type: "setUsername";
+      username: string;
+    }
+  | {
+      type: "setTheme";
+      theme: "light" | "dark";
+    }
+  | {
+      type: "setProfilePicture";
+      profilePicture: string;
+    }
+  | {
+      type: "setEmail";
+      email: string;
+    }
+  | {
+      type: "setId";
+      userId: string;
+    };
 
-type UserType = UserEntityType & {
-  setUsername: StateType<UserEntityType["username"] | null>;
-  setProfilePicture: StateType<UserEntityType["profilePicture"] | null>;
-  setTheme: StateType<UserEntityType["theme"]>;
-  setUserId: StateType<UserEntityType["userId"] | null>;
+const UserReducer = (
+  state: UserEntityType,
+  action: UserAction,
+): UserEntityType => {
+  switch (action.type) {
+    case "setUsername":
+      return { ...state, username: action.username };
+    case "setTheme":
+      return { ...state, theme: action.theme };
+    case "setProfilePicture":
+      return { ...state, profilePicture: action.profilePicture };
+    case "setEmail":
+      return { ...state, email: action.email };
+    case "setId":
+      return { ...state, userId: action.userId };
+    default:
+      return state;
+  }
 };
 
 type UserContextType = {
-  User: UserType;
+  User: UserEntityType;
+  UserDispatch: React.Dispatch<UserAction>;
 };
 
 export const UserContext = createContext<UserContextType | null>(null);
 
 export const UserContextProvider = ({ children }: UserContextProviderProps) => {
-  const [uname, setUname] = useState<UserType["username"] | null>(null);
-  const [pfp, setPfp] = useState<UserType["profilePicture"] | null>(null);
-  const [utheme, setUtheme] = useState<UserType["theme"]>(Themes.light);
-  const [uId, setUId] = useState<UserType["userId"] | null>(null);
-
-  const User: UserType = {
-    username: uname,
-    setUsername: setUname,
-    profilePicture: pfp,
-    setProfilePicture: setPfp,
-    theme: utheme,
-    setTheme: setUtheme,
-    userId: uId,
-    setUserId: setUId,
-  };
+  const [User, UserDispatch] = useReducer(UserReducer, {
+    username: null,
+    email: null,
+    profilePicture: null,
+    theme: Themes.light,
+    userId: null,
+    accountVerified: null,
+    passwordLength: null,
+    authorities: null,
+    accountNonExpired: null,
+    accountNonLocked: null,
+    credentialsNonExpired: null,
+  } as UserEntityType);
 
   return (
-    <UserContext.Provider value={{ User }}>{children}</UserContext.Provider>
+    <UserContext.Provider value={{ User, UserDispatch }}>
+      {children}
+    </UserContext.Provider>
   );
 };
 
