@@ -11,11 +11,11 @@ export default function Home() {
   useEffect(() => {
     UserDispatch({
       type: "setUsername",
-      username: "username",
+      value: "username",
     });
     UserDispatch({
       type: "setId",
-      userId: "aoch-123h-b978y",
+      value: "aoch-123h-b978y",
     });
   }, []);
 
