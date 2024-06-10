@@ -10,6 +10,7 @@ import { User as UserEntityType } from "@/mc-types/user-types";
 import Image from "next/image";
 import { useReducer, useState } from "react";
 import { useForm, SubmitHandler, Resolver } from "react-hook-form";
+import AuthConst from "@/mc-const/authconst";
 
 type Action = {
   type: string;
@@ -56,16 +57,15 @@ type ChangeCredentialUserForm = Pick<
 const resolver: Resolver<ChangeCredentialUserForm> = async (values) => {
   return {
     values: values.username ? values : {},
-    errors:
-      !values.username || !values.username.match(Regex.usernameModification)
-        ? {
-            username: {
-              type: "validate",
-              message:
-                "Username must consist of letters, numbers, underscores, be maximum 20 chars long",
-            },
-          }
-        : {},
+    errors: Regex.usernameModification.test(values.username ?? "")
+      ? {
+          username: {
+            type: "validate",
+            message:
+              "Username must consist of letters, numbers, underscores, be maximum 20 chars long",
+          },
+        }
+      : {},
   };
 };
 
@@ -84,7 +84,8 @@ const AccountPage = () => {
     formState: { errors },
   } = useForm<ChangeCredentialUserForm>({ resolver });
 
-  const onSubmit = handleSubmit((data) => console.log(data));
+  const onSubmit: SubmitHandler<ChangeCredentialUserForm> = (data) =>
+    console.log(data);
 
   return (
     <PageTemplate>
@@ -98,12 +99,16 @@ const AccountPage = () => {
             <figure>
               <form
                 className="flex flex-col items-start justify-center gap-2"
-                onSubmit={onSubmit}
+                onSubmit={handleSubmit(onSubmit)}
               >
                 <div className="flex flex-row items-center justify-center">
                   <div className="flex flex-col gap-1 text-wrap text-left text">
                     <input
-                      {...register("username")}
+                      {...(register("username"),
+                      {
+                        minLength: AuthConst.minUsernameLength,
+                        maxLength: AuthConst.maxUsernameLength,
+                      })}
                       placeholder={newCredentials.username ?? User.username}
                       disabled={!usernameEditEnabled}
                       className="border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
@@ -124,6 +129,7 @@ const AccountPage = () => {
                 </div>
                 <div className="flex flex-row items-center justify-center">
                   <input
+                    type="email"
                     {...register("email")}
                     placeholder={newCredentials.email ?? User.email}
                     disabled={!usernameEditEnabled}

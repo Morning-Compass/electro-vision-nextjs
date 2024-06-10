@@ -85,7 +85,7 @@ export default function Login() {
   return (
     <PageTemplate>
       <NavbarTemplate />
-      <section className="flex flex-col items-center justify-center text-mc-text bg-mc-primary w-[40vw] min-w-72 opacity-95 rounded-[3rem] mt-auto mb-auto mc-blur border-mc-text border-solid border-2">
+      <section className="flex flex-col items-center justify-center text-mc-text bg-mc-primary w-[40vw] min-w-72 opacity-95 rounded-[3rem] mt-auto mb-auto mc-blur">
         <article className="flex flex-col items-center justify-center mt-12 mb-12">
           <header className="text-3xl font-bold mb-8 mt-8 mr-2 ml-2 text-center">
             Create Morning Compass account
