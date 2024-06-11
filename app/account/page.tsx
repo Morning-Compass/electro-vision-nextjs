@@ -49,24 +49,15 @@ const changeCredentialReducer = (
       return { ...state, profilePicture: action.value };
   }
 };
-type ChangeCredentialUserForm = Pick<
+
+type ChangeCredentialUserForms = Pick<
   ChangeCredentialUser,
   "username" | "email"
 >;
 
-const resolver: Resolver<ChangeCredentialUserForm> = async (values) => {
-  return {
-    values: values.username ? values : {},
-    errors: Regex.usernameModification.test(values.username ?? "")
-      ? {
-          username: {
-            type: "validate",
-            message:
-              "Username must consist of letters, numbers, underscores, be maximum 20 chars long",
-          },
-        }
-      : {},
-  };
+type ChangeCredentialUserForm = {
+  username: string;
+  email: string;
 };
 
 const AccountPage = () => {
@@ -82,10 +73,11 @@ const AccountPage = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<ChangeCredentialUserForm>({ resolver });
+  } = useForm<ChangeCredentialUserForm>();
 
-  const onSubmit: SubmitHandler<ChangeCredentialUserForm> = (data) =>
+  const onSubmit: SubmitHandler<ChangeCredentialUserForm> = (data) => {
     console.log(data);
+  };
 
   return (
     <PageTemplate>
@@ -104,16 +96,12 @@ const AccountPage = () => {
                 <div className="flex flex-row items-center justify-center">
                   <div className="flex flex-col gap-1 text-wrap text-left text">
                     <input
-                      {...(register("username"),
-                      {
-                        minLength: AuthConst.minUsernameLength,
-                        maxLength: AuthConst.maxUsernameLength,
-                      })}
+                      {...register("username", { minLength: 2 })}
+                      type="text"
                       placeholder={newCredentials.username ?? User.username}
                       disabled={!usernameEditEnabled}
                       className="border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
                     />
-                    {errors?.username && <p>{errors.username.message}</p>}
                   </div>
                   <div
                     className="max-h-12 min-h-8 h-[10vh] aspect-square grid place-items-center"
