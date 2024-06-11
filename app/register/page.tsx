@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, ChangeEvent, FormEvent } from "react";
+import { useState } from "react";
 import OLF from "@/mc-lib/OneLastFetch";
 import ApiLinks from "@/mc-const/api-links";
 import Link from "next/link";
@@ -9,20 +9,21 @@ import NavbarTemplate from "@/components/templates/NavbarTemplate";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import FormError from "@/components/FormError";
-import Regex from "@/mc-const/regex";
 import { FooterSmall } from "@/components/templates/FooterSmall";
+import { User as UserEntityType } from "@/mc-types/user-types";
+import { SubmitHandler, useForm } from "react-hook-form";
+import AuthConst from "@/mc-const/authconst";
 
 export default function Login() {
-  type formProps = {
-    email: string;
-    password: string;
-    username: string;
+  type formProps = Pick<UserEntityType, "email" | "username"> & {
+    password: string | null;
+    repPassword: string | null;
   };
-
   const [formState, setFormState] = useState<formProps>({
-    email: "",
-    password: "",
-    username: "",
+    email: null,
+    password: null,
+    username: null,
+    repPassword: null,
   });
   const [message, setMessage] = useState<string | null>(null);
   const [repPassword, setRepPassword] = useState<string>("");
@@ -31,57 +32,21 @@ export default function Login() {
     string[] | null
   >(null);
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    const passwordVerificationErrorList: string[] = [];
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<formProps>();
 
-    if (!Regex.emailRegistration.match(formState.email)) {
-      passwordVerificationErrorList.push("Email must be correct");
-    }
-    if (formState.password !== repPassword) {
-      console.log("passwords must match");
-      passwordVerificationErrorList.push("Passwords must match");
-    }
-    if (formState.password.length < 8 && !passwordVerificationError) {
-      console.log("password must be atleast 8 character long");
-      passwordVerificationErrorList.push(
-        "Password must be at least 8 characters long",
-      );
-    }
-    if (!Regex.passwordRegistration.match(formState.password.toLowerCase())) {
-      console.log("password must contain any special char");
-      passwordVerificationErrorList.push(
-        "Password must contain any special character",
-      );
-    }
-
-    if (passwordVerificationErrorList.length > 0) {
-      setPasswordVerificationErorr(passwordVerificationErrorList);
-    } else {
-      setPasswordVerificationErorr(null);
-    }
-
-    try {
-      const response = await OLF.post(ApiLinks.register, {
-        username: formState.username,
-        email: formState.email,
-        password: formState.password,
-      });
-
-      setMessage(response["message"]);
-      console.log(response["message"]);
-    } catch (e) {}
-  };
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setFormState((p) => ({
-      ...p,
-      [e.target.name]: e.target.value,
-    }));
+  const onSubmit: SubmitHandler<formProps> = async (data) => {
+    const response = await OLF.post(ApiLinks.register, {
+      username: data.username,
+      email: data.email,
+      password: data.password,
+    });
   };
 
   // const inputStyles = { inputSecurity: showPassword ? "none" : "inherit", }
-
   return (
     <PageTemplate>
       <NavbarTemplate />
@@ -92,41 +57,37 @@ export default function Login() {
           </header>
           <form
             className="flex flex-col items-center justify-center gap-4"
-            onSubmit={handleSubmit}
+            onSubmit={handleSubmit(onSubmit)}
           >
-            <Input
+            <input
+              {...register("email", {
+                minLength: {
+                  value: AuthConst.minUsernameLength,
+                  message: `Username must have at least ${AuthConst.minUsernameLength} characters`,
+                },
+              })}
               type="text"
               placeholder="Email"
               name="email"
-              value={formState.email}
-              onChange={handleChange}
             />
-            <Input
+            <input
+              {...register("username")}
               type="text"
               placeholder="Username"
               name="username"
-              value={formState.username}
-              onChange={handleChange}
             />
-            <Input
+            <input
+              {...register("password")}
               type="password"
               placeholder="Password"
               name="password"
-              value={formState.password}
-              onChange={handleChange}
             />
-            <Input
+            <input
+              {...register("repPassword")}
               type="password"
               placeholder="Repeat Password"
               name="password"
-              value={repPassword}
-              onChange={(e) => setRepPassword(e.target.value)}
             />
-            <FormError condition={passwordVerificationError !== null}>
-              {passwordVerificationError?.map((passwordError) => (
-                <p>{passwordError}</p>
-              ))}
-            </FormError>
             <Button type="submit" value="Register" />
             {/* <div onClick={() => setShowPassword(p => !p)} className="w-4 h-4 text-center border-solid border-black rounded-[100%] cursor-pointer">x</div> */}
           </form>
