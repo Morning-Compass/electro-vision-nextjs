@@ -20,17 +20,12 @@ export default function Login() {
     password: string | null;
     repPassword: string | null;
   };
-  const [formState, setFormState] = useState<formProps>({
-    email: null,
-    password: null,
-    username: null,
-    repPassword: null,
-  });
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
+    getValues,
     setError,
   } = useForm<formProps>();
 
@@ -124,19 +119,19 @@ export default function Login() {
             <FormErrorWrap>
               <input
                 {...register("repPassword", {
+                  required: {
+                    value: true,
+                    message: "Password repeat is required",
+                  },
                   minLength: {
                     value: AuthConst.minPasswordLength,
                     message: `Password Must have at least ${AuthConst.minPasswordLength} characters`,
                   },
                   validate: (rep) => {
-                    if (formState.password !== rep) {
+                    if (getValues().password !== rep) {
                       return "Passwords Must Match";
                     }
                     return true;
-                  },
-                  required: {
-                    value: true,
-                    message: "Password repaet is required",
                   },
                 })}
                 type="password"
