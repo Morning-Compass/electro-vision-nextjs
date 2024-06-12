@@ -6,16 +6,22 @@ import Link from "next/link";
 import PageTemplate from "@/components/templates/PageTemplate";
 import OLF from "@/mc-lib/OneLastFetch";
 import ApiLinks from "@/mc-const/api-links";
-import { Navbar } from "@/components/navbar";
 import NavbarTemplate from "@/components/templates/NavbarTemplate";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import { FooterSmall } from "@/components/templates/FooterSmall";
+import { User as UserEntityType } from "@/mc-types/user-types";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { LogOptions } from "vite";
+import FormErrorWrap from "@/components/templates/FormErrorWrap";
+import FormErrorParahraph from "@/components/templates/FormErrorParagraph";
+import Regex from "@/mc-const/regex";
+import AuthConst from "@/mc-const/authconst";
 
 export default function Login() {
   type formProps = {
-    credential: string;
-    password: string;
+    credential: string | null;
+    password: string | null;
   };
 
   const loginOptions = {
@@ -23,17 +29,17 @@ export default function Login() {
     username: "username",
   } as const;
 
-  const [formState, setFormState] = useState<formProps>({
-    credential: "",
-    password: "",
-  });
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    getValues,
+    setError,
+  } = useForm<formProps>();
 
-  const [loginOption, setLoginOption] = useState<string>(loginOptions.email);
+  const [loginOption, setLoginOption] = useState<"email" | "username">("email");
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    console.log(loginOption);
-
+  const onSubmit: SubmitHandler<formProps> = async (data) => {
     const loginLink =
       loginOption === loginOptions.email
         ? ApiLinks.loginEmail
@@ -42,21 +48,10 @@ export default function Login() {
     const response = await OLF.post(loginLink, {
       [loginOption === loginOptions.email
         ? loginOptions.email
-        : loginOptions.username]: formState.credential,
-      password: formState.password,
+        : loginOptions.username]: getValues().credential,
+      password: getValues().password,
     });
     redirect("/");
-  };
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setFormState((p) => ({
-      ...p,
-      [e.target.name]: e.target.value,
-    }));
-
-    if (e.target.value.toString().includes("@"))
-      setLoginOption(loginOptions.email);
-    else setLoginOption(loginOptions.username);
   };
 
   return (
@@ -69,23 +64,51 @@ export default function Login() {
           </header>
           <form
             className="flex flex-col items-center justify-center gap-4"
-            onSubmit={handleSubmit}
+            onSubmit={handleSubmit(onSubmit)}
           >
-            {/* temporary check for username or email to be checkt by @ conent or sth */}
-            <Input
-              type="text"
-              placeholder="Email or Username"
-              name="credential"
-              value={formState.credential}
-              onChange={handleChange}
-            />
-            <Input
-              type="password"
-              placeholder="Password"
-              name="password"
-              value={formState.password}
-              onChange={handleChange}
-            />
+            <FormErrorWrap>
+              <input
+                {...register("credential", {
+                  validate: (cred) => {
+                    if (cred && cred.includes("@")) {
+                      const regexResult = Regex.emailRegistration.test(cred);
+                      if (!regexResult) {
+                        return "Email must be correct";
+                      }
+                      return true;
+                    }
+                  },
+                  required: {
+                    value: true,
+                    message: "Credential is required",
+                  },
+                })}
+                type="text"
+                placeholder="Email or Username"
+                name="credential"
+                className="border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
+              />
+              <FormErrorParahraph errorObject={errors.credential} />
+            </FormErrorWrap>
+            <FormErrorWrap>
+              <input
+                {...register("password", {
+                  minLength: {
+                    value: AuthConst.minPasswordLength,
+                    message: `Password must have at least ${AuthConst.minPasswordLength} characters`,
+                  },
+                  required: {
+                    value: true,
+                    message: "Password is requiered",
+                  },
+                })}
+                type="password"
+                placeholder="Password"
+                name="password"
+                className="border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
+              />
+              <FormErrorParahraph errorObject={errors.password} />
+            </FormErrorWrap>
             <Button type="submit" value="Login" />
           </form>
           <figure className="flex items-center justify-evenly p-6">
@@ -94,8 +117,7 @@ export default function Login() {
             </p>
             <Link
               href={"/register"}
-              className="text-mc-text font-medium hover:scale-110 duration-300 ml-4 mr-4"
-              font-bold
+              className="text-mc-text hover:scale-110 duration-300 ml-4 mr-4 font-bold"
             >
               Register here
             </Link>

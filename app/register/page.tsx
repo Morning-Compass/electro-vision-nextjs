@@ -150,8 +150,7 @@ export default function Login() {
             </p>
             <Link
               href={"/login"}
-              className="text-mc-text font-medium hover:scale-110 duration-300 ml-4 mr-4"
-              font-bold
+              className="text-mc-text hover:scale-110 duration-300 ml-4 mr-4 font-bold"
             >
               Login here
             </Link>
