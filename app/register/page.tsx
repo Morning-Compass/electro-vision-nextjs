@@ -6,13 +6,14 @@ import ApiLinks from "@/mc-const/api-links";
 import Link from "next/link";
 import PageTemplate from "@/components/templates/PageTemplate";
 import NavbarTemplate from "@/components/templates/NavbarTemplate";
-import Input from "@/components/Input";
 import Button from "@/components/Button";
-import FormError from "@/components/FormError";
 import { FooterSmall } from "@/components/templates/FooterSmall";
 import { User as UserEntityType } from "@/mc-types/user-types";
 import { SubmitHandler, useForm } from "react-hook-form";
 import AuthConst from "@/mc-const/authconst";
+import FormErrorParahraph from "@/components/templates/FormErrorParagraph";
+import FormErrorWrap from "@/components/templates/FormErrorWrap";
+import Regex from "@/mc-const/regex";
 
 export default function Login() {
   type formProps = Pick<UserEntityType, "email" | "username"> & {
@@ -25,17 +26,12 @@ export default function Login() {
     username: null,
     repPassword: null,
   });
-  const [message, setMessage] = useState<string | null>(null);
-  const [repPassword, setRepPassword] = useState<string>("");
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [passwordVerificationError, setPasswordVerificationErorr] = useState<
-    string[] | null
-  >(null);
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
+    setError,
   } = useForm<formProps>();
 
   const onSubmit: SubmitHandler<formProps> = async (data) => {
@@ -59,35 +55,97 @@ export default function Login() {
             className="flex flex-col items-center justify-center gap-4"
             onSubmit={handleSubmit(onSubmit)}
           >
-            <input
-              {...register("email", {
-                minLength: {
-                  value: AuthConst.minUsernameLength,
-                  message: `Username must have at least ${AuthConst.minUsernameLength} characters`,
-                },
-              })}
-              type="text"
-              placeholder="Email"
-              name="email"
-            />
-            <input
-              {...register("username")}
-              type="text"
-              placeholder="Username"
-              name="username"
-            />
-            <input
-              {...register("password")}
-              type="password"
-              placeholder="Password"
-              name="password"
-            />
-            <input
-              {...register("repPassword")}
-              type="password"
-              placeholder="Repeat Password"
-              name="password"
-            />
+            <FormErrorWrap>
+              <input
+                {...register("email", {
+                  validate: (email) => {
+                    const emailRegexResult = Regex.emailRegistration.test(
+                      email ?? "",
+                    );
+                    if (!emailRegexResult) {
+                      return "Email must be correct";
+                    }
+                    return true;
+                  },
+                  required: {
+                    value: true,
+                    message: "Email is required",
+                  },
+                })}
+                type="text"
+                placeholder="Email"
+                name="email"
+                className="border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
+              />
+              <FormErrorParahraph errorObject={errors.email} />
+            </FormErrorWrap>
+            <FormErrorWrap>
+              <input
+                {...register("username", {
+                  minLength: {
+                    value: AuthConst.minUsernameLength,
+                    message: `Username must have at least ${AuthConst.minUsernameLength} characters`,
+                  },
+                  maxLength: {
+                    value: AuthConst.maxUsernameLength,
+                    message: `Username must have less than ${AuthConst.maxUsernameLength} characters`,
+                  },
+                  required: {
+                    value: true,
+                    message: "Username is required",
+                  },
+                })}
+                type="text"
+                placeholder="Username"
+                name="username"
+                className="border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
+              />
+              <FormErrorParahraph errorObject={errors.username} />
+            </FormErrorWrap>
+            <FormErrorWrap>
+              <input
+                {...register("password", {
+                  minLength: {
+                    value: AuthConst.minPasswordLength,
+                    message: `Password Must have at least ${AuthConst.minPasswordLength} characters`,
+                  },
+                  required: {
+                    value: true,
+                    message: "Password is required",
+                  },
+                })}
+                type="password"
+                placeholder="Password"
+                name="password"
+                className="border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
+              />
+              <FormErrorParahraph errorObject={errors.password} />
+            </FormErrorWrap>
+            <FormErrorWrap>
+              <input
+                {...register("repPassword", {
+                  minLength: {
+                    value: AuthConst.minPasswordLength,
+                    message: `Password Must have at least ${AuthConst.minPasswordLength} characters`,
+                  },
+                  validate: (rep) => {
+                    if (formState.password !== rep) {
+                      return "Passwords Must Match";
+                    }
+                    return true;
+                  },
+                  required: {
+                    value: true,
+                    message: "Password repaet is required",
+                  },
+                })}
+                type="password"
+                placeholder="Repeat Password"
+                name="password"
+                className="border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
+              />
+              <FormErrorParahraph errorObject={errors.repPassword} />
+            </FormErrorWrap>
             <Button type="submit" value="Register" />
             {/* <div onClick={() => setShowPassword(p => !p)} className="w-4 h-4 text-center border-solid border-black rounded-[100%] cursor-pointer">x</div> */}
           </form>
@@ -103,11 +161,11 @@ export default function Login() {
               Login here
             </Link>
           </figure>
-          {message ? (
+          {
             <article className="mt-4 ">
               You have registered successfully, you will be redirected
             </article>
-          ) : null}
+          }
         </article>
       </section>
       <FooterSmall />

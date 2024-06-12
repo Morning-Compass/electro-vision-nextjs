@@ -132,7 +132,7 @@ const AccountPage = () => {
                   </div>
                 </div>
                 <div className="flex flex-row items-center justify-center">
-                  <div className="flex flex-col gap-1 text-wrap text-left text">
+                  <div className="flex flex-col gap-1 text-wrap text-left">
                     <input
                       type="email"
                       {...register("email", {
