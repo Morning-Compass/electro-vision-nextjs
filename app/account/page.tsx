@@ -199,6 +199,8 @@ const AccountPage = () => {
                             message: `Username must have less than ${AuthConst.maxUsernameLength} characters`,
                           },
                           validate: (username) => {
+                            if (!newCredentials.usernameEditEnabled)
+                              return true;
                             const regexResult = Regex.usernameModification.test(
                               username ?? "",
                             );
@@ -240,6 +242,7 @@ const AccountPage = () => {
                         type="email"
                         {...register("email", {
                           validate: (email) => {
+                            if (!newCredentials.emailEditEnabled) return true;
                             const emailRegexResult =
                               Regex.emailRegistration.test(email ?? "");
                             if (!emailRegexResult) {
