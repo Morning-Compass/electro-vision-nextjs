@@ -22,6 +22,7 @@ const NavbarUserInfo = ({
           width={32}
           height={32}
           alt="pfp"
+          className="rounded-full aspect-square"
         />
         <Link href={"/account"}>
           <div className="grid place-items-center rounded-[100%]">

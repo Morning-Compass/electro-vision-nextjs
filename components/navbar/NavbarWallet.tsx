@@ -17,7 +17,10 @@ const NavbarWallet = ({ children }: NavbarUserProps) => {
       {User.username && User.userId ? (
         <li className="sm:ml-auto bg-mc-text pt-2 pb-2 rounded-[2.5rem] pr-8 pl-8">
           <div className="flex flex-row items-center justify-center gap-4">
-            <NavbarUserInfo username={User.username} />
+            <NavbarUserInfo
+              username={User.username}
+              userPropfilePicture={User.profilePicture ?? undefined}
+            />
             <ThemeSwitcher />
           </div>
         </li>

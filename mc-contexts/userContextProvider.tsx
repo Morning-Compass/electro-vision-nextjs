@@ -11,7 +11,7 @@ type UserContextProviderProps = {
 type UserAction =
   | {
       type: "setUsername";
-      value: string;
+      value: string | null;
     }
   | {
       type: "setTheme";
@@ -19,15 +19,15 @@ type UserAction =
     }
   | {
       type: "setProfilePicture";
-      value: string;
+      value: string | null;
     }
   | {
       type: "setEmail";
-      value: string;
+      value: string | null;
     }
   | {
       type: "setId";
-      value: string;
+      value: string | null;
     };
 
 const UserReducer = (
