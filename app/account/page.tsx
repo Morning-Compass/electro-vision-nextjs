@@ -91,7 +91,12 @@ const changeCredentialReducer = (
     case "setEmailEditEnabled":
       return { ...state, emailEditEnabled: action.value };
     case "setAllEditDisabled":
-      return { ...state, emailEditEnabled: false, usernameEditEnabled: false };
+      return {
+        ...state,
+        emailEditEnabled: false,
+        usernameEditEnabled: false,
+        newPasswordEditEnabled: false,
+      };
     case "setNewPassword":
       return { ...state, newPassword: action.value };
     case "setNewRepeatPassword":
@@ -126,6 +131,7 @@ const AccountPage = () => {
     handleSubmit,
     formState: { errors },
     getValues,
+    setValue,
   } = useForm<ChangeCredentialUserForm>();
 
   const onSubmit: SubmitHandler<ChangeCredentialUserForm> = async (data) => {
@@ -259,12 +265,15 @@ const AccountPage = () => {
                   </div>
                   <div
                     className="max-h-12 min-h-8 h-[10vh] aspect-square grid place-items-center"
-                    onClick={() =>
+                    onClick={() => {
+                      if (newCredentials.usernameEditEnabled) {
+                        setValue("username", "");
+                      }
                       newCredentialsDispatch({
                         type: "setUsernameEditEnabled",
                         value: !newCredentials.usernameEditEnabled,
-                      })
-                    }
+                      });
+                    }}
                   >
                     <Image
                       src={"/settings.png"}
@@ -298,12 +307,15 @@ const AccountPage = () => {
                   </FormErrorWrap>
                   <div
                     className="max-h-12 min-h-8 h-[10vh] aspect-square grid place-items-center"
-                    onClick={() =>
+                    onClick={() => {
+                      if (newCredentials.emailEditEnabled) {
+                        setValue("email", "");
+                      }
                       newCredentialsDispatch({
                         type: "setEmailEditEnabled",
                         value: !newCredentials.emailEditEnabled,
-                      })
-                    }
+                      });
+                    }}
                   >
                     <Image
                       src={"/settings.png"}
@@ -382,12 +394,16 @@ const AccountPage = () => {
                   </FormErrorWrap>
                   <div
                     className="max-h-12 min-h-8 h-[10vh] aspect-square grid place-items-center"
-                    onClick={() =>
+                    onClick={() => {
+                      if (newCredentials.newPasswordEditEnabled) {
+                        setValue("newPassword", "");
+                        setValue("newRepeatPassword", "");
+                      }
                       newCredentialsDispatch({
                         type: "setNewPasswordEditEnabled",
                         value: !newCredentials.newPasswordEditEnabled,
-                      })
-                    }
+                      });
+                    }}
                   >
                     <Image
                       src={"/settings.png"}
