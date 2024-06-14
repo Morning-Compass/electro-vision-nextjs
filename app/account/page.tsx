@@ -362,6 +362,16 @@ const AccountPage = () => {
                             value: AuthConst.minPasswordLength,
                             message: `Password Must have at least ${AuthConst.minPasswordLength} characters`,
                           },
+                          validate: (rep) => {
+                            if (
+                              (getValues().newPassword !== "" ||
+                                getValues().newPassword !== null) &&
+                              (rep === "" || rep === null)
+                            ) {
+                              return "Password repetition is required";
+                            }
+                            return true;
+                          },
                         })}
                         placeholder="New Repeat Password"
                         disabled={!newCredentials.newPasswordEditEnabled}

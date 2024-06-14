@@ -108,6 +108,26 @@ export default function Login() {
                     value: true,
                     message: "Password is required",
                   },
+                  validate: (password) => {
+                    const passwordRegexResult = Regex.password.test(
+                      password ?? "",
+                    );
+                    if (!passwordRegexResult || !password) {
+                      return "Password must have letters numbers and special charachters";
+                    }
+                    if (password?.toLowerCase() === password) {
+                      return "Password must have at least one capital letter";
+                    }
+                    if (!/\d/.test(password)) {
+                      return "Password must have at least one number";
+                    }
+                    if (
+                      !/[!@#$%^&*(),.?":{}|<>[\]\\\/`~'=_+\-]/.test(password)
+                    ) {
+                      return "Password must contain at least one special character";
+                    }
+                    return true;
+                  },
                 })}
                 type="password"
                 placeholder="Password"
