@@ -10,4 +10,5 @@ export type User = {
   accountNonExpired: boolean | null;
   accountNonLocked: boolean | null;
   credentialsNonExpired: boolean | null;
+  token: string | null;
 };

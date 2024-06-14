@@ -8,13 +8,19 @@ import Regex from "@/mc-const/regex";
 import useUserContext from "@/mc-contexts/userContextProvider";
 import { User as UserEntityType } from "@/mc-types/user-types";
 import Image from "next/image";
-import { useReducer, useState } from "react";
+import { ReactNode, useReducer, useState } from "react";
 import { useForm, SubmitHandler, Resolver } from "react-hook-form";
 import AuthConst from "@/mc-const/authconst";
 import FormErrorWrap from "@/components/templates/FormErrorWrap";
 import FormErrorParahraph from "@/components/templates/FormErrorParagraph";
 import OLF from "@/mc-lib/OneLastFetch";
 import toast from "react-hot-toast";
+
+const EditCredentialWrapper = ({ children }: { children: ReactNode }) => {
+  return (
+    <div className="flex flex-row items-center justify-center">{children}</div>
+  );
+};
 
 type Action = {
   type: string;
@@ -24,15 +30,15 @@ type Action = {
 type ChangeCredentialAction =
   | {
       type: "setNewUsername";
-      value: string;
+      value: string | null;
     }
   | {
       type: "setNewEmail";
-      value: string;
+      value: string | null;
     }
   | {
       type: "setProfilePicture";
-      value: string;
+      value: string | null;
     }
   | {
       type: "setUsernameEditEnabled";
@@ -44,6 +50,14 @@ type ChangeCredentialAction =
     }
   | {
       type: "setAllEditDisabled";
+    }
+  | {
+      type: "setNewPassword";
+      value: string | null;
+    }
+  | {
+      type: "setNewRepeatPassword";
+      value: string | null;
     };
 
 type ChangeCredentialUser = Pick<
@@ -52,6 +66,8 @@ type ChangeCredentialUser = Pick<
 > & {
   usernameEditEnabled: boolean;
   emailEditEnabled: boolean;
+  newPassword: string | null;
+  newRepeatPassword: string | null;
 };
 
 const changeCredentialReducer = (
@@ -71,6 +87,10 @@ const changeCredentialReducer = (
       return { ...state, emailEditEnabled: action.value };
     case "setAllEditDisabled":
       return { ...state, emailEditEnabled: false, usernameEditEnabled: false };
+    case "setNewPassword":
+      return { ...state, newPassword: action.value };
+    case "setNewRepeatPassword":
+      return { ...state, newRepeatPassword: action.value };
   }
 };
 
@@ -84,11 +104,13 @@ const AccountPage = () => {
   const [newCredentials, newCredentialsDispatch] = useReducer(
     changeCredentialReducer,
     {
-      username: User.username ?? "",
-      email: User.email ?? "",
-      profilePicture: User.profilePicture ?? "",
+      username: User.username,
+      email: User.email,
+      profilePicture: User.profilePicture,
       usernameEditEnabled: false,
       emailEditEnabled: false,
+      newPassword: null,
+      newRepeatPassword: null,
     } as ChangeCredentialUser,
   );
 
@@ -245,28 +267,27 @@ const AccountPage = () => {
                   </div>
                 </div>
                 <div className="flex flex-row items-center justify-center">
-                  <div className="flex flex-col gap-1 text-wrap text-left">
-                    <FormErrorWrap>
-                      <input
-                        type="email"
-                        {...register("email", {
-                          validate: (email) => {
-                            if (!newCredentials.emailEditEnabled) return true;
-                            const emailRegexResult =
-                              Regex.emailRegistration.test(email ?? "");
-                            if (!emailRegexResult) {
-                              return "Email must be correct";
-                            }
-                            return true;
-                          },
-                        })}
-                        placeholder={newCredentials.email ?? User.email}
-                        disabled={!newCredentials.emailEditEnabled}
-                        className={`border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800 ${newCredentials.emailEditEnabled ? "border-6 border-emerald-500" : ""}`}
-                      />
-                      <FormErrorParahraph errorObject={errors.email} />
-                    </FormErrorWrap>
-                  </div>
+                  <FormErrorWrap>
+                    <input
+                      type="email"
+                      {...register("email", {
+                        validate: (email) => {
+                          if (!newCredentials.emailEditEnabled) return true;
+                          const emailRegexResult = Regex.emailRegistration.test(
+                            email ?? "",
+                          );
+                          if (!emailRegexResult) {
+                            return "Email must be correct";
+                          }
+                          return true;
+                        },
+                      })}
+                      placeholder={newCredentials.email ?? User.email}
+                      disabled={!newCredentials.emailEditEnabled}
+                      className={`border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800 ${newCredentials.emailEditEnabled ? "border-6 border-emerald-500" : ""}`}
+                    />
+                    <FormErrorParahraph errorObject={errors.email} />
+                  </FormErrorWrap>
                   <div
                     className="max-h-12 min-h-8 h-[10vh] aspect-square grid place-items-center"
                     onClick={() =>
@@ -284,6 +305,7 @@ const AccountPage = () => {
                     />
                   </div>
                 </div>
+
                 {newCredentials.usernameEditEnabled ||
                 newCredentials.emailEditEnabled ? (
                   <Button type="submit" value="OK" customWidth="w-14" />
