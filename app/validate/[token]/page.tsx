@@ -37,6 +37,7 @@ const VerifiAccountPage = ({ params }: VerifiAccountPageProps) => {
         toast.success("Account validated!", { duration: 3000 });
       } catch (error) {
         const e = error as OneLastError;
+        console.log(e.error);
         const errorMessage = JSON.parse(e.error);
         console.log(errorMessage.message);
         console.log(

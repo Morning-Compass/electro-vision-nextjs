@@ -98,8 +98,17 @@ const AccountPage = () => {
     formState: { errors },
   } = useForm<ChangeCredentialUserForm>();
 
-  const onSubmit: SubmitHandler<ChangeCredentialUserForm> = (data) => {
-    newCredentialsDispatch({ type: "setAllEditDisabled" });
+  const onSubmit: SubmitHandler<ChangeCredentialUserForm> = async (data) => {
+    try {
+      await OLF.put("future change credentials", {
+        token: "future jwt roken",
+        credentials: data,
+      });
+      newCredentialsDispatch({ type: "setAllEditDisabled" });
+      toast.success("Credentials changed successfully", { duration: 3000 });
+    } catch (e) {
+      toast.error("Changing credentials went wrong", { duration: 3000 });
+    }
     console.log(data);
   };
 
@@ -213,7 +222,7 @@ const AccountPage = () => {
                         type="text"
                         placeholder={newCredentials.username ?? User.username}
                         disabled={!newCredentials.usernameEditEnabled}
-                        className="border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
+                        className={`border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800 ${newCredentials.usernameEditEnabled ? "border-6 border-emerald-500" : ""}`}
                       />
                       <FormErrorParahraph errorObject={errors.username} />
                     </FormErrorWrap>
@@ -253,7 +262,7 @@ const AccountPage = () => {
                         })}
                         placeholder={newCredentials.email ?? User.email}
                         disabled={!newCredentials.emailEditEnabled}
-                        className="border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
+                        className={`border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800 ${newCredentials.emailEditEnabled ? "border-6 border-emerald-500" : ""}`}
                       />
                       <FormErrorParahraph errorObject={errors.email} />
                     </FormErrorWrap>
