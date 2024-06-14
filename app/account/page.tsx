@@ -8,7 +8,7 @@ import Regex from "@/mc-const/regex";
 import useUserContext from "@/mc-contexts/userContextProvider";
 import { User as UserEntityType } from "@/mc-types/user-types";
 import Image from "next/image";
-import { ReactNode, useReducer, useState } from "react";
+import { ReactNode, useEffect, useReducer, useState } from "react";
 import { useForm, SubmitHandler, Resolver } from "react-hook-form";
 import AuthConst from "@/mc-const/authconst";
 import FormErrorWrap from "@/components/templates/FormErrorWrap";
@@ -148,19 +148,6 @@ const AccountPage = () => {
     console.log(data);
   };
 
-  const setUserImage = async (token: string, base64Image: string) => {
-    try {
-      console.log(base64Image);
-      UserDispatch({ type: "setProfilePicture", value: base64Image });
-      await OLF.post("future api link", {
-        token: token,
-        user_image: base64Image,
-      });
-    } catch (e) {
-      toast.error("Setting photo went wrong", { duration: 3000 });
-    }
-  };
-
   const handleUserProfilePictureSet = async (
     e: React.ChangeEvent<HTMLInputElement>,
   ) => {
@@ -169,7 +156,10 @@ const AccountPage = () => {
 
       const reader = new FileReader();
       reader.onload = () => {
-        setUserImage("future JWT token", reader.result as string);
+        UserDispatch({
+          type: "setProfilePicture",
+          value: reader.result as string,
+        });
       };
       reader.readAsDataURL(file);
     }
@@ -178,16 +168,46 @@ const AccountPage = () => {
   const handleUserProfilePictureDelete = async () => {
     try {
       UserDispatch({ type: "setProfilePicture", value: null });
-      await OLF.delete("future link to delete", { token: "future JWT token" });
+      await OLF.delete("future link to delete", {
+        token: "future JWT token",
+      });
     } catch (e) {
       toast.error("Deleting photo went wrong", { duration: 3000 });
     }
   };
 
+  const setUserImage = async () => {
+    try {
+      if (!User.profilePicture) throw new Error();
+
+      await OLF.post("future api link", {
+        token: "future JWT token",
+        user_image: User.profilePicture,
+      });
+    } catch (e) {
+      toast.error("Setting photo went wrong", { duration: 3000 });
+    }
+  };
+
+  const handleUserProfilePictureSubmit = (
+    e: React.FormEvent<HTMLFormElement>,
+  ) => {
+    e.preventDefault();
+    setUserImage();
+  };
+
+  const [prevUserImage, setPrevUserImage] = useState(User.profilePicture);
+
+  useEffect(() => {
+    if (User.profilePicture !== prevUserImage) {
+      setPrevUserImage(User.profilePicture);
+    }
+  }, [User.profilePicture, prevUserImage]);
+
   return (
     <PageTemplate>
       <NavbarTemplate />
-      <section className="text-mc-text bg-mc-primary w-[40vw] min-w-72 opacity-95 rounded-[3rem] mt-auto mb-auto">
+      <section className="text-mc-text bg-mc-primary w-[45vw] min-w-72 opacity-95 rounded-[3rem] mt-auto mb-auto">
         {User.username && User.userId && User.email ? (
           <article className="flex flex-col items-center justify-center mt-12 mb-12 gap-12">
             <header className="text-3xl font-bold mt-8 mb-2 mr-6 ml-6 text-center">
@@ -202,20 +222,25 @@ const AccountPage = () => {
                 loading="lazy"
                 className="rounded-full aspect-square"
               />
-              <input
-                type="file"
-                name="file"
-                accept=".png, .jpg, .jpeg"
-                id="upload"
-                hidden={true}
-                onChange={handleUserProfilePictureSet}
-              />
+              <form onSubmit={handleUserProfilePictureSubmit}>
+                <input
+                  type="file"
+                  name="file"
+                  accept=".png, .jpg, .jpeg"
+                  id="upload"
+                  hidden={true}
+                  onChange={handleUserProfilePictureSet}
+                />
+                {User.profilePicture !== prevUserImage ? (
+                  <Button type="submit" value="OK" customWidth="w-14" />
+                ) : null}
+              </form>
               <div className="flex items-center justify-center gap-4">
                 <label
                   htmlFor="upload"
                   className="flex items-center justify-center text-center bg-mc-yellow text-white min-w-24 min-h-8 w-[12vw] h-[3vh] font-bold rounded-2xl hover:scale-110 duration-300"
                 >
-                  Choose...
+                  Choose
                 </label>
                 <Button
                   type="button"
@@ -276,7 +301,7 @@ const AccountPage = () => {
                     }}
                   >
                     <Image
-                      src={"/settings.png"}
+                      src={"/cogwheel.png"}
                       width={32}
                       height={32}
                       alt="E"
@@ -318,7 +343,7 @@ const AccountPage = () => {
                     }}
                   >
                     <Image
-                      src={"/settings.png"}
+                      src={"/cogwheel.png"}
                       width={32}
                       height={32}
                       alt="E"
@@ -406,7 +431,7 @@ const AccountPage = () => {
                     }}
                   >
                     <Image
-                      src={"/settings.png"}
+                      src={"/cogwheel.png"}
                       width={32}
                       height={32}
                       alt="E"

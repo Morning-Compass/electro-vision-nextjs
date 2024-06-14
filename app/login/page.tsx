@@ -57,10 +57,10 @@ export default function Login() {
   return (
     <PageTemplate>
       <NavbarTemplate />
-      <section className="text-mc-text bg-mc-primary w-[40vw] min-w-72 opacity-95 rounded-[3rem] mt-auto mb-auto">
+      <section className="text-mc-text bg-mc-primary w-[45vw] min-w-72 opacity-95 rounded-[3rem] mt-auto mb-auto">
         <article className="flex flex-col items-center justify-center mt-12 mb-12">
           <header className="text-3xl font-bold mt-8 mb-8 mr-6 ml-6 text-center">
-            Login to your Morning Compass account
+            Login to Morning Compass account
           </header>
           <form
             className="flex flex-col items-center justify-center gap-4"
