@@ -16,7 +16,7 @@ import FormErrorParahraph from "@/components/templates/FormErrorParagraph";
 import OLF from "@/mc-lib/OneLastFetch";
 import toast from "react-hot-toast";
 
-const EditCredentialWrapper = ({ children }: { children: ReactNode }) => {
+const EditCredentialWrap = ({ children }: { children: ReactNode }) => {
   return (
     <div className="flex flex-row items-center justify-center">{children}</div>
   );
@@ -58,6 +58,10 @@ type ChangeCredentialAction =
   | {
       type: "setNewRepeatPassword";
       value: string | null;
+    }
+  | {
+      type: "setNewPasswordEditEnabled";
+      value: boolean;
     };
 
 type ChangeCredentialUser = Pick<
@@ -68,6 +72,7 @@ type ChangeCredentialUser = Pick<
   emailEditEnabled: boolean;
   newPassword: string | null;
   newRepeatPassword: string | null;
+  newPasswordEditEnabled: boolean;
 };
 
 const changeCredentialReducer = (
@@ -91,12 +96,14 @@ const changeCredentialReducer = (
       return { ...state, newPassword: action.value };
     case "setNewRepeatPassword":
       return { ...state, newRepeatPassword: action.value };
+    case "setNewPasswordEditEnabled":
+      return { ...state, newPasswordEditEnabled: action.value };
   }
 };
 
 type ChangeCredentialUserForm = Pick<
   ChangeCredentialUser,
-  "username" | "email"
+  "username" | "email" | "newPassword" | "newRepeatPassword"
 >;
 
 const AccountPage = () => {
@@ -118,6 +125,7 @@ const AccountPage = () => {
     register,
     handleSubmit,
     formState: { errors },
+    getValues,
   } = useForm<ChangeCredentialUserForm>();
 
   const onSubmit: SubmitHandler<ChangeCredentialUserForm> = async (data) => {
@@ -216,7 +224,7 @@ const AccountPage = () => {
                 className="flex flex-col items-start justify-center gap-2"
                 onSubmit={handleSubmit(onSubmit)}
               >
-                <div className="flex flex-row items-center justify-center">
+                <EditCredentialWrap>
                   <div className="flex flex-col gap-1 text-wrap text-left text">
                     <FormErrorWrap>
                       <input
@@ -265,8 +273,8 @@ const AccountPage = () => {
                       alt="E"
                     />
                   </div>
-                </div>
-                <div className="flex flex-row items-center justify-center">
+                </EditCredentialWrap>
+                <EditCredentialWrap>
                   <FormErrorWrap>
                     <input
                       type="email"
@@ -304,10 +312,85 @@ const AccountPage = () => {
                       alt="E"
                     />
                   </div>
-                </div>
+                </EditCredentialWrap>
+                <EditCredentialWrap>
+                  <FormErrorWrap>
+                    <input
+                      type="password"
+                      {...register("newPassword", {
+                        minLength: {
+                          value: AuthConst.minPasswordLength,
+                          message: `Password Must have at least ${AuthConst.minPasswordLength} characters`,
+                        },
+                        validate: (password) => {
+                          if (!newCredentials.newPasswordEditEnabled)
+                            return true;
+                          const passwordRegexResult = Regex.password.test(
+                            password ?? "",
+                          );
+                          if (!passwordRegexResult || !password) {
+                            return "Password must have letters numbers and special charachters";
+                          }
+                          if (password?.toLowerCase() === password) {
+                            return "Password must have at least one capital letter";
+                          }
+                          if (!/\d/.test(password)) {
+                            return "Password must have at least one number";
+                          }
+                          if (
+                            !/[!@#$%^&*(),.?":{}|<>[\]\\\/`~'=_+\-]/.test(
+                              password,
+                            )
+                          ) {
+                            return "Password must contain at least one special character";
+                          }
+                          if (password !== getValues().newRepeatPassword) {
+                            return "Passwords must match";
+                          }
+                          return true;
+                        },
+                      })}
+                      placeholder="New Password"
+                      disabled={!newCredentials.newPasswordEditEnabled}
+                      className={`border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800 ${newCredentials.newPasswordEditEnabled ? "border-6 border-emerald-500" : ""}`}
+                    />
+                    {newCredentials.newPasswordEditEnabled ? (
+                      <input
+                        type="password"
+                        {...register("newRepeatPassword", {
+                          minLength: {
+                            value: AuthConst.minPasswordLength,
+                            message: `Password Must have at least ${AuthConst.minPasswordLength} characters`,
+                          },
+                        })}
+                        placeholder="New Repeat Password"
+                        disabled={!newCredentials.newPasswordEditEnabled}
+                        className={`border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800 ${newCredentials.newPasswordEditEnabled ? "border-6 border-emerald-500" : ""}`}
+                      />
+                    ) : null}
+                    <FormErrorParahraph errorObject={errors.newPassword} />
+                  </FormErrorWrap>
+                  <div
+                    className="max-h-12 min-h-8 h-[10vh] aspect-square grid place-items-center"
+                    onClick={() =>
+                      newCredentialsDispatch({
+                        type: "setNewPasswordEditEnabled",
+                        value: !newCredentials.newPasswordEditEnabled,
+                      })
+                    }
+                  >
+                    <Image
+                      src={"/settings.png"}
+                      width={32}
+                      height={32}
+                      alt="E"
+                    />
+                  </div>
+                </EditCredentialWrap>
 
                 {newCredentials.usernameEditEnabled ||
-                newCredentials.emailEditEnabled ? (
+                newCredentials.emailEditEnabled ||
+                newCredentials.newPasswordEditEnabled ? (
                   <Button type="submit" value="OK" customWidth="w-14" />
                 ) : null}
               </form>
