@@ -48,6 +48,11 @@ p {
     --color-secondary-text: #f9f9f9;
     --color-primary-bg: #282828;
   }
+
+  .mc-blur {
+    backdrop-filter: blur(32px);
+    -webkit-backdrop-filter: blur(32px);
+  }
 }
 
 .theme-dark {

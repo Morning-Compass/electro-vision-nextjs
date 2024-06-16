@@ -8,7 +8,7 @@ function Navbar({ children, ...props }: NavbarProps) {
   return (
     <nav
       {...props}
-      className="flex flex-row justify-center bg-mc-primary text-mc-text  min-h-16 w-screen font-bold last:ml-auto"
+      className="flex flex-row justify-center bg-mc-primary text-mc-text  min-h-16 w-screen font-bold"
     >
       {children}
     </nav>

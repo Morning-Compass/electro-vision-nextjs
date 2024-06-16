@@ -2,6 +2,22 @@ type TData = string | Object;
 type TPutData = string | Object | undefined;
 type THeaders = HeadersInit | undefined;
 
+export class OneLastError extends Error {
+  public title: string = "";
+  public error: string = "";
+
+  constructor(errorText: string) {
+    super("OneLastFetch went wrong");
+    this.name = "OneLastError";
+    this.title = "OneLastFetch went wrong";
+    this.error = errorText;
+  }
+
+  toString() {
+    return JSON.stringify({ title: this.title, error: this.error });
+  }
+}
+
 export class OneLastFetch {
   private defaultHeaders = { "Content-Type": "application/json" };
 
@@ -78,7 +94,8 @@ export class OneLastFetch {
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`OneLastPost went wrong (${errorText}})`);
+      //      throw { title: "OneLastPut went wrong", error: errorText };
+      throw new OneLastError(errorText);
     }
     return await response.json();
   }

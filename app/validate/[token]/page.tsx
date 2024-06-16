@@ -3,9 +3,10 @@
 import ApiLinks from "@/mc-const/api-links";
 import { responseKeys } from "@/mc-const/response-keys";
 import PageTemplate from "@/components/templates/PageTemplate";
-import OLF from "@/mc-lib/OneLastFetch";
+import OLF, { OneLastError } from "@/mc-lib/OneLastFetch";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import apiResponse from "@/mc-const/api-response.json";
 
 type VerificationToken = string | string[] | undefined;
 
@@ -29,17 +30,28 @@ const VerifiAccountPage = ({ params }: VerifiAccountPageProps) => {
   };
 
   useEffect(() => {
-    const validate = () => {
+    const validate = async () => {
       try {
-        const response = validateAccount();
+        const response = await validateAccount();
         console.log(response);
-        toast.success("Account validated!");
+        toast.success("Account validated!", { duration: 3000 });
       } catch (error) {
-        const e = error as responseKeys;
-        if (e.message === responseErrors.invalidToken) {
+        const e = error as OneLastError;
+        console.log(e.error);
+        const errorMessage = JSON.parse(e.error);
+        console.log(errorMessage.message);
+        console.log(
+          apiResponse.auth.validate.account_validation_token_invalid.message,
+        );
+        if (
+          errorMessage.message ===
+          apiResponse.auth.validate.account_validation_token_invalid.message
+        ) {
           console.log("Token is invalid!");
           toast.error("Token is invalid!");
+          return;
         }
+        toast.error("Token is invalid", { duration: 3000 });
       }
     };
 
@@ -48,7 +60,7 @@ const VerifiAccountPage = ({ params }: VerifiAccountPageProps) => {
 
   return (
     <PageTemplate>
-      <article>Validate your YouAi account</article>
+      <article>Validate your Morning Compass account</article>
       <article>Token {apiVerificationToken}</article>
     </PageTemplate>
   );

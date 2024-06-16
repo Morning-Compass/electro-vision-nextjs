@@ -1,3 +1,4 @@
+import Themes from "@/mc-const/themes";
 import Image from "next/image";
 import Link from "next/link";
 import React, { ReactNode } from "react";
@@ -22,10 +23,11 @@ const NavbarUserInfo = ({
           width={32}
           height={32}
           alt="pfp"
+          className="rounded-full aspect-square"
         />
         <Link href={"/account"}>
           <div className="grid place-items-center rounded-[100%]">
-            <Image src={"/settings.png"} alt="account" width={32} height={32} />
+            <Image src={"/cogwheel.png"} alt="account" width={32} height={32} />
           </div>
         </Link>
       </div>

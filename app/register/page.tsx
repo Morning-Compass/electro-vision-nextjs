@@ -1,153 +1,188 @@
 "use client";
 
-import { useState, ChangeEvent, FormEvent } from "react";
+import { useState } from "react";
 import OLF from "@/mc-lib/OneLastFetch";
 import ApiLinks from "@/mc-const/api-links";
 import Link from "next/link";
 import PageTemplate from "@/components/templates/PageTemplate";
 import NavbarTemplate from "@/components/templates/NavbarTemplate";
-import Input from "@/components/Input";
 import Button from "@/components/Button";
-import FormError from "@/components/FormError";
+import { FooterSmall } from "@/components/templates/FooterSmall";
+import { User as UserEntityType } from "@/mc-types/user-types";
+import { SubmitHandler, useForm } from "react-hook-form";
+import AuthConst from "@/mc-const/authconst";
+import FormErrorParahraph from "@/components/templates/FormErrorParagraph";
+import FormErrorWrap from "@/components/templates/FormErrorWrap";
 import Regex from "@/mc-const/regex";
 
 export default function Login() {
-  type formProps = {
-    email: string;
-    password: string;
-    username: string;
+  type formProps = Pick<UserEntityType, "email" | "username"> & {
+    password: string | null;
+    repPassword: string | null;
   };
 
-  const [formState, setFormState] = useState<formProps>({
-    email: "",
-    password: "",
-    username: "",
-  });
-  const [message, setMessage] = useState<string | null>(null);
-  const [repPassword, setRepPassword] = useState<string>("");
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [passwordVerificationError, setPasswordVerificationErorr] = useState<
-    string[] | null
-  >(null);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    getValues,
+    setError,
+  } = useForm<formProps>();
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    const passwordVerificationErrorList: string[] = [];
-    e.preventDefault();
-
-    if (!Regex.emailRegistration.match(formState.email)) {
-      passwordVerificationErrorList.push("Email must be correct");
-    }
-    if (formState.password !== repPassword) {
-      console.log("passwords must match");
-      passwordVerificationErrorList.push("Passwords must match");
-    }
-    if (formState.password.length < 8 && !passwordVerificationError) {
-      console.log("password must be atleast 8 character long");
-      passwordVerificationErrorList.push(
-        "Password must be at least 8 characters long",
-      );
-    }
-    if (!Regex.passwordRegistration.match(formState.password.toLowerCase())) {
-      console.log("password must contain any special char");
-      passwordVerificationErrorList.push(
-        "Password must contain any special character",
-      );
-    }
-
-    if (passwordVerificationErrorList.length > 0) {
-      setPasswordVerificationErorr(passwordVerificationErrorList);
-    } else {
-      setPasswordVerificationErorr(null);
-    }
-
-    try {
-      const response = await OLF.post(ApiLinks.register, {
-        username: formState.username,
-        email: formState.email,
-        password: formState.password,
-      });
-
-      setMessage(response["message"]);
-      console.log(response["message"]);
-    } catch (e) {}
-  };
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setFormState((p) => ({
-      ...p,
-      [e.target.name]: e.target.value,
-    }));
+  const onSubmit: SubmitHandler<formProps> = async (data) => {
+    const response = await OLF.post(ApiLinks.register, {
+      username: data.username,
+      email: data.email,
+      password: data.password,
+    });
   };
 
   // const inputStyles = { inputSecurity: showPassword ? "none" : "inherit", }
-
   return (
     <PageTemplate>
       <NavbarTemplate />
-      <section className="flex flex-col items-center justify-center text-mc-text bg-mc-primary w-[40vw] opacity-95 rounded-[3rem] mt-auto mb-auto">
+      <section className="flex flex-col items-center justify-center text-mc-text bg-mc-primary w-[45vw] min-w-72 opacity-95 rounded-[3rem] mt-auto mb-auto mc-blur">
         <article className="flex flex-col items-center justify-center mt-12 mb-12">
-          <header className="text-3xl font-bold mb-8 mt-8">
+          <header className="text-3xl font-bold mb-8 mt-8 mr-2 ml-2 text-center">
             Create Morning Compass account
           </header>
           <form
             className="flex flex-col items-center justify-center gap-4"
-            onSubmit={handleSubmit}
+            onSubmit={handleSubmit(onSubmit)}
           >
-            <Input
-              type="text"
-              placeholder="Email"
-              name="email"
-              value={formState.email}
-              onChange={handleChange}
-            />
-            <Input
-              type="text"
-              placeholder="Username"
-              name="username"
-              value={formState.username}
-              onChange={handleChange}
-            />
-            <Input
-              type="password"
-              placeholder="Password"
-              name="password"
-              value={formState.password}
-              onChange={handleChange}
-            />
-            <Input
-              type="password"
-              placeholder="Repeat Password"
-              name="password"
-              value={repPassword}
-              onChange={(e) => setRepPassword(e.target.value)}
-            />
-            <FormError condition={passwordVerificationError !== null}>
-              {passwordVerificationError?.map((passwordError) => (
-                <p>{passwordError}</p>
-              ))}
-            </FormError>
+            <FormErrorWrap>
+              <input
+                {...register("email", {
+                  validate: (email) => {
+                    const emailRegexResult = Regex.emailRegistration.test(
+                      email ?? "",
+                    );
+                    if (!emailRegexResult) {
+                      return "Email must be correct";
+                    }
+                    return true;
+                  },
+                  required: {
+                    value: true,
+                    message: "Email is required",
+                  },
+                })}
+                type="text"
+                placeholder="Email"
+                name="email"
+                className="border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
+              />
+              <FormErrorParahraph errorObject={errors.email} />
+            </FormErrorWrap>
+            <FormErrorWrap>
+              <input
+                {...register("username", {
+                  minLength: {
+                    value: AuthConst.minUsernameLength,
+                    message: `Username must have at least ${AuthConst.minUsernameLength} characters`,
+                  },
+                  maxLength: {
+                    value: AuthConst.maxUsernameLength,
+                    message: `Username must have less than ${AuthConst.maxUsernameLength} characters`,
+                  },
+                  required: {
+                    value: true,
+                    message: "Username is required",
+                  },
+                })}
+                type="text"
+                placeholder="Username"
+                name="username"
+                className="border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
+              />
+              <FormErrorParahraph errorObject={errors.username} />
+            </FormErrorWrap>
+            <FormErrorWrap>
+              <input
+                {...register("password", {
+                  minLength: {
+                    value: AuthConst.minPasswordLength,
+                    message: `Password Must have at least ${AuthConst.minPasswordLength} characters`,
+                  },
+                  required: {
+                    value: true,
+                    message: "Password is required",
+                  },
+                  validate: (password) => {
+                    const passwordRegexResult = Regex.password.test(
+                      password ?? "",
+                    );
+                    if (!passwordRegexResult || !password) {
+                      return "Password must have letters numbers and special charachters";
+                    }
+                    if (password?.toLowerCase() === password) {
+                      return "Password must have at least one capital letter";
+                    }
+                    if (!/\d/.test(password)) {
+                      return "Password must have at least one number";
+                    }
+                    if (
+                      !/[!@#$%^&*(),.?":{}|<>[\]\\\/`~'=_+\-]/.test(password)
+                    ) {
+                      return "Password must contain at least one special character";
+                    }
+                    return true;
+                  },
+                })}
+                type="password"
+                placeholder="Password"
+                name="password"
+                className="border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
+              />
+              <FormErrorParahraph errorObject={errors.password} />
+            </FormErrorWrap>
+            <FormErrorWrap>
+              <input
+                {...register("repPassword", {
+                  required: {
+                    value: true,
+                    message: "Password repeat is required",
+                  },
+                  minLength: {
+                    value: AuthConst.minPasswordLength,
+                    message: `Password Must have at least ${AuthConst.minPasswordLength} characters`,
+                  },
+                  validate: (rep) => {
+                    if (getValues().password !== rep) {
+                      return "Passwords Must Match";
+                    }
+                    return true;
+                  },
+                })}
+                type="password"
+                placeholder="Repeat Password"
+                name="repPassword"
+                className="border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
+              />
+              <FormErrorParahraph errorObject={errors.repPassword} />
+            </FormErrorWrap>
             <Button type="submit" value="Register" />
             {/* <div onClick={() => setShowPassword(p => !p)} className="w-4 h-4 text-center border-solid border-black rounded-[100%] cursor-pointer">x</div> */}
           </form>
-          <figure className="flex items-center justify-center p-6">
-            <p className="flex flex-row items-center justify-center gap-6 select-none">
-              Already have account?{" "}
-              <Link
-                href={"/login"}
-                className="text-mc-text font-medium hover:scale-110 duration-300"
-                font-bold
-              >
-                <p className="mr-4 ml-4">Login here</p>
-              </Link>
+          <figure className="flex flex-row items-center justify-center m-6">
+            <p className="select-none ml-4 mr-4 text-center">
+              Already have account?
             </p>
+            <Link
+              href={"/login"}
+              className="text-mc-text hover:scale-110 duration-300 ml-4 mr-4 font-bold"
+            >
+              Login here
+            </Link>
           </figure>
-          {message ? (
+          {
             <article className="mt-4 ">
               You have registered successfully, you will be redirected
             </article>
-          ) : null}
+          }
         </article>
       </section>
+      <FooterSmall />
     </PageTemplate>
   );
 }
