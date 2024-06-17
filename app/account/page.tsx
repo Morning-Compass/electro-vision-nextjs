@@ -207,7 +207,7 @@ const AccountPage = () => {
   return (
     <PageTemplate>
       <NavbarTemplate />
-      <section className="text-mc-text bg-mc-primary w-[45vw] min-w-72 opacity-95 rounded-[3rem] mt-auto mb-auto">
+      <section className="text-mc-text bg-mc-primary w-[45vw] min-w-72 opacity-95 rounded-[3rem] mt-auto mb-auto transition-colors duration-500">
         {User.username && User.userId && User.email ? (
           <article className="flex flex-col items-center justify-center mt-12 mb-12 gap-12">
             <header className="text-3xl font-bold mt-8 mb-2 mr-6 ml-6 text-center">
