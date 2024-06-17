@@ -13,25 +13,22 @@ const ThemeSwitcher = () => {
       UserDispatch({ type: "setTheme", value: "dark" });
   };
 
-  //const themeColor = User.theme === Themes.dark ? "#000000" : "#FFFFFF";
-  //const frameColor = User.theme === Themes.dark ? "#FFFFFF" : "#000000";
-
-  const themeImg =
-    User.theme === Themes.dark ? "../public/sun.png" : "../public/moon.png";
-
   return (
     <div
-      className="rounded-[100%] w-8 h-8 cursor-pointer aspect-square"
+      className={`rounded-[4rem] w-20 h-10 cursor-pointer duration-150 ${User.theme === Themes.dark ? "bg-mc-darkgrey" : "bg-mc-white"} flex items-center`}
       onClick={() => {
         changeTheme();
       }}
     >
-      <Image
-        src={User.theme !== Themes.dark ? "/sun.png" : "/moon.png"}
-        alt="theme"
-        width={32}
-        height={32}
-      />
+      <div className={`${User.theme !== Themes.dark ? "ml-auto" : "mr-auto"} `}>
+        <Image
+          src={User.theme !== Themes.dark ? "/sun.png" : "/moon.png"}
+          alt="theme"
+          width={32}
+          height={32}
+          className="mr-1 ml-1"
+        />
+      </div>
     </div>
   );
 };
