@@ -6,6 +6,7 @@ import Image from "next/image";
 
 const ThemeSwitcher = () => {
   const { User, UserDispatch } = useUserContext();
+
   const changeTheme = () => {
     if (User.theme === Themes.dark)
       UserDispatch({ type: "setTheme", value: "light" });
@@ -15,14 +16,14 @@ const ThemeSwitcher = () => {
 
   return (
     <div
-      className={`rounded-[4rem] w-20 h-10 cursor-pointer duration-150 ${User.theme === Themes.dark ? "bg-mc-darkgrey" : "bg-mc-white"} flex items-center`}
-      onClick={() => {
-        changeTheme();
-      }}
+      className={`rounded-[4rem] w-20 h-10 cursor-pointer transition-colors duration-500 ${User.theme === Themes.dark ? "bg-mc-darkgrey" : "bg-mc-white"} flex items-center relative`}
+      onClick={changeTheme}
     >
-      <div className={`${User.theme !== Themes.dark ? "ml-auto" : "mr-auto"} `}>
+      <div
+        className={`absolute transform transition-transform duration-500 ${User.theme === Themes.dark ? "translate-x-1" : "translate-x-[2.5rem]"}`}
+      >
         <Image
-          src={User.theme !== Themes.dark ? "/sun.png" : "/moon.png"}
+          src={User.theme === Themes.dark ? "/moon.png" : "/sun.png"}
           alt="theme"
           width={32}
           height={32}

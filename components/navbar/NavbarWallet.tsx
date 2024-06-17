@@ -15,7 +15,7 @@ const NavbarWallet = ({ children }: NavbarUserProps) => {
   return (
     <>
       {User.username && User.userId ? (
-        <li className="sm:ml-auto bg-cyan-600 text-gray-100 pt-2 pb-2 rounded-[2.5rem] pr-8 pl-8">
+        <li className="sm:ml-auto bg-gradient-to-r from-cyan-500 to-mc-yellow text-gray-100 pt-2 pb-2 rounded-[2.5rem] pr-8 pl-8">
           <div className="text-mc-white flex flex-row items-center justify-center gap-4">
             <NavbarUserInfo
               username={User.username}
