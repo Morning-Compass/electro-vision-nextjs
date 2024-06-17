@@ -16,7 +16,7 @@ const ThemeSwitcher = () => {
 
   return (
     <div
-      className={`rounded-[4rem] w-20 h-10 cursor-pointer transition-colors duration-500 ${User.theme === Themes.dark ? "bg-mc-darkgrey" : "bg-mc-white"} flex items-center relative`}
+      className={`rounded-[4rem] w-20 h-10 cursor-pointer transition-colors duration-500 bg-mc-primary flex items-center relative`}
       onClick={changeTheme}
     >
       <div
