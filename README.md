@@ -11,7 +11,9 @@ f(x) = y^{x}\int_{-\infty}^{\infty}
 
 $$
 
-https://latex.codecogs.com/svg.image?\int_{-\infty}^{\infty}
+$$
+\int_0^1 x^2 \, dx
+$$
 
 ### 1.1 Syntax
 
