@@ -1,6 +1,6 @@
 FROM node
 VOLUME [ "/morning-compass-nextjs" ]
-WORKDIR /app
+WORKDIR /
 COPY . .
 RUN npm install
 CMD ["yarn", "dev"]
