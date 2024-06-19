@@ -4,11 +4,11 @@
 
 It's not rocket science. It may be hard but that's just some code.
 definitely Easier than...
-$$
+$
 f(x) = \int_{-\infty}^{\infty}
         x^{a\pi ei}dx
 
-$$
+$
 
 ### 1.1 Syntax
 
