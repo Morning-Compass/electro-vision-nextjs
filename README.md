@@ -5,14 +5,8 @@
 It's not rocket science. It may be hard but that's just some code.
 definitely Easier than...
 $$
-f(x) = y^{x}\int_{-\infty}^{\infty}\
-        \sum_{a=0}^{\infty}\
-        x^{a\pi ei}dx
+f(x) = y^{x} \int_{-\infty}^{\infty} \sum_{a=0}^{\infty} x^{a \pi e i} \, dx
 
-$$
-
-$$
-\int_0^1 x^2 \, dx
 $$
 
 ### 1.1 Syntax
