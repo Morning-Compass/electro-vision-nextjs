@@ -50,6 +50,15 @@ $$
 - Kuba - backend reviews
 - Tomek - frontend reviews
 
-### 1.3 Task maneger
+### 1.3 Task manager
 
 - _unknown_
+
+#### Important commands
+
+- cargo tauri dev (run the project)
+- docker compose up -d (run the docker-compose.yml)
+- docker ps -a (list of all containers)
+- docker start **_id_of_container_** (run a container of certain **_id_**)
+- docker stop **_id_of_container_** (stop a container of certain **_id_**)
+- yarn install (install node modules)
