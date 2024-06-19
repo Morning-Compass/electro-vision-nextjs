@@ -11,6 +11,8 @@ f(x) = y^{x}\int_{-\infty}^{\infty}
 
 $$
 
+https://latex.codecogs.com/svg.image?\int_{-\infty}^{\infty}
+
 ### 1.1 Syntax
 
 #### Directories
