@@ -5,8 +5,8 @@
 It's not rocket science. It may be hard but that's just some code.
 definitely Easier than...
 $$
-f(x) = y^{x}\int_{-\infty}^{\infty}
-        \sum_{a=0}^{\infty}
+f(x) = y^{x}\int_{-\infty}^{\infty}\
+        \sum_{a=0}^{\infty}\
         x^{a\pi ei}dx
 
 $$
