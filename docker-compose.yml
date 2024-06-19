@@ -11,6 +11,15 @@ services:
       - "3400:5432"
     volumes:
       - postgres:/var/lib/postgresql/data
+  web:
+    build: .
+    container_name: morning-compass-project
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+    command: ["sh", "-c", "cargo tauri dev"]
+    
 
 volumes:
   postgres:
