@@ -1,13 +1,14 @@
-# Use the official Rust image
-FROM rust:latest
+# Use the official Tauri Docker image as the base
+FROM ivangabriele/tauri:debian-bullseye-18
 
-# Install Node.js
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-RUN apt-get install -y nodejs
+# Set the working directory
+WORKDIR /app
 
-# Install necessary dependencies for Tauri and Xvfb
-RUN apt-get update && \
-    apt-get install -y \
+# Copy the project files
+COPY . .
+
+# Install necessary system dependencies
+RUN apt-get update && apt-get install -y \
     libwebkit2gtk-4.0-dev \
     libgtk-3-dev \
     libsoup2.4-dev \
@@ -17,20 +18,13 @@ RUN apt-get update && \
     x11-xserver-utils \
     curl
 
-# Set the working directory
-WORKDIR /app
-
-# Copy the project files
-COPY . .
-
-# Install npm dependencies
-RUN npm install
-
-# Install Tauri CLI globally
-RUN cargo install tauri-cli
+# Install npm dependencies (if needed)
+RUN npm install && \
+    npm install -g yarn corepack && \
+    cargo install tauri-cli --version "^1.0.0-beta.X"
 
 # Expose the development port
 EXPOSE 3000
 
-# Run the development server with Xvfb
-CMD ["sh", "-c", "CARGO_TARGET_DIR=/app/target xvfb-run -s '-screen 0 1024x768x24' cargo tauri dev"]
+# Default command for the container
+CMD ["cargo", "tauri", "dev"]

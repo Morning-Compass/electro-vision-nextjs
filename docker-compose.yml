@@ -13,17 +13,11 @@ services:
       - postgres:/var/lib/postgresql/data
   frontend:
     build: .
-    container_name: morning-compass-project
-    ports:
-      - "3000:3000"
-    environment:
-      - PORT=3000
+    container_name: morning-compass-frontend
     volumes:
-      - ./src:/app/src
-      - ./public:/app/public
-      - ./target:/app/target
-    command: ["sh", "-c", "CARGO_TARGET_DIR=/app/src-tauri/target xvfb-run -s '-screen 0 1024x768x24' cargo tauri dev"]
-
+      - .:/app
+    working_dir: /app
+    command: cargo tauri dev
 volumes:
   postgres:
     driver: local
