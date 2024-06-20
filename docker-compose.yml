@@ -18,7 +18,15 @@ services:
   #     - .:/app
   #   working_dir: /app
   #   command: cargo tauri dev
-  
+  backend:
+    image: rust:1.67 # build: .
+    restart: always
+    container_name: morning-compass-backend
+    environment:
+      - PORT=8001
+    ports:
+      - 8001:8001
+
 volumes:
   postgres:
     driver: local
