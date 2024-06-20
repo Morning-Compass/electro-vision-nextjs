@@ -8,7 +8,7 @@ It's not rocket science. It may be hard but that's just some code.
 Definitely easier than...
 
 $$
-f(x) = y^{x} \int_{-\infty}^{\infty} \sum_{a=0}^{\infty} x^{a \pi e i} \\, dx
+f(x) = (y!)^{x} \int_{-\infty}^{\infty} \sum_{a=0}^{\infty} x^{a \pi e i} \\, dx
 $$
 
 ### 1.1 Naming conventions
@@ -58,6 +58,7 @@ $$
 
 - cargo tauri dev (run the project)
 - docker compose up -d (run the docker-compose.yml)
+- docker compose watch (run the docker when you need the auto-update)
 - docker ps -a (list of all containers)
 - docker start **_id_of_container_** (run a container of certain **_id_**)
 - docker stop **_id_of_container_** (stop a container of certain **_id_**)
