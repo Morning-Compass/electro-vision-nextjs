@@ -11,13 +11,14 @@ services:
       - "3400:5432"
     volumes:
       - postgres:/var/lib/postgresql/data
-  frontend:
-    build: .
-    container_name: morning-compass-frontend
-    volumes:
-      - .:/app
-    working_dir: /app
-    command: cargo tauri dev
+  # frontend:
+  #   build: .
+  #   container_name: morning-compass-frontend
+  #   volumes:
+  #     - .:/app
+  #   working_dir: /app
+  #   command: cargo tauri dev
+  
 volumes:
   postgres:
     driver: local
