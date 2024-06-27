@@ -24,11 +24,9 @@ export default function Home() {
   }, []);
 
   return (
-    <PageTemplate>
+    <PageTemplate bgClass="bg-landing-gradient">
       <NavbarTemplate />
-      <section className="flex flex-col items-center mt-auto mb-auto">
-        Morning Compass
-      </section>
+      <section className="flex flex-col items-center mt-auto mb-auto"></section>
       <FooterSmall />
     </PageTemplate>
   );

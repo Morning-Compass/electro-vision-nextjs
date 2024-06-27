@@ -12,6 +12,8 @@ const config: Config = {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+        "landing-gradient":
+          "radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(23,158,255,1) 100%);",
       },
       colors: {
         "mc-blue": "#0b3945",
