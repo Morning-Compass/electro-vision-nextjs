@@ -87,3 +87,4 @@ Namespaces are one honking great idea -- let's do more of those!
 - docker start **_id_of_container_** (run a container of certain **_id_**)
 - docker stop **_id_of_container_** (stop a container of certain **_id_**)
 - yarn install (install node modules)
+- sudo systemctl start docker (run docker-engine on linux)
