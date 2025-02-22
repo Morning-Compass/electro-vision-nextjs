@@ -1,4 +1,4 @@
-import Themes from "@/mc-const/themes";
+import Themes from "@/ev-const/themes";
 import Image from "next/image";
 import Link from "next/link";
 import React, { ReactNode } from "react";

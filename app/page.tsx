@@ -3,7 +3,7 @@
 import { FooterSmall } from "@/components/templates/FooterSmall";
 import NavbarTemplate from "@/components/templates/NavbarTemplate";
 import PageTemplate from "@/components/templates/PageTemplate";
-import useUserContext from "@/mc-contexts/userContextProvider";
+import useUserContext from "@/ev-contexts/userContextProvider";
 import { useEffect } from "react";
 
 export default function Home() {

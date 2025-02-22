@@ -1,6 +1,6 @@
 "use client";
 
-import useUserContext from "@/mc-contexts/userContextProvider";
+import useUserContext from "@/ev-contexts/userContextProvider";
 import { ReactNode } from "react";
 
 type CleanPageProps = {

@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
-import { UserContextProvider } from "@/mc-contexts/userContextProvider";
+import { UserContextProvider } from "@/ev-contexts/userContextProvider";
 import { Toaster } from "react-hot-toast";
 
 const poppins = Poppins({ subsets: ["latin"], weight: "400" });
 
 export const metadata: Metadata = {
-  title: "Morning Compass",
-  description: "Morning Compass",
+  title: "Electro Vision",
+  description: "Electro Vision",
 };
 
 export default function RootLayout({

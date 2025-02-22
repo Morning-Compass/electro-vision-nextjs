@@ -6,7 +6,7 @@ export const FooterSmall = () => {
   return (
     <Footer customHeight="min-h-16">
       <FooterMain center={true} customHeight="min-h-16">
-        <FooterCenterElement>Morning Compass</FooterCenterElement>
+        <FooterCenterElement>Electro Vision</FooterCenterElement>
       </FooterMain>
     </Footer>
   );

@@ -1,12 +1,12 @@
 "use client";
 
-import ApiLinks from "@/mc-const/api-links";
-import { responseKeys } from "@/mc-const/response-keys";
+import ApiLinks from "@/ev-const/api-links";
+import { responseKeys } from "@/ev-const/response-keys";
 import PageTemplate from "@/components/templates/PageTemplate";
-import OLF, { OneLastError } from "@/mc-lib/OneLastFetch";
+import OLF, { OneLastError } from "@/ev-lib/ElectroVisionFetch";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import apiResponse from "@/mc-const/api-response.json";
+import apiResponse from "@/ev-const/api-response.json";
 
 type VerificationToken = string | string[] | undefined;
 
@@ -60,7 +60,7 @@ const VerifiAccountPage = ({ params }: VerifiAccountPageProps) => {
 
   return (
     <PageTemplate>
-      <article>Validate your Morning Compass account</article>
+      <article>Validate your Electro Vision account</article>
       <article>Token {apiVerificationToken}</article>
     </PageTemplate>
   );

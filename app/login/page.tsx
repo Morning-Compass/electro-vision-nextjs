@@ -4,19 +4,19 @@ import { useState, ChangeEvent, FormEvent } from "react";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import PageTemplate from "@/components/templates/PageTemplate";
-import OLF from "@/mc-lib/OneLastFetch";
-import ApiLinks from "@/mc-const/api-links";
+import OLF from "@/ev-lib/ElectroVisionFetch";
+import ApiLinks from "@/ev-const/api-links";
 import NavbarTemplate from "@/components/templates/NavbarTemplate";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import { FooterSmall } from "@/components/templates/FooterSmall";
-import { User as UserEntityType } from "@/mc-types/user-types";
+import { User as UserEntityType } from "@/ev-types/user-types";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { LogOptions } from "vite";
 import FormErrorWrap from "@/components/templates/FormErrorWrap";
 import FormErrorParahraph from "@/components/templates/FormErrorParagraph";
-import Regex from "@/mc-const/regex";
-import AuthConst from "@/mc-const/authconst";
+import Regex from "@/ev-const/regex";
+import AuthConst from "@/ev-const/authconst";
 
 export default function Login() {
   type formProps = {
@@ -60,7 +60,7 @@ export default function Login() {
       <section className="text-mc-text transition-colors duration-500 bg-mc-primary w-[45vw] min-w-72 opacity-95 rounded-[3rem] mt-auto mb-auto">
         <article className="flex flex-col items-center justify-center mt-12 mb-12">
           <header className="text-3xl font-bold mt-8 mb-8 mr-6 ml-6 text-center">
-            Login to Morning Compass account
+            Login to Electro Vision account
           </header>
           <form
             className="flex flex-col items-center justify-center gap-4"

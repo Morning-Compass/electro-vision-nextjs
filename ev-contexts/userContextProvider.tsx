@@ -1,7 +1,7 @@
 "use client";
 
-import Themes from "@/mc-const/themes";
-import { User as UserEntityType } from "@/mc-types/user-types";
+import Themes from "@/ev-const/themes";
+import { User as UserEntityType } from "@/ev-types/user-types";
 import React, { ReactNode, createContext, useContext, useReducer } from "react";
 
 type UserContextProviderProps = {

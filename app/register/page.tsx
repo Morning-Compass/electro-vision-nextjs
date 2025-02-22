@@ -1,19 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import OLF from "@/mc-lib/OneLastFetch";
-import ApiLinks from "@/mc-const/api-links";
+import OLF from "@/ev-lib/ElectroVisionFetch";
+import ApiLinks from "@/ev-const/api-links";
 import Link from "next/link";
 import PageTemplate from "@/components/templates/PageTemplate";
 import NavbarTemplate from "@/components/templates/NavbarTemplate";
 import Button from "@/components/Button";
 import { FooterSmall } from "@/components/templates/FooterSmall";
-import { User as UserEntityType } from "@/mc-types/user-types";
+import { User as UserEntityType } from "@/ev-types/user-types";
 import { SubmitHandler, useForm } from "react-hook-form";
-import AuthConst from "@/mc-const/authconst";
+import AuthConst from "@/ev-const/authconst";
 import FormErrorParahraph from "@/components/templates/FormErrorParagraph";
 import FormErrorWrap from "@/components/templates/FormErrorWrap";
-import Regex from "@/mc-const/regex";
+import Regex from "@/ev-const/regex";
 
 export default function Login() {
   type formProps = Pick<UserEntityType, "email" | "username"> & {
@@ -44,7 +44,7 @@ export default function Login() {
       <section className="flex flex-col items-center justify-center text-mc-text bg-mc-primary w-[45vw] min-w-72 opacity-95 rounded-[3rem] mt-auto mb-auto mc-blur transition-colors duration-500">
         <article className="flex flex-col items-center justify-center mt-12 mb-12">
           <header className="text-3xl font-bold mb-8 mt-8 mr-2 ml-2 text-center">
-            Create Morning Compass account
+            Create Electro Vision account
           </header>
           <form
             className="flex flex-col items-center justify-center gap-4"

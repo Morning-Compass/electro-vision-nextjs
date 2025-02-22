@@ -1,4 +1,4 @@
-# morning-compass-nextjs
+# electro-vision-nextjs
 
 ## **_We all do the necessary tasks, there are is no need to divide the team into frontend and backend_**
 

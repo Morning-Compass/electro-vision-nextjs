@@ -2,14 +2,14 @@ type TData = string | Object;
 type TPutData = string | Object | undefined;
 type THeaders = HeadersInit | undefined;
 
-export class OneLastError extends Error {
+export class ElectroVisionError extends Error {
   public title: string = "";
   public error: string = "";
 
   constructor(errorText: string) {
-    super("OneLastFetch went wrong");
-    this.name = "OneLastError";
-    this.title = "OneLastFetch went wrong";
+    super("ElectroVisionFetch went wrong");
+    this.name = "ElectroVisionError";
+    this.title = "ElectroVisionFetch went wrong";
     this.error = errorText;
   }
 
@@ -18,7 +18,7 @@ export class OneLastError extends Error {
   }
 }
 
-export class OneLastFetch {
+export class ElectroVisionFetch {
   private defaultHeaders = { "Content-Type": "application/json" };
 
   async get(endpointUrl: string, headers: THeaders = undefined) {
@@ -31,12 +31,12 @@ export class OneLastFetch {
       });
 
       if (!response.ok) {
-        throw new Error("OneLastGet went wrong");
+        throw new Error("ElectroVisionGet went wrong");
       }
 
       return await response.json();
     } catch (error) {
-      console.error("OneLastGet error: ", error);
+      console.error("ElectroVisionGet error: ", error);
       throw error; // Propagate the error to the caller
     }
   }
@@ -56,7 +56,7 @@ export class OneLastFetch {
         if (response.status == 502) {
           throw new Error("502");
         }
-        throw new Error(`OneLastPost went wrong (${errorText}})`);
+        throw new Error(`ElectroVisionPost went wrong (${errorText}})`);
       }
       return await response.json();
     }
@@ -65,7 +65,7 @@ export class OneLastFetch {
       headers: this.defaultHeaders,
     });
 
-    if (!response.ok) throw new Error("OneLastPost went wrong");
+    if (!response.ok) throw new Error("ElectroVisionPost went wrong");
     return await response.json();
   }
 
@@ -94,8 +94,8 @@ export class OneLastFetch {
 
     if (!response.ok) {
       const errorText = await response.text();
-      //      throw { title: "OneLastPut went wrong", error: errorText };
-      throw new OneLastError(errorText);
+      //      throw { title: "ElectroVisionPut went wrong", error: errorText };
+      throw new ElectroVisionError(errorText);
     }
     return await response.json();
   }
@@ -115,11 +115,11 @@ export class OneLastFetch {
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`OneLastDelete went wrong (${errorText})`);
+      throw new Error(`ElectroVisionDelete went wrong (${errorText})`);
     }
     return await response.json();
   }
 }
 
-const OLF = new OneLastFetch();
+const OLF = new ElectroVisionFetch();
 export default OLF;

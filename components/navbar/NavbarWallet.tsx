@@ -3,7 +3,7 @@
 import React, { ReactNode } from "react";
 import NavbarUserInfo from "./NavbarUserInfo";
 import ThemeSwitcher from "../ThemeSwitcher";
-import useUserContext from "@/mc-contexts/userContextProvider";
+import useUserContext from "@/ev-contexts/userContextProvider";
 
 type NavbarUserProps = {
   children?: ReactNode;

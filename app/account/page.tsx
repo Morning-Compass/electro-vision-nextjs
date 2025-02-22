@@ -4,16 +4,16 @@ import Button from "@/components/Button";
 import { FooterSmall } from "@/components/templates/FooterSmall";
 import NavbarTemplate from "@/components/templates/NavbarTemplate";
 import PageTemplate from "@/components/templates/PageTemplate";
-import Regex from "@/mc-const/regex";
-import useUserContext from "@/mc-contexts/userContextProvider";
-import { User as UserEntityType } from "@/mc-types/user-types";
+import Regex from "@/ev-const/regex";
+import useUserContext from "@/ev-contexts/userContextProvider";
+import { User as UserEntityType } from "@/ev-types/user-types";
 import Image from "next/image";
 import { ReactNode, useEffect, useReducer, useState } from "react";
 import { useForm, SubmitHandler, Resolver } from "react-hook-form";
-import AuthConst from "@/mc-const/authconst";
+import AuthConst from "@/ev-const/authconst";
 import FormErrorWrap from "@/components/templates/FormErrorWrap";
 import FormErrorParahraph from "@/components/templates/FormErrorParagraph";
-import OLF from "@/mc-lib/OneLastFetch";
+import OLF from "@/ev-lib/ElectroVisionFetch";
 import toast from "react-hot-toast";
 
 const EditCredentialWrap = ({ children }: { children: ReactNode }) => {
@@ -211,7 +211,7 @@ const AccountPage = () => {
         {User.username && User.userId && User.email ? (
           <article className="flex flex-col items-center justify-center mt-12 mb-12 gap-12">
             <header className="text-3xl font-bold mt-8 mb-2 mr-6 ml-6 text-center">
-              Morning Compass Settings
+              Electro Vision Settings
             </header>
             <figure className="mr-4 ml-4 flex items-center justify-center flex-col gap-6">
               <Image

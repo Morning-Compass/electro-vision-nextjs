@@ -1,7 +1,7 @@
 "use client";
 
-import Themes from "@/mc-const/themes";
-import useUserContext from "@/mc-contexts/userContextProvider";
+import Themes from "@/ev-const/themes";
+import useUserContext from "@/ev-contexts/userContextProvider";
 import Image from "next/image";
 
 const ThemeSwitcher = () => {
