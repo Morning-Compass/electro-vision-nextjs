@@ -4,7 +4,7 @@ import PageTemplate from "@/components/templates/PageTemplate";
 import FleetOverview from "@/components/roles/fleet/Overview";
 import ServiceOptions from "@/components/roles/ServiceOptions";
 
-export default function Management() {
+export default function FleetPage() {
   const managementOptions = [
     {
       imageSrc: "/car.svg",

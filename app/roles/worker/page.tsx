@@ -3,9 +3,8 @@ import NavbarTemplate from "@/components/templates/NavbarTemplate";
 import PageTemplate from "@/components/templates/PageTemplate";
 import WorkerOverview from "@/components/roles/worker/Overview";
 import ServiceOptions from "@/components/roles/ServiceOptions";
-import Link from "next/link";
 
-export default function Management() {
+export default function WorkerPage() {
   const managementOptions = [
     {
       imageSrc: "/tasks.svg",

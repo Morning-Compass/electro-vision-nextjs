@@ -9,7 +9,7 @@ const NavbarTemplate = () => {
         <NavbarElement link={"/"}>Home</NavbarElement>
         <NavbarElement link={"/login"}>Login</NavbarElement>
         <NavbarElement link={"/register"}>Register</NavbarElement>
-        <NavbarElement link={"/roles/worker"}>Management</NavbarElement>
+        <NavbarElement link={"/roles"}>Management</NavbarElement>
         <NavbarWallet />
       </NavbarMain>
     </Navbar>
