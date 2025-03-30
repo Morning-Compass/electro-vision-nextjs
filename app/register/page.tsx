@@ -41,13 +41,17 @@ export default function Login() {
   return (
     <PageTemplate>
       <NavbarTemplate />
-      <section className="flex flex-col items-center justify-center text-mc-text bg-mc-primary w-[45vw] min-w-72 opacity-95 rounded-[3rem] mt-auto mb-auto mc-blur transition-colors duration-500">
-        <article className="flex flex-col items-center justify-center mt-12 mb-12">
+      <section className="flex flex-row justify-around text-mc-text bg-mc-primary w-[55vw] min-w-72 opacity-95 rounded-[1.5rem] mt-auto mb-auto mc-blur transition-colors duration-500 p-6 max-h-[75vh]">
+        <img
+          src="./login_register_image.svg"
+          className="flex-1 w-[calc(50%-10em)] h-auto object-contain"
+        />
+        <article className="flex flex-col items-center justify-between h-auto w-[50%]">
           <header className="text-3xl font-bold mb-8 mt-8 mr-2 ml-2 text-center">
-            Create Electro Vision account
+            Welcome!
           </header>
           <form
-            className="flex flex-col items-center justify-center gap-4"
+            className="flex flex-col items-stretch justify-between gap-4 h-[60%]"
             onSubmit={handleSubmit(onSubmit)}
           >
             <FormErrorWrap>
@@ -70,32 +74,9 @@ export default function Login() {
                 type="text"
                 placeholder="Email"
                 name="email"
-                className="border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
+                className="border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
               />
               <FormErrorParahraph errorObject={errors.email} />
-            </FormErrorWrap>
-            <FormErrorWrap>
-              <input
-                {...register("username", {
-                  minLength: {
-                    value: AuthConst.minUsernameLength,
-                    message: `Username must have at least ${AuthConst.minUsernameLength} characters`,
-                  },
-                  maxLength: {
-                    value: AuthConst.maxUsernameLength,
-                    message: `Username must have less than ${AuthConst.maxUsernameLength} characters`,
-                  },
-                  required: {
-                    value: true,
-                    message: "Username is required",
-                  },
-                })}
-                type="text"
-                placeholder="Username"
-                name="username"
-                className="border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
-              />
-              <FormErrorParahraph errorObject={errors.username} />
             </FormErrorWrap>
             <FormErrorWrap>
               <input
@@ -132,7 +113,7 @@ export default function Login() {
                 type="password"
                 placeholder="Password"
                 name="password"
-                className="border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
+                className="border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
               />
               <FormErrorParahraph errorObject={errors.password} />
             </FormErrorWrap>
@@ -157,14 +138,18 @@ export default function Login() {
                 type="password"
                 placeholder="Repeat Password"
                 name="repPassword"
-                className="border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
+                className="border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
               />
               <FormErrorParahraph errorObject={errors.repPassword} />
             </FormErrorWrap>
-            <Button type="submit" value="Register" />
+            <Button
+              type="submit"
+              value="Register"
+              customWidth="max-w-[40rem] min-w-56 w-[25vw]"
+            />
             {/* <div onClick={() => setShowPassword(p => !p)} className="w-4 h-4 text-center border-solid border-black rounded-[100%] cursor-pointer">x</div> */}
           </form>
-          <figure className="flex flex-row items-center justify-center m-6">
+          <figure className="flex flex-col items-center justify-center m-6">
             <p className="select-none ml-4 mr-4 text-center">
               Already have account?
             </p>
@@ -175,11 +160,9 @@ export default function Login() {
               Login here
             </Link>
           </figure>
-          {
-            <article className="mt-4 ">
-              You have registered successfully, you will be redirected
-            </article>
-          }
+          {/* <article className="mt-4">
+            You have registered successfully, you will be redirected
+          </article> */}
         </article>
       </section>
       <FooterSmall />
