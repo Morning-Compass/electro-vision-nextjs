@@ -16,7 +16,7 @@ const config: Config = {
           "radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(23,158,255,1) 100%);",
       },
       colors: {
-        "mc-blue": "#0b3945",
+        "mc-blue": "#0C44FF",
         "mc-cyan": "#087e8b",
         "mc-lightblue": "#bfd7ea",
         "mc-softred": "#ff5a5f",

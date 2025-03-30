@@ -46,7 +46,7 @@ export default function Login() {
           src="./login_register_image.svg"
           className="flex-1 w-[calc(50%-10em)] h-auto object-contain"
         />
-        <article className="flex flex-col items-center justify-between h-auto w-[50%]">
+        <article className="flex flex-col items-center justify-between h-auto w-[50%] mt-12 mb-12">
           <header className="text-3xl font-bold mb-8 mt-8 mr-2 ml-2 text-center">
             Welcome!
           </header>
@@ -55,6 +55,7 @@ export default function Login() {
             onSubmit={handleSubmit(onSubmit)}
           >
             <FormErrorWrap>
+              <h1 className="font-bold text-lg pl-4">Email</h1>
               <input
                 {...register("email", {
                   validate: (email) => {
@@ -74,11 +75,12 @@ export default function Login() {
                 type="text"
                 placeholder="Email"
                 name="email"
-                className="border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
+                className="border-4 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
               />
               <FormErrorParahraph errorObject={errors.email} />
             </FormErrorWrap>
             <FormErrorWrap>
+              <h1 className="font-bold text-lg pl-4">Password</h1>
               <input
                 {...register("password", {
                   minLength: {
@@ -113,11 +115,12 @@ export default function Login() {
                 type="password"
                 placeholder="Password"
                 name="password"
-                className="border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
+                className="border-4 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
               />
               <FormErrorParahraph errorObject={errors.password} />
             </FormErrorWrap>
             <FormErrorWrap>
+              <h1 className="font-bold text-lg pl-4">Repeat Password</h1>
               <input
                 {...register("repPassword", {
                   required: {
@@ -138,7 +141,7 @@ export default function Login() {
                 type="password"
                 placeholder="Repeat Password"
                 name="repPassword"
-                className="border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
+                className="border-4 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
               />
               <FormErrorParahraph errorObject={errors.repPassword} />
             </FormErrorWrap>

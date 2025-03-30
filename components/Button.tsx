@@ -45,7 +45,7 @@ const Button = ({
       src={type === "image" ? src : ""}
       className={
         className ??
-        ` ${bgColor ?? "bg-mc-blue"} ${textColor ?? "text-white"} ${rounded === true ? "rounded-2xl" : ""} max-w-64 min-w-30 ${customWidth ?? "w-[30vw]"} max-h-12 min-h-8 ${customHeight ?? "h-[10vh]"} font-bold  ${hoverEffect === true ? "hover:scale-110" : ""} duration-300 cursor-pointer`
+        ` ${bgColor ?? "bg-mc-blue"} ${textColor ?? "text-white"} ${rounded === true ? "rounded-[0.9rem]" : ""} max-w-64 min-w-30 ${customWidth ?? "w-[30vw]"} max-h-12 min-h-8 ${customHeight ?? "h-[10vh]"} font-bold  ${hoverEffect === true ? "hover:scale-110" : ""} duration-300 cursor-pointer`
       }
     />
   );
