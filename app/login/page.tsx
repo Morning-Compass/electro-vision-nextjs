@@ -19,9 +19,9 @@ import Regex from "@/ev-const/regex";
 import AuthConst from "@/ev-const/authconst";
 
 export default function Login() {
-  type formProps = {
-    credential: string | null;
-    password: string | null;
+  type FormProps = {
+    credential: string;
+    password: string;
   };
 
   const loginOptions = {
@@ -32,14 +32,13 @@ export default function Login() {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     getValues,
-    setError,
-  } = useForm<formProps>();
+  } = useForm<FormProps>();
 
   const [loginOption, setLoginOption] = useState<"email" | "username">("email");
 
-  const onSubmit: SubmitHandler<formProps> = async (data) => {
+  const onSubmit: SubmitHandler<FormProps> = async (data) => {
     const loginLink =
       loginOption === loginOptions.email
         ? ApiLinks.loginEmail
@@ -48,8 +47,8 @@ export default function Login() {
     const response = await OLF.post(loginLink, {
       [loginOption === loginOptions.email
         ? loginOptions.email
-        : loginOptions.username]: getValues().credential,
-      password: getValues().password,
+        : loginOptions.username]: data.credential,
+      password: data.password,
     });
     redirect("/");
   };
@@ -61,6 +60,7 @@ export default function Login() {
         <img
           src="./login_register_image.svg"
           className="flex-1 w-[calc(50%-10em)] h-auto object-contain"
+          alt="Login"
         />
         <article className="flex flex-col items-center justify-between h-auto w-[50%] mt-12 mb-12">
           <header className="text-3xl font-bold mt-8 mb-8 mr-6 ml-6 text-center">
@@ -72,8 +72,13 @@ export default function Login() {
           >
             <FormErrorWrap>
               <h1 className="font-bold text-lg pl-4">Email</h1>
-              <input
-                {...register("credential", {
+              <Input
+                type="text"
+                name="credential"
+                placeholder="Email"
+                className="border-4 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
+                error={errors.credential?.message}
+                register={register("credential", {
                   validate: (cred) => {
                     if (cred && cred.includes("@")) {
                       const regexResult = Regex.emailRegistration.test(cred);
@@ -88,32 +93,27 @@ export default function Login() {
                     message: "Credential is required",
                   },
                 })}
-                type="text"
-                placeholder="Email"
-                name="credential"
-                className="border-4 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
               />
-              <FormErrorParahraph errorObject={errors.credential} />
             </FormErrorWrap>
             <FormErrorWrap>
               <h1 className="font-bold text-lg pl-4">Password</h1>
-              <input
-                {...register("password", {
+              <Input
+                type="password"
+                name="password"
+                placeholder="Password"
+                className="border-4 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
+                error={errors.password?.message}
+                register={register("password", {
                   minLength: {
                     value: AuthConst.minPasswordLength,
                     message: `Password must have at least ${AuthConst.minPasswordLength} characters`,
                   },
                   required: {
                     value: true,
-                    message: "Password is requiered",
+                    message: "Password is required",
                   },
                 })}
-                type="password"
-                placeholder="Password"
-                name="password"
-                className="border-4 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
               />
-              <FormErrorParahraph errorObject={errors.password} />
             </FormErrorWrap>
             <Button
               type="submit"

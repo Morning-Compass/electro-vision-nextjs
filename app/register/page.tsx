@@ -14,6 +14,7 @@ import AuthConst from "@/ev-const/authconst";
 import FormErrorParahraph from "@/components/templates/FormErrorParagraph";
 import FormErrorWrap from "@/components/templates/FormErrorWrap";
 import Regex from "@/ev-const/regex";
+import Input from "@/components/Input";
 
 export default function Login() {
   type formProps = Pick<UserEntityType, "email" | "username"> & {
@@ -37,7 +38,6 @@ export default function Login() {
     });
   };
 
-  // const inputStyles = { inputSecurity: showPassword ? "none" : "inherit", }
   return (
     <PageTemplate>
       <NavbarTemplate />
@@ -45,6 +45,7 @@ export default function Login() {
         <img
           src="./login_register_image.svg"
           className="flex-1 w-[calc(50%-10em)] h-auto object-contain"
+          alt="Register"
         />
         <article className="flex flex-col items-center justify-between h-auto w-[50%] mt-12 mb-12">
           <header className="text-3xl font-bold mb-8 mt-8 mr-2 ml-2 text-center">
@@ -56,8 +57,13 @@ export default function Login() {
           >
             <FormErrorWrap>
               <h1 className="font-bold text-lg pl-4">Email</h1>
-              <input
-                {...register("email", {
+              <Input
+                type="text"
+                name="email"
+                placeholder="Email"
+                className="border-4 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
+                error={errors.email?.message}
+                register={register("email", {
                   validate: (email) => {
                     const emailRegexResult = Regex.emailRegistration.test(
                       email ?? "",
@@ -72,17 +78,17 @@ export default function Login() {
                     message: "Email is required",
                   },
                 })}
-                type="text"
-                placeholder="Email"
-                name="email"
-                className="border-4 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
               />
-              <FormErrorParahraph errorObject={errors.email} />
             </FormErrorWrap>
             <FormErrorWrap>
               <h1 className="font-bold text-lg pl-4">Password</h1>
-              <input
-                {...register("password", {
+              <Input
+                type="password"
+                name="password"
+                placeholder="Password"
+                className="border-4 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
+                error={errors.password?.message}
+                register={register("password", {
                   minLength: {
                     value: AuthConst.minPasswordLength,
                     message: `Password Must have at least ${AuthConst.minPasswordLength} characters`,
@@ -112,17 +118,17 @@ export default function Login() {
                     return true;
                   },
                 })}
-                type="password"
-                placeholder="Password"
-                name="password"
-                className="border-4 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
               />
-              <FormErrorParahraph errorObject={errors.password} />
             </FormErrorWrap>
             <FormErrorWrap>
               <h1 className="font-bold text-lg pl-4">Repeat Password</h1>
-              <input
-                {...register("repPassword", {
+              <Input
+                type="password"
+                name="repPassword"
+                placeholder="Repeat Password"
+                className="border-4 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
+                error={errors.repPassword?.message}
+                register={register("repPassword", {
                   required: {
                     value: true,
                     message: "Password repeat is required",
@@ -138,19 +144,13 @@ export default function Login() {
                     return true;
                   },
                 })}
-                type="password"
-                placeholder="Repeat Password"
-                name="repPassword"
-                className="border-4 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
               />
-              <FormErrorParahraph errorObject={errors.repPassword} />
             </FormErrorWrap>
             <Button
               type="submit"
               value="Register"
               customWidth="max-w-[40rem] min-w-56 w-[25vw]"
             />
-            {/* <div onClick={() => setShowPassword(p => !p)} className="w-4 h-4 text-center border-solid border-black rounded-[100%] cursor-pointer">x</div> */}
           </form>
           <figure className="flex flex-col items-center justify-center m-6">
             <p className="select-none ml-4 mr-4 text-center">
@@ -163,9 +163,6 @@ export default function Login() {
               Login here
             </Link>
           </figure>
-          {/* <article className="mt-4">
-            You have registered successfully, you will be redirected
-          </article> */}
         </article>
       </section>
       <FooterSmall />
