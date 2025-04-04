@@ -62,7 +62,7 @@ export default function Login() {
           className="flex-1 w-[calc(50%-10em)] h-auto object-contain"
           alt="Login"
         />
-        <article className="flex flex-col items-center justify-between h-auto w-[50%] mt-12 mb-12">
+        <article className="flex flex-col items-center justify-between h-auto w-[50%] mt-28 mb-12">
           <header className="text-3xl font-bold mt-8 mb-8 mr-6 ml-6 text-center">
             Good to see you again!
           </header>
