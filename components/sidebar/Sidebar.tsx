@@ -5,7 +5,14 @@ export type SidebarProps = {
 };
 
 function Sidebar({ children, ...props }: SidebarProps) {
-  return <nav {...props}>{children}</nav>;
+  return (
+    <nav
+      {...props}
+      className="flex flex-col self-start ml-8 bg-white p-4 rounded-[0.9em]"
+    >
+      {children}
+    </nav>
+  );
 }
 
 export default Sidebar;

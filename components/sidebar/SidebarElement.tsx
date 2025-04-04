@@ -18,8 +18,6 @@ export default function SidebarElement({
   link,
   imageSrc,
   imageAlt = "Sidebar Icon",
-  imageWidth = "32px",
-  imageHeight = "32px",
   containerClassName = "",
   linkClassName = "",
   imageClassName = "",
@@ -27,7 +25,7 @@ export default function SidebarElement({
 }: SidebarElementprops) {
   return (
     <li
-      className={`sm:mr-10 flex-grow-1 flex justify-center ${containerClassName}`}
+      className={`flex-grow-1 flex justify-center ${containerClassName}`}
       {...props}
     >
       <Link
@@ -37,8 +35,8 @@ export default function SidebarElement({
         <Image
           src={imageSrc}
           alt={imageAlt}
-          width={imageWidth}
-          height={imageHeight}
+          width={32}
+          height={32}
           className={`object-contain ${imageClassName}`}
         />
       </Link>
