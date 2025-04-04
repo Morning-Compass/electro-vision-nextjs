@@ -37,7 +37,7 @@ export default function SidebarElement({
           alt={imageAlt}
           width={32}
           height={32}
-          className={`object-contain ${imageClassName}`}
+          className={`object-contain ${imageClassName} `}
         />
       </Link>
     </li>

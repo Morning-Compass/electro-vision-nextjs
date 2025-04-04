@@ -5,7 +5,7 @@ import SidebarElement from "@/components/sidebar/SidebarElement";
 export default function SidebarTemplate() {
   return (
     <Sidebar>
-      <SidebarElement imageSrc="./category.svg" />
+      <SidebarElement imageSrc="./category.svg" imageClassName="icon-blue" />
       <SidebarElement imageSrc="./timeline.svg" />
       <SidebarElement imageSrc="./chat.svg" />
       <SidebarElement imageSrc="./map.svg" />

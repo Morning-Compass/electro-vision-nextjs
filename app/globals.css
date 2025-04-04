@@ -65,3 +65,8 @@ p {
     --color-secondary-text: #272727;
     --color-primary-bg: #fefefe;
 }
+
+.icon-blue {
+    filter: invert(50%) sepia(90%) saturate(16400%) hue-rotate(190deg)
+        brightness(140%) contrast(110%);
+}
