@@ -29,7 +29,7 @@ export default function SidebarElement({
       {...props}
     >
       <Link
-        className={`hover:scale-110 duration-200 pt-4 pb-4 ${linkClassName}`}
+        className={`hover:scale-125 duration-200 pt-4 pb-4 ${linkClassName}`}
         href={link ?? ""}
       >
         <Image
