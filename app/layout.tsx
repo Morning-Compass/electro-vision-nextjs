@@ -3,6 +3,7 @@ import { Poppins } from "next/font/google";
 import "./globals.css";
 import { UserContextProvider } from "@/ev-contexts/userContextProvider";
 import { Toaster } from "react-hot-toast";
+import "@/components/carousel/embla.css";
 
 const poppins = Poppins({ subsets: ["latin"], weight: "400" });
 
