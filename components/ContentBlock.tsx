@@ -6,10 +6,18 @@ export type ContentBlockProps = {
   blockClassName?: string;
 };
 
-function ContentBlock({ children, ...props }: ContentBlockProps) {
+function ContentBlock({
+  children,
+  containerClassName,
+  blockClassName,
+}: ContentBlockProps) {
   return (
-    <section {...props} className="flex flex-1 justify-center items-center">
-      <section className="flex flex-row justify-around text-mc-text bg-mc-primary w-[55vw] min-w-72 opacity-95 rounded-[1.5rem] mt-auto mb-auto mc-blur transition-colors duration-500 p-6 max-h-[75vh] self-center">
+    <section
+      className={`flex flex-1 justify-center ${containerClassName || ""}`}
+    >
+      <section
+        className={`flex flex-column justify-around text-mc-text bg-mc-primary w-[55vw] min-w-72 opacity-95 rounded-[1.5rem] mb-auto mc-blur transition-colors duration-500 p-6 max-h-[75vh] ${blockClassName || ""}`}
+      >
         {children}
       </section>
     </section>
