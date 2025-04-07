@@ -1,11 +1,8 @@
-// src/components/carousel/EmblaCarousel.tsx
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react'; // Import hooks
+import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { EmblaOptionsType, EmblaCarouselType } from 'embla-carousel'; // Import EmblaCarouselType
-// Remove imports for arrow buttons if they are not used elsewhere
-// import { PrevButton, NextButton, usePrevNextButtons } from './EmblaCarouselArrowButtons';
+import { EmblaOptionsType, EmblaCarouselType } from 'embla-carousel';
 import useEmblaCarousel from 'embla-carousel-react';
 
 type PropType = {
@@ -47,11 +44,8 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
             if (index === selectedIndex) return; // Do nothing if clicking the selected slide
             emblaApi.scrollTo(index);
         },
-        [emblaApi, selectedIndex] // Depend on emblaApi and selectedIndex
+        [emblaApi, selectedIndex]
     );
-
-    // Remove logic related to usePrevNextButtons if arrows are fully removed
-    // const { prevBtnDisabled, nextBtnDisabled, onPrevButtonClick, onNextButtonClick } = usePrevNextButtons(emblaApi);
 
     if (!slides || slides.length === 0) {
         return <div>No images to display.</div>;
@@ -62,37 +56,25 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
             <div className="embla__viewport" ref={emblaRef}>
                 <div className="embla__container">
                     {slides.map((imageUrl, index) => (
-                        // --- Add onClick and conditional class ---
                         <div
                             className={`embla__slide ${
                                 index === selectedIndex ? 'is-selected' : ''
-                            }`} // Add 'is-selected' class
+                            }`}
                             key={index}
-                            onClick={() => handleSlideClick(index)} // Add click handler
+                            onClick={() => handleSlideClick(index)}
                         >
                             <Image
                                 src={imageUrl}
                                 alt={`${altText} ${index + 1}`}
                                 fill
-                                style={{ objectFit: 'contain' }} // Or 'cover'
+                                style={{ objectFit: 'contain' }}
                                 priority={index === 0}
-                                sizes="(max-width: 768px) 90vw, 70vw" // Adjust as needed
+                                sizes="(max-width: 768px) 90vw, 70vw"
                             />
                         </div>
                     ))}
                 </div>
             </div>
-
-            {/* --- Remove Controls Section --- */}
-            {/*
-            <div className="embla__controls">
-                <div className="embla__buttons">
-                    <PrevButton onClick={onPrevButtonClick} disabled={prevBtnDisabled} />
-                    <NextButton onClick={onNextButtonClick} disabled={nextBtnDisabled} />
-                </div>
-                {/* Dots can remain if desired */}
-            {/*</div>
-            */}
         </section>
     );
 };
