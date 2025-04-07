@@ -32,6 +32,7 @@ const config: Config = {
         "ev-darkblue": "#252C58",
         "ev-border-blue": "#0C41FF",
         "ev-blue-fill": "#0C44FF",
+        "ev-gray": "#F1F2F6",
         "mc-primary": "var(--color-primary)",
         "mc-secondary": "var(--color-secondary)",
         "mc-text": "var(--color-text)",

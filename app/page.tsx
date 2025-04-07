@@ -2,19 +2,18 @@
 
 import { FooterSmall } from "@/components/templates/FooterSmall";
 import NavbarTemplate from "@/components/templates/NavbarTemplate";
-import PageTemplate from "@/components/templates/PageTemplate";
 import useUserContext from "@/ev-contexts/userContextProvider";
 import { useEffect } from "react";
 import Image from "next/image";
 import BackgroundImage from "./images-landing-page/ThunderstormBackground.png";
 import Lighting from "./images-landing-page/Lightning.png";
-import ImageCarousel from "@/components/carousel/EmblaCarousel";
 import EmployeesOverview from "./images-landing-page/EmployeesOverview.png";
 import Dashboard from "./images-landing-page/Dashboard.png";
 import Calendar from "./images-landing-page/Calendar.png";
 import Link from "next/link";
 import EmblaCarousel from "@/components/carousel/EmblaCarousel";
 import {EmblaOptionsType} from "embla-carousel";
+import LandingPageTemplate from "@/components/templates/LandingPageTemplate";
 
 export default function Home() {
   const { User, UserDispatch } = useUserContext();
@@ -40,9 +39,9 @@ export default function Home() {
   }, []);
 
   return (
-    <PageTemplate bgClass="#F1F2F6">
-      <NavbarTemplate />
-        <div className="flex flex-row top-24 right-20 z-10 absolute">
+    <LandingPageTemplate bgClass="#F1F2F6">
+      {/*<NavbarTemplate />*/}
+        <div className="flex flex-row top-12 right-16 z-10 absolute">
             <div className="flex justify-center items-center rounded-lg border-2 border-ev-border-blue text-white text-xl p-3 pl-9 pr-9 bg-ev-blue-fill/40 mr-16">
                 <Link href="/login"><strong>Login</strong></Link>
             </div>
@@ -81,6 +80,6 @@ export default function Home() {
             </div>
         </section>
       <FooterSmall />
-    </PageTemplate>
+    </LandingPageTemplate>
   );
 }

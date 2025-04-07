@@ -19,13 +19,13 @@ const PageTemplate = ({
     <>
       {bgClass === undefined ? (
         <main
-          className={`bg-center bg-fixed bg-cover text-mc-text min-h-screen w-screen font-mono theme-${User.theme} flex flex-col items-center`}
+          className={`bg-center bg-fixed bg-cover text-mc-text min-h-screen w-screen font-mono gap-5 theme-${User.theme} flex flex-col items-center`}
         >
           {children}
         </main>
       ) : (
         <main
-          className={`bg-center bg-fixed bg-cover text-mc-text min-h-screen w-screen font-mono theme-${User.theme} flex flex-col items-center ${bgClass}`}
+          className={`bg-center bg-fixed bg-cover text-mc-text min-h-screen w-screen font-mono gap-5 theme-${User.theme} flex flex-col items-center ${bgClass}`}
         >
           {children}
         </main>
