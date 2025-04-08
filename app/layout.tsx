@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
+import { Lexend } from "next/font/google";
 import "./globals.css";
 import { UserContextProvider } from "@/ev-contexts/userContextProvider";
 import { Toaster } from "react-hot-toast";
 import "@/components/carousel/embla.css";
 
-const poppins = Poppins({ subsets: ["latin"], weight: "400" });
+const lexend = Lexend({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
 
 export const metadata: Metadata = {
   title: "Electro Vision",
@@ -19,7 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={poppins.className}>
+      <body className={`${lexend.className} antialiased`}>
         <UserContextProvider>
           {children}
           <Toaster position="top-center" />

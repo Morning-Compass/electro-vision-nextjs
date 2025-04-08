@@ -8,6 +8,7 @@ type InputProps = {
   className?: string;
   error?: string;
   register?: any;
+  value?: string;
 };
 
 const Input = ({ error, register, name, ...props }: InputProps) => {

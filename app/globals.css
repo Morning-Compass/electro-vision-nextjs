@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+    html {
+        font-family:
+            "Lexend",
+            system-ui,
+            -apple-system;
+    }
+}
+
 :root {
     --foreground-rgb: 0, 0, 0;
     --background-start-rgb: 214, 219, 220;
@@ -19,7 +28,7 @@
 body {
     color: rgb(var(--foreground-rgb));
     background: rgb(var(--background-start-rgb));
-
+    font-family: "Lexend";
     scroll-behavior: smooth;
 }
 
