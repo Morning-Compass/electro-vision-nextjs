@@ -1,11 +1,11 @@
 import Input from "@/components/Input";
 import Image from "next/image";
 
-export type SearchButtonProps = {
+export type CalendarButtonProps = {
   className?: string;
 };
 
-function SearchButton({ className }: SearchButtonProps) {
+function CalendarButton({ className }: CalendarButtonProps) {
   return (
     <section className={`flex flex-row ${className}`}>
       <Image
@@ -24,4 +24,4 @@ function SearchButton({ className }: SearchButtonProps) {
   );
 }
 
-export default SearchButton;
+export default CalendarButton;
