@@ -10,6 +10,7 @@ const NavbarTemplate = () => {
         <NavbarElement link={"/login"}>Login</NavbarElement>
         <NavbarElement link={"/register"}>Register</NavbarElement>
         <NavbarElement link={"/chat"}>Chat</NavbarElement>
+        <NavbarElement link={"/calendar"}>Calendar</NavbarElement>
         <NavbarWallet />
       </NavbarMain>
     </Navbar>

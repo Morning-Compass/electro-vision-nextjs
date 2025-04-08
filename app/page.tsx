@@ -13,7 +13,7 @@ import Calendar from "./images-landing-page/Calendar.png";
 import Link from "next/link";
 import EmblaCarousel from "@/components/carousel/EmblaCarousel";
 import {EmblaOptionsType} from "embla-carousel";
-import LandingPageTemplate from "@/components/templates/LandingPageTemplate";
+import PageTemplate from "@/components/templates/PageTemplate";
 
 export default function Home() {
   const { User, UserDispatch } = useUserContext();
@@ -39,7 +39,7 @@ export default function Home() {
   }, []);
 
   return (
-    <LandingPageTemplate bgClass="#F1F2F6">
+    <PageTemplate bgClass="#F1F2F6">
       {/*<NavbarTemplate />*/}
         <div className="flex flex-row top-12 right-16 z-10 absolute">
             <div className="flex justify-center items-center rounded-lg border-2 border-ev-border-blue text-white text-xl p-3 pl-9 pr-9 bg-ev-blue-fill/40 mr-16">
@@ -80,6 +80,6 @@ export default function Home() {
             </div>
         </section>
       <FooterSmall />
-    </LandingPageTemplate>
+    </PageTemplate>
   );
 }
