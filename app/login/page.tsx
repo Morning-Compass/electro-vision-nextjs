@@ -17,6 +17,7 @@ import FormErrorWrap from "@/components/templates/FormErrorWrap";
 import FormErrorParahraph from "@/components/templates/FormErrorParagraph";
 import Regex from "@/ev-const/regex";
 import AuthConst from "@/ev-const/authconst";
+import Image from "next/image";
 
 export default function Login() {
   type FormProps = {
@@ -57,10 +58,12 @@ export default function Login() {
     <PageTemplate>
       <NavbarTemplate />
       <section className="flex flex-row justify-around text-mc-text bg-mc-primary w-[55vw] min-w-72 opacity-95 rounded-[1.5rem] mt-auto mb-auto mc-blur transition-colors duration-500 p-6 max-h-[75vh]">
-        <img
-          src="./login_register_image.svg"
-          className="flex-1 w-[calc(50%-10em)] h-auto object-contain"
-          alt="Login"
+        <Image
+          src={"./login_register_image.svg"}
+          className={"flex-1 w-[calc(50%-10em)] h-auto object-contain"}
+          alt={"Login"}
+          width={10}
+          height={10}
         />
         <article className="flex flex-col items-center justify-between h-auto w-[50%] mt-28 mb-12">
           <header className="text-3xl font-bold mt-8 mb-8 mr-6 ml-6 text-center">
