@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { EmblaOptionsType, EmblaCarouselType } from 'embla-carousel';
 import useEmblaCarousel from 'embla-carousel-react';
+import Autoplay from 'embla-carousel-autoplay';
 import {
     PrevButton,
     NextButton,
@@ -26,7 +27,16 @@ type PropType = {
 
 const EmblaCarousel: React.FC<PropType> = (props) => {
     const { slides, options } = props;
-    const [emblaRef, emblaApi] = useEmblaCarousel(options);
+    const [emblaRef, emblaApi] = useEmblaCarousel(options,
+      [ // Array of plugins
+          Autoplay({
+              delay: 4000, // Delay between slides in milliseconds (4 seconds)
+              stopOnInteraction: true,
+              stopOnMouseEnter: true,
+              stopOnFocusIn: true,
+          })
+      ]
+    );
     const [selectedIndex, setSelectedIndex] = useState(0);
 
     const {
