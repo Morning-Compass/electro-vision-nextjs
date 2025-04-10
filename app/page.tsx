@@ -13,10 +13,37 @@ import PageTemplate from "@/components/templates/PageTemplate";
 export default function Home() {
   const { User, UserDispatch } = useUserContext();
   const CarouselImages = [
-    "/images-landing-page/Dashboard.png",
-    "/images-landing-page/Calendar.png",
-    "/images-landing-page/AttendanceOverview.png",
+    {
+      id: 'Dashboard',
+      type: 'custom',
+      title: 'Manage Statistics',
+      imageUrl: "/images-landing-page/Dashboard.png",
+      altText: "Dashboard",
+      description: "You can track all your statistics about employees and how much of\n" +
+        "            work on site has been done thanks to our Dashboard that shows all of\n" +
+        "            the important information's.",
+    },
+    {
+      id: 'Calendar',
+      type: 'custom',
+      title: 'Manage Time',
+      imageUrl: "/images-landing-page/Calendar.png",
+      altText: "Calendar",
+      description: "You can set when and what has to be done by using in built calendar.\n" +
+        "            Thanks to this it is clear to see what will be done in a week.",
+    },
+    {
+      id: 'Dashboard',
+      type: 'custom',
+      title: 'Manage Employees',
+      imageUrl: "/images-landing-page/AttendanceOverview.png",
+      altText: "Employees",
+      description: "You can overview all you employees where you can see details about\n" +
+        "            what they are working on and who exactly they are thanks to our\n" +
+        "            Employees Overview screen.",
+    },
   ];
+
   const OPTIONS: EmblaOptionsType = { loop: true };
   useEffect(() => {
     UserDispatch({
@@ -37,18 +64,18 @@ export default function Home() {
     <PageTemplate bgClass="#F1F2F6">
       {/*<NavbarTemplate />*/}
       <div className="flex flex-row top-12 right-16 z-10 absolute">
-        <div className="flex justify-center items-center rounded-lg border-2 border-ev-border-blue text-white text-xl p-3 pl-9 pr-9 bg-ev-blue-fill/40 mr-16">
+        <div className="flex justify-center items-center rounded-lg border-2 border-ev-border-blue text-mc-darkwhite text-xl p-3 pl-9 pr-9 bg-ev-blue-fill/40 mr-16">
           <Link href="/login">
             <strong>Login</strong>
           </Link>
         </div>
-        <div className="flex justify-center items-center rounded-lg border-2 border-ev-border-blue text-white text-xl p-3 pl-9 pr-9 bg-ev-blue-fill/40">
+        <div className="flex justify-center items-center rounded-lg border-2 border-ev-border-blue text-mc-darkwhite text-xl p-3 pl-9 pr-9 bg-ev-blue-fill/40">
           <Link href="/register">
             <strong>Register</strong>
           </Link>
         </div>
       </div>
-      <section className="flex items-center justify-center w-screen h-screen mb-10">
+      <section className="flex items-center justify-center w-screen h-screen -mb-24">
         <a className="text-ev-darkblue z-10 text-9xl text-center">
           Welcome to Electro Vision
         </a>
@@ -64,75 +91,12 @@ export default function Home() {
             zIndex: "5",
           }}
         />
-        {/*
-        <Image src="/images-landing-page/ThunderstormBackground.png" alt="Thunderstorm Image" width={0} height={0} style={{ width: "100%", height: "100%", position: "absolute" }} />
-        */}
       </section>
-      <section className="flex flex-col items-center justify-center rounded-3xl bg-white w-1/2 mt-10 mb-10 p-11">
-        <a className="text-black text-8xl">
-          Manage <strong>Everything</strong>
-        </a>
+      <section className="flex flex-col items-center justify-center rounded-3xl bg-white w-4/5 h-[70vh] mt-10 mb-10 p-11">
         <EmblaCarousel
           slides={CarouselImages}
           options={OPTIONS}
-          altText="Images of site"
         />
-      </section>
-      <section className="flex flex-col items-center justify-center rounded-3xl bg-white w-7/10 mt-10 mb-10 ml-128 p-11">
-        <a className="text-black text-8xl">
-          Manage <strong>Employees</strong>
-        </a>
-        <div className="flex flex-row justify-start items-center mt-8">
-          <a className="text-wrap size-1/3 mr-5 ml-20 text-left">
-            You can overview all you employees where you can see details about
-            what they are working on and who exactly they are thanks to our
-            Employees Overview screen.
-          </a>
-          <Image
-            src="images-landing-page/EmployeesOverview.png"
-            alt={"Employees Overview Image"}
-            width={0}
-            height={0}
-            className="rounded-3xl w-auto h-auto"
-          ></Image>
-        </div>
-      </section>
-      <section className="flex flex-col items-center justify-center rounded-3xl bg-white w-7/10 mt-10 mb-10 mr-128 p-11">
-        <a className="text-black text-8xl">
-          Manage <strong>Statistics</strong>
-        </a>
-        <div className="flex flex-row justify-end items-center mt-8">
-          <Image
-            src="/images-landing-page/Dashboard.png"
-            alt={"Dashboard Image"}
-            width={0}
-            height={0}
-            className="rounded-3xl w-1/2 h-auto"
-          ></Image>
-          <a className="text-wrap size-1/3 mr-20 ml-5 text-right">
-            You can track all your statistics about employees and how much of
-            work on site has been done thanks to our Dashboard that shows all of
-            the important information's.
-          </a>
-        </div>
-      </section>
-      <section className="flex flex-col items-center justify-center rounded-3xl bg-white w-7/10 mt-10 mb-10 ml-128 p-11">
-        <a className="text-black text-8xl">
-          Manage <strong>Time</strong>
-        </a>
-        <div className="flex flex-row justify-start items-center mt-8">
-          <a className="text-wrap size-1/3 mr-5 ml-20 text-left">
-            You can set when and what has to be done by using in built calendar.
-            Thanks to this it is clear to see what will be done in a week.
-          </a>
-          <Image
-            src="/images-landing-page/Calendar.png"
-            alt={"Calendar Image"}
-            width={0}
-            height={0}
-            className="rounded-3xl w-1/2 h-auto"
-          ></Image>
-        </div>
       </section>
       <FooterSmall />
     </PageTemplate>

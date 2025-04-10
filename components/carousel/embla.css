@@ -1,11 +1,10 @@
 .embla {
     width: 100%;
     height: auto;
-    --slide-spacing: 5rem;
-    --slide-size: 70%;
-    max-width: 60rem;
+    --slide-size: 100%;
+    max-width: 80%;
     margin: auto;
-    padding: 0 1rem;
+    position: relative;
 }
 
 .embla__viewport {
@@ -18,30 +17,68 @@
 .embla__container {
     display: flex;
     touch-action: pan-y pinch-zoom;
-    margin-left: calc(var(--slide-spacing) * -1);
+    margin-left: -0.25rem;
     height: 100%;
 }
-
 .embla__slide {
     height: 100%;
     flex: 0 0 var(--slide-size);
     min-width: 0;
-    padding-left: var(--slide-spacing);
     position: relative;
     overflow: hidden;
     border-radius: 0.5rem;
-    margin-left: 0.5rem;
-    margin-right: 0.5rem;
+    margin-left: 0.25rem;
+    margin-right: 0.25rem;
+    display: flex;
+    align-items: center;
 }
 
-.embla__slide:not(.is-selected) {
+.embla__button {
+    -webkit-tap-highlight-color: rgba(var(230, 230, 230), 0.5);
+    -webkit-appearance: none;
+    appearance: none;
+    background-color: rgba(var(--background-site-rgb-value, 249, 249, 249), 0.85);
+    touch-action: manipulation;
+    border: 1px solid var(rgb(25, 25, 25), #E5E7EB);
+    text-decoration: none;
     cursor: pointer;
-    opacity: 0.6;
-    transition: opacity 0.3s ease-in-out;
-    margin-left: 0.5rem;
-    margin-right: 0.5rem;
+    padding: 0;
+    margin: 0;
+    z-index: 1;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(rgb(222, 222, 222), #333);
+    box-shadow: 0 0.1rem 0.3rem rgba(0,0,0,0.1);
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.embla__slide:not(.is-selected):hover {
-    opacity: 0.9;
+.embla__button:disabled {
+    color: var(rgb(192, 192, 192), #9ca3af);
+    cursor: default;
+    opacity: 0.5;
+}
+
+.embla__button:not(:disabled):hover {
+    background-color: rgba(var(--background-site-rgb-value, 249, 249, 249), 1);
+    box-shadow: 0 0.2rem 0.4rem rgba(0,0,0,0.15);
+}
+
+.embla__button__svg {
+    width: 40%;
+    height: 40%;
+}
+
+.embla__button--prev {
+    left: -3rem;
+}
+
+.embla__button--next {
+    right:-3rem;
 }
