@@ -20,6 +20,7 @@ const NavbarTemplate = () => {
             <div className="text-2xl">Electro Vision</div>
           </div>
         </NavbarElement>
+        <NavbarElement link={"/chat"}>Chat</NavbarElement>
         {/*
         <NavbarElement link={"/"}>Home</NavbarElement>
         <NavbarElement link={"/login"}>Login</NavbarElement>
