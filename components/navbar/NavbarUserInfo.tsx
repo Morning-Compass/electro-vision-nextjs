@@ -15,23 +15,20 @@ const NavbarUserInfo = ({
   userPropfilePicture = undefined,
 }: NavbarUserInfoProps) => {
   return (
-    <div className="grid place-items-center">
-      <div className="flex flex-row items-center justify-center gap-4">
-        <p>{username}</p>
-        <Image
-          src={userPropfilePicture ?? "/default-user.png"}
-          width={32}
-          height={32}
-          alt="pfp"
-          className="rounded-full aspect-square"
-        />
-        <Link href={"/account"}>
-          <div className="grid place-items-center rounded-[100%]">
-            <Image src={"/cogwheel.png"} alt="account" width={32} height={32} />
-          </div>
-        </Link>
+    <Link href={"/account"}>
+      <div className="grid place-items-center">
+        <div className="flex flex-row items-center justify-center gap-4">
+          <p className="text-mc-text">{username}</p>
+          <Image
+            src={userPropfilePicture ?? "/default-user.png"}
+            width={32}
+            height={32}
+            alt="pfp"
+            className="rounded-full aspect-square"
+          />
+        </div>
       </div>
-    </div>
+    </Link>
   );
 };
 
