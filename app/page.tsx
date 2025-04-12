@@ -14,6 +14,33 @@ export default function Home() {
   const { User, UserDispatch } = useUserContext();
   const CarouselImages = [
     {
+      id: 'ElectricPlanAssign',
+      type: 'custom',
+      title: 'Custom Electric Plan',
+      imageUrl: "/images-landing-page/ElectricPlanAssign.png",
+      altText: "Electric Plan Assign",
+      description: "You can micro manage all your employees by assigning\n" +
+        "            them to specific places on our custom plan editor.\n",
+    },
+    {
+      id: 'ElectricPlanEmployee',
+      type: 'custom',
+      title: 'Custom Electric Plan',
+      imageUrl: "/images-landing-page/ElectricPlanEmployee.png",
+      altText: "Electric Plan Employee",
+      description: "You can view all your employees work and see what\n" +
+        "            they are assigned thanks to our custom plan editor.\n",
+    },
+    {
+      id: 'ElectricPlans',
+      type: 'custom',
+      title: 'Custom Electric Plan',
+      imageUrl: "/images-landing-page/ElectricPlans.png",
+      altText: "Electric Plans",
+      description: "You can have multiple electrical plans and\n" +
+        "            use them as filters to find where attention is most needed.\n",
+    },
+    {
       id: 'Dashboard',
       type: 'custom',
       title: 'Manage Statistics',

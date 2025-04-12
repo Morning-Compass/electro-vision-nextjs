@@ -102,7 +102,7 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
                                         alt={slideData.altText || 'Carousel image'}
                                         width={0}
                                         height={0}
-                                        className="rounded-3xl w-auto h-auto"
+                                        className="rounded-3xl w-auto max-w-200 h-auto"
                                       />}
                                   </div>
                               </>
