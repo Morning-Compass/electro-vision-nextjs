@@ -94,9 +94,9 @@ const EmblaCarousel: React.FC<PropType> = (props) => {
                             )}
                             {slideData.type === 'custom' && (
                               <>
-                                  {slideData.title && <h3 className="text-black text-8xl">{slideData.title}</h3>}
+                                  {slideData.title && <h3 className="text-black text-8xl text-center">{slideData.title}</h3>}
                                   <div className="flex flex-row justify-end items-center mt-8">
-                                      {slideData.description && <p className="text-wrap size-1/3 mr-40 text-left">{slideData.description}</p>}
+                                      {slideData.description && <p className="text-wrap size-1/3 mr-20 text-left">{slideData.description}</p>}
                                       {slideData.imageUrl && <Image
                                         src={slideData.imageUrl}
                                         alt={slideData.altText || 'Carousel image'}

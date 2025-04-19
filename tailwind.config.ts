@@ -48,6 +48,9 @@ const config: Config = {
       maxWidth: {
         "200": "50rem",
       },
+      borderWidth: {
+        "3": "3px",
+      },
     },
   },
   plugins: [],

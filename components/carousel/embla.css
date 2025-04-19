@@ -33,6 +33,10 @@
     align-items: center;
 }
 
+.embla__slide img {
+    max-height: 27rem;
+}
+
 .embla__button {
     -webkit-tap-highlight-color: rgba(var(230, 230, 230), 0.5);
     -webkit-appearance: none;

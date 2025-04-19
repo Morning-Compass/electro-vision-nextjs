@@ -8,16 +8,19 @@ import ContentBlock from "@/components/ContentBlock";
 import SearchButton from "@/components/SearchButton";
 import CalendarButton from "@/components/CalendarButton";
 import Input from "@/components/Input";
-import ChatElement from "@/components/chat/ChatElement";
+import ContentBlockElement from "@/components/ContentBlockElement";
 
 export default function Chat() {
+  const pageType = "chat";
+  const linkValue = "Chat";
+
   return (
     <PageTemplate>
       <NavbarTemplate />
       <section className="flex flex-row w-full mt-10">
         <SidebarTemplate activeIcon="chat" />
         <ContentBlock>
-          <section className="w-full flex flex-row items-center justify-between gap-4">
+          <section className="w-full flex flex-row items-center justify-between align-middle gap-4 mt-2">
             <h2 className="text-[1.75rem] font-semibold p-0 m-0 leading-none">
               Messages
             </h2>
@@ -32,37 +35,45 @@ export default function Chat() {
               />
             </section>
           </section>
-          <section className="mt-10 w-full">
-            <section className="grid grid-cols-4 gap-4 w-[60%]">
+          <section className="mt-8 w-full border-b-4 border-t-3 pt-4 pb-4">
+            <section className="grid grid-cols-7 gap-6 w-[75%]">
               <section className="font-semibold">ID</section>
               <section className="font-semibold">Employee</section>
               <section className="font-semibold">Role</section>
               <section className="font-semibold">Department</section>
             </section>
           </section>
-          <ChatElement
+          <ContentBlockElement
             id={2341421}
             employee="Ahmed Rashdan"
             role="Help Desk Executive"
             department="IT Department"
+            link={pageType}
+            linkValue={linkValue}
           />
-          <ChatElement
+          <ContentBlockElement
             id={2341421}
             employee="Ahmed Rashdan"
             role="Help Desk Executive"
             department="IT Department"
+            link={pageType}
+            linkValue={linkValue}
           />
-          <ChatElement
+          <ContentBlockElement
             id={2341421}
             employee="Ahmed Rashdan"
             role="Help Desk Executive"
             department="IT Department"
+            link={pageType}
+            linkValue={linkValue}
           />
-          <ChatElement
+          <ContentBlockElement
             id={2341421}
             employee="Ahmed Rashdan"
             role="Help Desk Executive"
             department="IT Department"
+            link={pageType}
+            linkValue={linkValue}
           />
         </ContentBlock>
       </section>

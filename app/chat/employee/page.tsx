@@ -6,7 +6,7 @@ import NavbarTemplate from "@/components/templates/NavbarTemplate";
 import { FooterSmall } from "@/components/templates/FooterSmall";
 import SidebarTemplate from "@/components/templates/SidebarTemplate";
 import ContentBlock from "@/components/ContentBlock";
-import ChatElement from "@/components/chat/ChatElement";
+import ContentBlockElement from "@/components/ContentBlockElement";
 import Link from "next/link";
 
 export default function ChatEmployee() {
@@ -26,7 +26,7 @@ export default function ChatEmployee() {
             <section
               className={`flex justify-around text-[1.2em] text-[#3354F4] font-semibold`}
             >
-              <Link href={"/chat"}>back</Link>
+              <Link href={"/chat"}>Back</Link>
               <p>{id}</p>
               <p>{employee}</p>
               <p>{role}</p>
