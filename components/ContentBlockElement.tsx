@@ -68,8 +68,8 @@ function ContentBlockElement({
       </section>
       <Link
         href={{
-          pathname: `/${link}/employee`,
-          query: { id, employee, role, department },
+          pathname: `/${link}`,
+          query: { id, employee, role, department, profilePicture },
         }}
       >
         <Input

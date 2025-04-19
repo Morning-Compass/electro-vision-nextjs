@@ -11,7 +11,7 @@ import Input from "@/components/Input";
 import ContentBlockElement from "@/components/ContentBlockElement";
 
 export default function Chat() {
-  const pageType = "chat";
+  const subPage = "chat/employee";
   const linkValue = "Chat";
 
   return (
@@ -48,7 +48,7 @@ export default function Chat() {
             employee="Ahmed Rashdan"
             role="Help Desk Executive"
             department="IT Department"
-            link={pageType}
+            link={subPage}
             linkValue={linkValue}
           />
           <ContentBlockElement
@@ -56,7 +56,7 @@ export default function Chat() {
             employee="Ahmed Rashdan"
             role="Help Desk Executive"
             department="IT Department"
-            link={pageType}
+            link={subPage}
             linkValue={linkValue}
           />
           <ContentBlockElement
@@ -64,7 +64,7 @@ export default function Chat() {
             employee="Ahmed Rashdan"
             role="Help Desk Executive"
             department="IT Department"
-            link={pageType}
+            link={subPage}
             linkValue={linkValue}
           />
           <ContentBlockElement
@@ -72,7 +72,7 @@ export default function Chat() {
             employee="Ahmed Rashdan"
             role="Help Desk Executive"
             department="IT Department"
-            link={pageType}
+            link={subPage}
             linkValue={linkValue}
           />
           <section className="border-t-2 text-left pt-4">

@@ -11,7 +11,7 @@ import Input from "@/components/Input";
 import ContentBlockElement from "@/components/ContentBlockElement";
 
 export default function EmployeesProblems() {
-  const pageType = "details";
+  const subPage = "employees-problems/details";
   const linkValue = "Details";
 
   return (
@@ -50,7 +50,7 @@ export default function EmployeesProblems() {
             role="Help Desk Executive"
             department="IT Department"
             date="19 April 2025"
-            link={pageType}
+            link={subPage}
             linkValue={linkValue}
           />
           <ContentBlockElement
@@ -59,7 +59,7 @@ export default function EmployeesProblems() {
             role="Help Desk Executive"
             department="IT Department"
             date="19 April 2025"
-            link={pageType}
+            link={subPage}
             linkValue={linkValue}
           />
           <ContentBlockElement
@@ -68,7 +68,7 @@ export default function EmployeesProblems() {
             role="Help Desk Executive"
             department="IT Department"
             date="19 April 2025"
-            link={pageType}
+            link={subPage}
             linkValue={linkValue}
           />
           <ContentBlockElement
@@ -77,7 +77,7 @@ export default function EmployeesProblems() {
             role="Help Desk Executive"
             department="IT Department"
             date="19 April 2025"
-            link={pageType}
+            link={subPage}
             linkValue={linkValue}
           />
           <section className="border-t-2 text-left pt-4">
