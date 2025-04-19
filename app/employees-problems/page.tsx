@@ -10,19 +10,19 @@ import CalendarButton from "@/components/CalendarButton";
 import Input from "@/components/Input";
 import ContentBlockElement from "@/components/ContentBlockElement";
 
-export default function Chat() {
-  const pageType = "chat";
-  const linkValue = "Chat";
+export default function EmployeesProblems() {
+  const pageType = "details";
+  const linkValue = "Details";
 
   return (
     <PageTemplate>
       <NavbarTemplate />
       <section className="flex flex-row w-full mt-10">
-        <SidebarTemplate activeIcon="chat" />
+        <SidebarTemplate activeIcon="alert" />
         <ContentBlock>
           <section className="w-full flex flex-row items-center justify-between align-middle gap-4 mt-2">
-            <h2 className="text-[1.75rem] font-semibold p-0 m-0 leading-none">
-              Messages
+            <h2 className="text-[1.75rem] font-semibold p-0 m-0 leading-none w-96">
+              Employees Problems
             </h2>
             <section className="flex flex-row justify-around w-[90%]">
               <SearchButton />
@@ -31,7 +31,7 @@ export default function Chat() {
                 name="add_button"
                 type="button"
                 className="text-white border-4 bg-mc-blue border-none rounded-[0.9rem] max-w-[10rem] min-w-20 w-[10vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 hover:scale-110 duration-300"
-                value="New Message"
+                value="Filter"
               />
             </section>
           </section>
@@ -41,6 +41,7 @@ export default function Chat() {
               <section className="font-semibold">Employee</section>
               <section className="font-semibold">Role</section>
               <section className="font-semibold">Department</section>
+              <section className="font-semibold">Date</section>
             </section>
           </section>
           <ContentBlockElement
@@ -48,6 +49,7 @@ export default function Chat() {
             employee="Ahmed Rashdan"
             role="Help Desk Executive"
             department="IT Department"
+            date="19 April 2025"
             link={pageType}
             linkValue={linkValue}
           />
@@ -56,6 +58,7 @@ export default function Chat() {
             employee="Ahmed Rashdan"
             role="Help Desk Executive"
             department="IT Department"
+            date="19 April 2025"
             link={pageType}
             linkValue={linkValue}
           />
@@ -64,6 +67,7 @@ export default function Chat() {
             employee="Ahmed Rashdan"
             role="Help Desk Executive"
             department="IT Department"
+            date="19 April 2025"
             link={pageType}
             linkValue={linkValue}
           />
@@ -72,6 +76,7 @@ export default function Chat() {
             employee="Ahmed Rashdan"
             role="Help Desk Executive"
             department="IT Department"
+            date="19 April 2025"
             link={pageType}
             linkValue={linkValue}
           />

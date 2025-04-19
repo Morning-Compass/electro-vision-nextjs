@@ -1,5 +1,6 @@
 import Input from "@/components/Input";
 import Link from "next/link";
+import Image from "next/image";
 
 export type ContentBlockElementProps = {
   containerClassName?: string;
@@ -14,6 +15,21 @@ export type ContentBlockElementProps = {
   link: string;
   linkValue: string;
 };
+
+function statusClass(status?: string) {
+  switch (status) {
+    case "Work from office":
+      return "p-2 text-mc-blue bg-ev-ice rounded-lg text-center";
+    case "Absent":
+      return "p-2 text-mc-red bg-ev-pink rounded-lg text-center";
+    case "Late arrival":
+      return "p-2 text-mc-yellow bg-mc-soft-yellow rounded-lg text-center";
+    case "Work from home":
+      return "p-2 text-ev-dark-gray bg-ev-gray-button rounded-lg text-center";
+    default:
+        return "";
+  }
+}
 
 function ContentBlockElement({
   containerClassName,
@@ -35,13 +51,20 @@ function ContentBlockElement({
       <section
         className={`grid grid-cols-7 gap-6 w-[75%] ${boxClassName || ""}`}
       >
-        <p>{id}</p>
-        <p>{employee}</p>
-        <p>{role}</p>
-        <p>{department}</p>
-        <p>{date}</p>
-        <p>{status}</p>
-        <p>{profilePicture}</p>
+        <p className="flex items-center">{id}</p>
+        <p className="flex items-center">{employee}</p>
+        <p className="flex items-center">{role}</p>
+        <p className="flex items-center">{department}</p>
+        <p className="flex items-center">{date}</p>
+        <p className={statusClass(status)}>{status}</p>
+        {profilePicture && (
+          <Image
+            src={profilePicture}
+            alt="Employee profile picture"
+            width={0}
+            height={0}
+            className="rounded-full h-auto w-10"/>
+        )}
       </section>
       <Link
         href={{
