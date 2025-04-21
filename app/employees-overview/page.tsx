@@ -9,6 +9,7 @@ import SearchButton from "@/components/SearchButton";
 import CalendarButton from "@/components/CalendarButton";
 import Input from "@/components/Input";
 import ContentBlockElement from "@/components/ContentBlockElement";
+import Link from "next/link";
 
 export default function EmployeesOverview() {
   const subPage = "employees-overview/details";
@@ -33,12 +34,17 @@ export default function EmployeesOverview() {
                 className="text-white border-4 bg-mc-blue border-none rounded-[0.9rem] max-w-[10rem] min-w-20 w-[10vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 hover:scale-110 duration-300"
                 value="Filter"
               />
-              <Input
-                name="add_button"
-                type="button"
-                className="text-white border-4 bg-ev-green border-none rounded-[0.9rem] max-w-[10rem] min-w-20 w-[10vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 hover:scale-110 duration-300"
-                value="Add"
-              />
+              <Link
+              href={{
+                pathname: `employees-overview/add`,
+              }}>
+                <Input
+                  name="add"
+                  type="button"
+                  className="text-white border-4 bg-ev-green border-none rounded-[0.9rem] max-w-[10rem] min-w-20 w-[10vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 hover:scale-110 duration-300"
+                  value="Add"
+                />
+              </Link>
             </section>
           </section>
           <section className="mt-8 w-full border-b-4 border-t-3 pt-4 pb-4">
