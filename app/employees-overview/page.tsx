@@ -29,7 +29,7 @@ export default function EmployeesOverview() {
               <SearchButton />
               <CalendarButton />
               <Input
-                name="add_button"
+                name="filter_button"
                 type="button"
                 className="text-white border-4 bg-mc-blue border-none rounded-[0.9rem] max-w-[10rem] min-w-20 w-[10vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 hover:scale-110 duration-300"
                 value="Filter"
@@ -39,7 +39,7 @@ export default function EmployeesOverview() {
                 pathname: `employees-overview/add`,
               }}>
                 <Input
-                  name="add"
+                  name="add_button"
                   type="button"
                   className="text-white border-4 bg-ev-green border-none rounded-[0.9rem] max-w-[10rem] min-w-20 w-[10vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 hover:scale-110 duration-300"
                   value="Add"
