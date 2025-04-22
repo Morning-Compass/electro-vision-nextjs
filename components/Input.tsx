@@ -9,12 +9,13 @@ type InputProps = {
   error?: string;
   register?: any;
   value?: string;
+  onClick?: () => void;
 };
 
-const Input = ({ error, register, name, ...props }: InputProps) => {
+const Input = ({ error, register, name, onClick, ...props }: InputProps) => {
   return (
     <div>
-      <input {...register} {...props} />
+      <input {...register} onClick={onClick} {...props} />
       {error && <span className="text-red-500 text-sm">{error}</span>}
     </div>
   );

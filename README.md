@@ -41,10 +41,6 @@ Namespaces are one honking great idea -- let's do more of those!
 
 - kebab-case: directories
 
-#### Images
-
-- PascalCase: images
-
 #### JS/TS/TSX
 
 - camelCase: functions, methods, variables, files (non-component-files)

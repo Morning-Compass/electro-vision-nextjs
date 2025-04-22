@@ -49,7 +49,7 @@ function ContentBlockElement({
       className={`w-full flex justify-between items-center align-middle pt-4 pb-4 border-b-2 ${containerClassName || ""}`}
     >
       <section
-        className={`grid grid-cols-7 gap-6 w-[75%] ${boxClassName || ""}`}
+        className={`grid grid-cols-7 gap-6 w-[75%] items-center ${boxClassName || ""}`}
       >
         <p className="flex items-center">{id}</p>
         <p className="flex items-center">{employee}</p>

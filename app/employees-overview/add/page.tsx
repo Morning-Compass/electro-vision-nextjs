@@ -24,7 +24,7 @@ export default function EmployeesOverview() {
                 <Input
                   name="select"
                   type="button"
-                  className="text-white border-4 bg-mc-blue border-none rounded-[0.9rem] max-w-[20rem] min-w-20 w-[8vw] max-h-12 min-h-4 h-[3vh] pl-4 pr-4 hover:scale-110 duration-300"
+                  className="text-white border-4 bg-mc-blue border-none rounded-lg max-w-[20rem] min-w-20 w-[8vw] max-h-12 min-h-4 h-[3vh] pl-4 pr-4 hover:scale-110 duration-300"
                   value="Select"
                 />
               </section>
@@ -33,7 +33,7 @@ export default function EmployeesOverview() {
                 <Input
                   name="edit"
                   type="button"
-                  className="text-white border-4 bg-mc-blue border-none rounded-[0.9rem] max-w-[20rem] min-w-20 w-[8vw] max-h-12 min-h-4 h-[3vh] pl-4 pr-4 hover:scale-110 duration-300"
+                  className="text-white border-4 bg-mc-blue border-none rounded-lg max-w-[20rem] min-w-20 w-[8vw] max-h-12 min-h-4 h-[3vh] pl-4 pr-4 hover:scale-110 duration-300"
                   value="Edit"
                 />
               </section>
@@ -42,7 +42,7 @@ export default function EmployeesOverview() {
                 <Input
                   name="edit"
                   type="button"
-                  className="text-white border-4 bg-mc-blue border-none rounded-[0.9rem] max-w-[20rem] min-w-20 w-[8vw] max-h-12 min-h-4 h-[3vh] pl-4 pr-4 hover:scale-110 duration-300"
+                  className="text-white border-4 bg-mc-blue border-none rounded-lg max-w-[20rem] min-w-20 w-[8vw] max-h-12 min-h-4 h-[3vh] pl-4 pr-4 hover:scale-110 duration-300"
                   value="Edit"
                 />
               </section>
@@ -51,7 +51,7 @@ export default function EmployeesOverview() {
                 <Input
                   name="edit"
                   type="button"
-                  className="text-white border-4 bg-mc-blue border-none rounded-[0.9rem] max-w-[20rem] min-w-20 w-[8vw] max-h-12 min-h-4 h-[3vh] pl-4 pr-4 hover:scale-110 duration-300"
+                  className="text-white border-4 bg-mc-blue border-none rounded-lg max-w-[20rem] min-w-20 w-[8vw] max-h-12 min-h-4 h-[3vh] pl-4 pr-4 hover:scale-110 duration-300"
                   value="Edit"
                 />
               </section>
