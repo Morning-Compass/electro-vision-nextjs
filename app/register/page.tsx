@@ -17,8 +17,10 @@ import Regex from "@/ev-const/regex";
 import Input from "@/components/Input";
 import Image from "next/image";
 
-export default function Login() {
-  type formProps = Pick<UserEntityType, "email" | "username"> & {
+export default function Register() {
+  type formProps = {
+    username: string | null;
+    email: string | null;
     password: string | null;
     repPassword: string | null;
   };
@@ -37,6 +39,7 @@ export default function Login() {
       email: data.email,
       password: data.password,
     });
+    console.log(response);
   };
 
   return (
@@ -58,6 +61,31 @@ export default function Login() {
             className="flex flex-col items-stretch justify-between gap-4 h-[60%]"
             onSubmit={handleSubmit(onSubmit)}
           >
+            <FormErrorWrap>
+              <h1 className="font-bold text-lg pl-4">Username</h1>
+              <Input
+                type="text"
+                name="username"
+                placeholder="Username"
+                className="border-4 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
+                error={errors.username?.message}
+                register={register("username", {
+                  validate: (username) => {
+                    const useranmeRegexResult = Regex.username.test(
+                      username ?? "",
+                    );
+                    if (!useranmeRegexResult) {
+                      return "Username must be correct";
+                    }
+                    return true;
+                  },
+                  required: {
+                    value: true,
+                    message: "Username is required",
+                  },
+                })}
+              />
+            </FormErrorWrap>
             <FormErrorWrap>
               <h1 className="font-bold text-lg pl-4">Email</h1>
               <Input

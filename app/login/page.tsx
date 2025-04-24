@@ -51,6 +51,7 @@ export default function Login() {
         : loginOptions.username]: data.credential,
       password: data.password,
     });
+    console.log(response);
     redirect("/");
   };
 
@@ -74,22 +75,26 @@ export default function Login() {
             onSubmit={handleSubmit(onSubmit)}
           >
             <FormErrorWrap>
-              <h1 className="font-bold text-lg pl-4">Email</h1>
+              <h1 className="font-bold text-lg pl-4">Email or Username</h1>
               <Input
                 type="text"
                 name="credential"
-                placeholder="Email"
+                placeholder="Email or Username"
                 className="border-4 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
                 error={errors.credential?.message}
                 register={register("credential", {
                   validate: (cred) => {
                     if (cred && cred.includes("@")) {
+                      setLoginOption("email");
                       const regexResult = Regex.emailRegistration.test(cred);
                       if (!regexResult) {
                         return "Email must be correct";
                       }
+                      console.log("optin email");
                       return true;
                     }
+                    setLoginOption("username");
+                    console.log("optin username");
                   },
                   required: {
                     value: true,
