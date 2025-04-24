@@ -9,6 +9,7 @@ import Image from "next/image";
 import SearchButton from "@/components/SearchButton";
 import Input from "@/components/Input";
 import Overlay from "@/components/Overlay";
+import Link from "next/link";
 
 export default function EmployeesOverview() {
   function onAdd() {
@@ -112,12 +113,16 @@ export default function EmployeesOverview() {
                   value="Settings"
                   onClick={() => {onSettings()}}
                 />
-                <Input
-                  name="add_tasks"
-                  type="button"
-                  className="text-white border-4 bg-mc-blue border-none rounded-lg w-96 max-h-12 min-h-4 h-[3vh] pl-4 pr-4 hover:scale-110 duration-300"
-                  value="Add Tasks"
-                />
+                <Link href={{
+                  pathname: 'plans/editor',
+                }}>
+                  <Input
+                    name="add_tasks"
+                    type="button"
+                    className="text-white border-4 bg-mc-blue border-none rounded-lg w-96 max-h-12 min-h-4 h-[3vh] pl-4 pr-4 hover:scale-110 duration-300"
+                    value="Add Tasks"
+                  />
+                </Link>
               </section>
             </section>
             <section className="flex flex-col w-1/4">
