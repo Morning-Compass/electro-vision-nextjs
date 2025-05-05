@@ -16,32 +16,36 @@ export default function SidebarTemplate({ activeIcon }: SidebarProps) {
   return (
     <Sidebar>
       <SidebarElement
-        imageSrc="./category.svg"
+        imageSrc="/category.svg"
         imageClassName={getIconClass("./category.svg")}
       />
       <SidebarElement
-        imageSrc="./timeline.svg"
+        imageSrc="/timeline.svg"
         imageClassName={getIconClass("./timeline.svg")}
       />
       <SidebarElement
-        imageSrc="./chat.svg"
+        imageSrc="/chat.svg"
         imageClassName={getIconClass("./chat.svg")}
+        link="/chat"
       />
       <SidebarElement
-        imageSrc="./map.svg"
+        imageSrc="/map.svg"
         imageClassName={getIconClass("./map.svg")}
+        link="/workspaces"
       />
       <SidebarElement
-        imageSrc="./alert.svg"
+        imageSrc="/alert.svg"
         imageClassName={getIconClass("./alert.svg")}
+        link="employees-problems"
       />
       <SidebarElement
-        imageSrc="./task.svg"
+        imageSrc="/task.svg"
         imageClassName={getIconClass("./task.svg")}
       />
       <SidebarElement
-        imageSrc="./people.svg"
+        imageSrc="/people.svg"
         imageClassName={getIconClass("./people.svg")}
+        link="/employees-overview"
       />
     </Sidebar>
   );

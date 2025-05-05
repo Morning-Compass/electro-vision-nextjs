@@ -21,9 +21,9 @@ const NavbarTemplate = () => {
           </div>
         </NavbarElement>
         <NavbarElement link={"/chat"}>Chat</NavbarElement>
-        <NavbarElement link={"/employees-overview"}>Employees</NavbarElement>
-        <NavbarElement link={"/employees-problems"}>Problems</NavbarElement>
         <NavbarElement link={"/workspaces"}>Workspaces</NavbarElement>
+        <NavbarElement link={"/employees-problems"}>Problems</NavbarElement>
+        <NavbarElement link={"/employees-overview"}>Employees</NavbarElement>
         {/*
         <NavbarElement link={"/"}>Home</NavbarElement>
         <NavbarElement link={"/login"}>Login</NavbarElement>
