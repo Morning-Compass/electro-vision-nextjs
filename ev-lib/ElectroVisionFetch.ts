@@ -42,32 +42,29 @@ export class ElectroVisionFetch {
   }
 
   async post(endpointUrl: string, data: TData, headers: THeaders = undefined) {
-    if (data != undefined) {
-      const response = await fetch(endpointUrl, {
-        method: "POST",
-        headers: headers
-          ? new Headers(headers)
-          : new Headers(this.defaultHeaders),
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        if (response.status == 502) {
-          throw new Error("502");
-        }
-        throw new Error(`ElectroVisionPost went wrong (${errorText}})`);
-      }
-      return await response.json();
-    }
+    const isFormData = typeof FormData !== "undefined" && data instanceof FormData;
+  
     const response = await fetch(endpointUrl, {
       method: "POST",
-      headers: this.defaultHeaders,
+      headers: headers
+        ? new Headers(headers)
+        : isFormData
+          ? undefined
+          : new Headers(this.defaultHeaders),
+      body: isFormData ? data : JSON.stringify(data),
     });
-
-    if (!response.ok) throw new Error("ElectroVisionPost went wrong");
+  
+    if (!response.ok) {
+      const errorText = await response.text();
+      if (response.status === 502) {
+        throw new Error("502");
+      }
+      throw new Error(`ElectroVisionPost went wrong (${errorText})`);
+    }
+  
     return await response.json();
   }
+  
 
   async put(
     endpointUrl: string,

@@ -11,6 +11,8 @@ import Link from "next/link";
 import Image from "next/image";
 import Input from "@/components/Input";
 import Overlay from "@/components/Overlay";
+import OLF from "@/ev-lib/ElectroVisionFetch";
+import ApiLinks from "@/ev-const/api-links";
 
 export default function EmployeesOverview() {
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
@@ -34,12 +36,30 @@ export default function EmployeesOverview() {
     }
   };
 
-  const handleAddWorkspace = () => {
-    console.log("Adding workspace:", workspaceName, selectedFile);
-    setIsOverlayOpen(false);
-    setWorkspaceName("");
-    setSelectedFile(null);
+  const handleAddWorkspace = async () => {
+    if (!selectedFile) {
+      console.error("No file selected.");
+      return;
+    }
+  
+    const userId = 1;
+  
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+    formData.append("user_id", userId.toString());
+  
+    try {
+      const response = await OLF.post(ApiLinks.uploadImage, formData);
+  
+      console.log("Upload response:", response.data);
+      setIsOverlayOpen(false);
+      setSelectedFile(null);
+      setWorkspaceName("");
+    } catch (error) {
+      console.error("Upload failed:", error);
+    }
   };
+  
 
   return (
     <PageTemplate>

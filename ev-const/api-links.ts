@@ -5,6 +5,7 @@ const ApiLinks = {
   loginEmail: host + "/api/auth/login/email",
   loginUsername: host + "/api/auth/login/username",
   validateAccount: host + "/api/auth/validate",
+  uploadImage: host + "/images/upload/",
 } as const;
 
 export default ApiLinks;
