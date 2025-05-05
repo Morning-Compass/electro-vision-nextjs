@@ -1,21 +1,15 @@
 import { UseFormRegister } from "react-hook-form";
+import { InputHTMLAttributes } from "react";
 
-type InputProps = {
-  type: string;
-  name: string;
-  placeholder?: string;
-  disabled?: boolean;
-  className?: string;
+export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: string;
   register?: any;
-  value?: string;
-  onClick?: () => void;
-};
+}
 
-const Input = ({ error, register, name, onClick, ...props }: InputProps) => {
+const Input = ({ error, register, ...props }: InputProps) => {
   return (
     <div>
-      <input {...register} onClick={onClick} {...props} />
+      <input {...register} {...props} />
       {error && <span className="text-red-500 text-sm">{error}</span>}
     </div>
   );

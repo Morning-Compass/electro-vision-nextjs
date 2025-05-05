@@ -5,7 +5,6 @@ import PageTemplate from "@/components/templates/PageTemplate";
 import NavbarTemplate from "@/components/templates/NavbarTemplate";
 import { FooterSmall } from "@/components/templates/FooterSmall";
 import SidebarTemplate from "@/components/templates/SidebarTemplate";
-import ContentBlock from "@/components/ContentBlock";
 import Image from "next/image";
 import SearchButton from "@/components/SearchButton";
 import Input from "@/components/Input";
@@ -24,8 +23,7 @@ export default function EmployeesOverview() {
 
   return (
     <PageTemplate>
-      <NavbarTemplate />
-      {/* Overlay for adding a custom task */}
+      <NavbarTemplate />    
       <Overlay isOpen={isOverlayOpen} onClose={handleClose} blockClassName="max-w-lg">
         <p className="text-4xl mb-10">Add Custom Task</p>
         <section className="flex flex-col justify-center items-center gap-6 w-full">

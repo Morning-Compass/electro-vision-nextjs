@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import { useState } from "react";
+import { useState, useEffect, ChangeEvent } from "react";
 import PageTemplate from "@/components/templates/PageTemplate";
 import NavbarTemplate from "@/components/templates/NavbarTemplate";
 import { FooterSmall } from "@/components/templates/FooterSmall";
@@ -14,40 +14,102 @@ import Overlay from "@/components/Overlay";
 
 export default function EmployeesOverview() {
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [workspaceName, setWorkspaceName] = useState<string>("");
+
+  useEffect(() => {
+    if (!selectedFile) {
+      setPreviewUrl(null);
+      return;
+    }
+    const objectUrl = URL.createObjectURL(selectedFile);
+    setPreviewUrl(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [selectedFile]);
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
+  const handleAddWorkspace = () => {
+    console.log("Adding workspace:", workspaceName, selectedFile);
+    setIsOverlayOpen(false);
+    setWorkspaceName("");
+    setSelectedFile(null);
+  };
 
   return (
     <PageTemplate>
       <NavbarTemplate />
 
-      <Overlay isOpen={isOverlayOpen} onClose={() => setIsOverlayOpen(false)}>
-        <p className="text-4xl mb-10">Add Workspace</p>
-        <textarea
-          name="textarea"
-          className="w-96 h-96 rounded-xl mb-10 bg-ev-gray text-ev-dark-gray"
-        />
-        <section className="flex flex-col justify-center items-center gap-6 w-full">
-          <section className="flex flex-row justify-between items-center w-full">
-            <p className="text-xl">Select Plan:</p>
-            <Input name="file_input" type="file" className="hidden" />
-            <label
-              htmlFor="file_input"
-              className="text-white text-center bg-mc-blue rounded-lg px-4 py-2 hover:scale-110 duration-300"
-            >
-              Add file
-            </label>
-          </section>
-          <section className="flex flex-row justify-between items-center w-full">
-            <label htmlFor="name_text" className="text-xl">
-              Name:
-            </label>
-            <Input
-              name="name_text"
-              type="text"
-              className="text-ev-dark-gray bg-ev-gray rounded-lg px-3 py-2"
-              placeholder="Socket..."
+      <Overlay
+        isOpen={isOverlayOpen}
+        onClose={() => setIsOverlayOpen(false)}
+        blockClassName="max-w-lg"
+      >
+        <p className="text-4xl mb-8">Add Workspace</p>
+
+        {/* Image placeholder or preview */}
+        <div className="relative w-96 h-64 mb-6 border-2 border-dashed border-gray-300 rounded-xl overflow-hidden bg-ev-gray">
+          {previewUrl ? (
+            <Image
+              src={previewUrl}
+              alt="Preview"
+              fill
+              className="object-contain"
             />
-          </section>
+          ) : (
+            <p className="text-ev-dark-gray absolute inset-0 flex items-center justify-center">
+              Image preview will appear here
+            </p>
+          )}
+        </div>
+
+        {/* File input trigger */}
+        <section className="flex flex-row justify-between items-center w-full mb-4">
+          <p className="text-xl">Select Image:</p>
+          <Input
+            name="file_input"
+            type="file"
+            accept="image/*"
+            id="file_input"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+          <label
+            htmlFor="file_input"
+            className="text-white text-center bg-mc-blue rounded-lg px-4 py-2 hover:scale-110 duration-300"
+          >
+            Choose Image
+          </label>
         </section>
+
+        {/* Workspace name */}
+        <section className="flex flex-row justify-between items-center w-full mb-6">
+          <label htmlFor="name_text" className="text-xl">
+            Name:
+          </label>
+          <Input
+            name="name_text"
+            type="text"
+            id="name_text"
+            value={workspaceName}
+            onChange={(e) => setWorkspaceName(e.target.value)}
+            className="text-ev-dark-gray bg-ev-gray rounded-lg px-3 py-2"
+            placeholder="e.g. Hangar 1"
+          />
+        </section>
+
+        <Input
+          name="ok_button"
+          type="button"
+          className="mt-4 text-white bg-ev-green rounded-lg w-full h-12 hover:scale-110 duration-300"
+          value="Add Workspace"
+          onClick={handleAddWorkspace}
+        />
       </Overlay>
 
       <section className="flex flex-row w-full mt-10">

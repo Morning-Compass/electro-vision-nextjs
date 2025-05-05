@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import PageTemplate from "@/components/templates/PageTemplate";
 import NavbarTemplate from "@/components/templates/NavbarTemplate";
