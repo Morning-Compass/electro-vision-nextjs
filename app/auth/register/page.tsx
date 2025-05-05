@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import OLF from "@/ev-lib/ElectroVisionFetch";
+import OLF, { ElectroVisionError } from "@/ev-lib/ElectroVisionFetch";
 import ApiLinks from "@/ev-const/api-links";
 import Link from "next/link";
 import PageTemplate from "@/components/templates/PageTemplate";
@@ -16,6 +16,10 @@ import FormErrorWrap from "@/components/templates/FormErrorWrap";
 import Regex from "@/ev-const/regex";
 import Input from "@/components/Input";
 import Image from "next/image";
+import Themes from "@/ev-const/themes";
+import useUserContext from "@/ev-contexts/userContextProvider";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function Register() {
   type formProps = {
@@ -33,13 +37,62 @@ export default function Register() {
     setError,
   } = useForm<formProps>();
 
+  //const [response, setResponse] = useState<any>();
+  const { User, UserDispatch } = useUserContext();
+  const router = useRouter();
+
   const onSubmit: SubmitHandler<formProps> = async (data) => {
-    const response = await OLF.post(ApiLinks.register, {
-      username: data.username,
-      email: data.email,
-      password: data.password,
-    });
-    console.log(response);
+    try {
+      const res = await OLF.post(ApiLinks.register, {
+        username: data.username,
+        email: data.email,
+        password: data.password,
+      });
+
+      // Check if the response contains an error
+      if ("error" in res) {
+        // Handle the error case
+        const error = res.error;
+        if (error instanceof ElectroVisionError) {
+          toast.error(error.error); // Display the error message from the server
+        } else {
+          toast.error("An unexpected error occurred");
+        }
+        return;
+      }
+
+      // If no error, proceed with success case
+      const response = res.data.response; // Access the data property
+
+      if (response.ok) {
+        let user: UserEntityType = {
+          authUser: {
+            id: response.id,
+            username: response.username,
+            accountVerified: response.account_valid,
+            email: response.email,
+            token: response.token,
+            createdAt: response.created_at,
+            roles: response.roles,
+          },
+          fullUser: null,
+          theme: Themes.light,
+        };
+        UserDispatch({ type: "setUser", value: user });
+        toast.success("Login Successful!");
+        router.push("/");
+        router.refresh();
+      } else {
+        // Handle case where response.ok is false
+        toast.error(response.message || "Registration failed");
+      }
+
+      console.log(response);
+    } catch (error) {
+      // This catch block is for unexpected errors (like network issues)
+      console.error("Registration error:", error);
+      toast.error("An unexpected error occurred during registration");
+    }
   };
 
   return (

@@ -16,13 +16,13 @@ const NavbarWallet = ({ children }: NavbarUserProps) => {
 
   return (
     <>
-      {User.username && User.userId ? (
+      {User.authUser?.username && User.authUser.id ? (
         <li className="sm:ml-auto  pt-2 pb-2 rounded-[2.5rem] pr-8 pl-8">
           <div className="text-mc-white flex flex-row items-center justify-center gap-4">
             <SearchButton />
             <NavbarUserInfo
-              username={User.username}
-              userPropfilePicture={User.profilePicture ?? undefined}
+              username={User.authUser.username}
+              userPropfilePicture={User.fullUser?.profile_picture ?? undefined}
             />
             <div
               //className="bg-gradient-to-r from-cyan-500 to-mc-yellow "

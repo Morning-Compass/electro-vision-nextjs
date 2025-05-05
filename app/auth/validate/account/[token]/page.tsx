@@ -3,10 +3,10 @@
 import ApiLinks from "@/ev-const/api-links";
 import { responseKeys } from "@/ev-const/response-keys";
 import PageTemplate from "@/components/templates/PageTemplate";
-import OLF, { OneLastError } from "@/ev-lib/ElectroVisionFetch";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import apiResponse from "@/ev-const/api-response.json";
+import OLF, { ElectroVisionError } from "@/ev-lib/ElectroVisionFetch";
 
 type VerificationToken = string | string[] | undefined;
 
@@ -36,7 +36,7 @@ const VerifiAccountPage = ({ params }: VerifiAccountPageProps) => {
         console.log(response);
         toast.success("Account validated!", { duration: 3000 });
       } catch (error) {
-        const e = error as OneLastError;
+        const e = error as ElectroVisionError;
         console.log(e.error);
         const errorMessage = JSON.parse(e.error);
         console.log(errorMessage.message);

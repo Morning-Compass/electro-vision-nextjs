@@ -17,7 +17,6 @@ export class ElectroVisionError extends Error {
     return JSON.stringify({ title: this.title, error: this.error });
   }
 }
-
 export class ElectroVisionFetch {
   private defaultHeaders = { "Content-Type": "application/json" };
 
@@ -31,42 +30,66 @@ export class ElectroVisionFetch {
       });
 
       if (!response.ok) {
-        throw new Error("ElectroVisionGet went wrong");
+        const errorText = await response.text();
+        return { error: new ElectroVisionError(errorText) };
       }
 
-      return await response.json();
+      return { data: await response.json() };
     } catch (error) {
       console.error("ElectroVisionGet error: ", error);
-      throw error; // Propagate the error to the caller
+      return {
+        error:
+          error instanceof Error
+            ? error
+            : new ElectroVisionError(String(error)),
+      };
     }
   }
 
   async post(endpointUrl: string, data: TData, headers: THeaders = undefined) {
-    if (data != undefined) {
+    try {
+      if (data != undefined) {
+        const response = await fetch(endpointUrl, {
+          method: "POST",
+          headers: headers
+            ? new Headers(headers)
+            : new Headers(this.defaultHeaders),
+          body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          if (response.status == 502) {
+            return { error: new ElectroVisionError("502 Bad Gateway") };
+          }
+          return {
+            error: new ElectroVisionError(
+              `ElectroVisionPost went wrong (${errorText})`,
+            ),
+          };
+        }
+        return { data: await response.json() };
+      }
+
       const response = await fetch(endpointUrl, {
         method: "POST",
-        headers: headers
-          ? new Headers(headers)
-          : new Headers(this.defaultHeaders),
-        body: JSON.stringify(data),
+        headers: this.defaultHeaders,
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        if (response.status == 502) {
-          throw new Error("502");
-        }
-        throw new Error(`ElectroVisionPost went wrong (${errorText}})`);
+        return { error: new ElectroVisionError(errorText) };
       }
-      return await response.json();
+      return { data: await response.json() };
+    } catch (error) {
+      console.error("ElectroVisionPost error: ", error);
+      return {
+        error:
+          error instanceof Error
+            ? error
+            : new ElectroVisionError(String(error)),
+      };
     }
-    const response = await fetch(endpointUrl, {
-      method: "POST",
-      headers: this.defaultHeaders,
-    });
-
-    if (!response.ok) throw new Error("ElectroVisionPost went wrong");
-    return await response.json();
   }
 
   async put(
@@ -74,30 +97,39 @@ export class ElectroVisionFetch {
     data: TPutData = undefined,
     headers: THeaders = undefined,
   ) {
-    let response;
-    if (data == undefined) {
-      response = await fetch(endpointUrl, {
-        method: "PUT",
-        headers: headers
-          ? new Headers(headers)
-          : new Headers(this.defaultHeaders),
-      });
-    } else {
-      response = await fetch(endpointUrl, {
-        method: "PUT",
-        headers: headers
-          ? new Headers(headers)
-          : new Headers(this.defaultHeaders),
-        body: JSON.stringify({ data }),
-      });
-    }
+    try {
+      let response;
+      if (data == undefined) {
+        response = await fetch(endpointUrl, {
+          method: "PUT",
+          headers: headers
+            ? new Headers(headers)
+            : new Headers(this.defaultHeaders),
+        });
+      } else {
+        response = await fetch(endpointUrl, {
+          method: "PUT",
+          headers: headers
+            ? new Headers(headers)
+            : new Headers(this.defaultHeaders),
+          body: JSON.stringify({ data }),
+        });
+      }
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      //      throw { title: "ElectroVisionPut went wrong", error: errorText };
-      throw new ElectroVisionError(errorText);
+      if (!response.ok) {
+        const errorText = await response.text();
+        return { error: new ElectroVisionError(errorText) };
+      }
+      return { data: await response.json() };
+    } catch (error) {
+      console.error("ElectroVisionPut error: ", error);
+      return {
+        error:
+          error instanceof Error
+            ? error
+            : new ElectroVisionError(String(error)),
+      };
     }
-    return await response.json();
   }
 
   async delete(
@@ -105,19 +137,33 @@ export class ElectroVisionFetch {
     data: TData,
     headers: THeaders = undefined,
   ) {
-    const response = await fetch(endpointUrl, {
-      method: "DELETE",
-      headers: headers
-        ? new Headers(headers)
-        : new Headers(this.defaultHeaders),
-      body: JSON.stringify({ data }),
-    });
+    try {
+      const response = await fetch(endpointUrl, {
+        method: "DELETE",
+        headers: headers
+          ? new Headers(headers)
+          : new Headers(this.defaultHeaders),
+        body: JSON.stringify({ data }),
+      });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`ElectroVisionDelete went wrong (${errorText})`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        return {
+          error: new ElectroVisionError(
+            `ElectroVisionDelete went wrong (${errorText})`,
+          ),
+        };
+      }
+      return { data: await response.json() };
+    } catch (error) {
+      console.error("ElectroVisionDelete error: ", error);
+      return {
+        error:
+          error instanceof Error
+            ? error
+            : new ElectroVisionError(String(error)),
+      };
     }
-    return await response.json();
   }
 }
 
