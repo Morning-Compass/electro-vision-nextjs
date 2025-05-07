@@ -83,15 +83,21 @@ export default function Login() {
       toast.success("Login Successfull");
       router.push("/hub");
       router.refresh();
-    } catch {}
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast.error(
+        error instanceof Error ? `${error.message}` : "Registration failed",
+        { duration: 5000 },
+      );
+    }
   };
 
   return (
-    <PageTemplate>
+    <PageTemplate allowUnauthenticated={true}>
       <NavbarTemplate />
-      <section className="flex flex-row justify-around text-mc-text bg-mc-primary w-[55vw] min-w-72 opacity-95 rounded-[1.5rem] mt-auto mb-auto mc-blur transition-colors duration-500 p-6 max-h-[75vh]">
+      <section className="flex flex-row justify-around text-ev-text bg-ev-primary-bg w-[55vw] min-w-72 opacity-95 rounded-[1.5rem] mt-auto mb-auto ev-blur transition-colors duration-500 p-6 max-h-[75vh]">
         <Image
-          src={"./login_register_image.svg"}
+          src={"/login_register_image.svg"}
           className={"flex-1 w-[calc(50%-10em)] h-auto object-contain"}
           alt={"Login"}
           width={10}
@@ -165,8 +171,8 @@ export default function Login() {
               Don't have account?
             </p>
             <Link
-              href={"/register"}
-              className="text-mc-text hover:scale-110 duration-300 ml-4 mr-4 font-bold"
+              href={"/auth/register"}
+              className="text-ev-text hover:scale-110 duration-300 ml-4 mr-4 font-bold"
             >
               Register here
             </Link>

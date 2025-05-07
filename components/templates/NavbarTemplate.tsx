@@ -9,7 +9,7 @@ const NavbarTemplate = () => {
     <Navbar>
       <NavbarMain>
         {/* temporary image*/}
-        <NavbarElement link={"/"}>
+        <NavbarElement link={"/hub"}>
           <div className="flex flex-row items-center justify-center gap-4">
             <Image
               src="/images-landing-page/Lightning.png"
@@ -20,10 +20,10 @@ const NavbarTemplate = () => {
             <div className="text-2xl">Electro Vision</div>
           </div>
         </NavbarElement>
-        <NavbarElement link={"/chat"}>Chat</NavbarElement>
+        {/* <NavbarElement link={"/chat"}>Chat</NavbarElement>
         <NavbarElement link={"/workspaces"}>Workspaces</NavbarElement>
         <NavbarElement link={"/employees-problems"}>Problems</NavbarElement>
-        <NavbarElement link={"/employees-overview"}>Employees</NavbarElement>
+        <NavbarElement link={"/employees-overview"}>Employees</NavbarElement> */}
         {/*
         <NavbarElement link={"/"}>Home</NavbarElement>
         <NavbarElement link={"/login"}>Login</NavbarElement>

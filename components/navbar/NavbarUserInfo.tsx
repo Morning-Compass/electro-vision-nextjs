@@ -18,7 +18,7 @@ const NavbarUserInfo = ({
     <Link href={"/account"}>
       <div className="grid place-items-center">
         <div className="flex flex-row items-center justify-center gap-4">
-          <p className="text-mc-text">{username}</p>
+          <p className="text-ev-text">{username}</p>
           <Image
             src={userPropfilePicture ?? "/default-user.png"}
             width={32}

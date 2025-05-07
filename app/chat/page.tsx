@@ -17,7 +17,7 @@ export default function Chat() {
   return (
     <PageTemplate>
       <NavbarTemplate />
-      <section className="flex flex-row w-full mt-10">
+      <section className="flex flex-row  w-full mt-10 h-full">
         <SidebarTemplate activeIcon="chat" />
         <ContentBlock>
           <section className="w-full flex flex-row items-center justify-between align-middle gap-4 mt-2">
@@ -75,9 +75,7 @@ export default function Chat() {
             link={subPage}
             linkValue={linkValue}
           />
-          <section className="border-t-2 text-left pt-4">
-            Page 1 of 100
-          </section>
+          <section className="border-t-2 text-left pt-4">Page 1 of 100</section>
         </ContentBlock>
       </section>
       <FooterSmall />

@@ -8,7 +8,7 @@ type FooterProps = {
 function Footer({ children, customHeight = undefined, ...props }: FooterProps) {
   return (
     <footer
-      className={`bg-mc-primary text-mc-text flex flex-col w-screen ${customHeight ?? ""} transition-colors duration-500`}
+      className={`bg-ev-primary text-ev-text flex flex-col w-screen ${customHeight ?? ""} transition-colors duration-500`}
       {...props}
     >
       {children}

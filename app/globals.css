@@ -51,6 +51,7 @@ p {
         --color-text: #f5f5f5;
         --color-secondary-text: #f9f9f9;
         --color-primary-bg: #282828;
+        --color-main-bg: #d6dbdc;
     }
 
     .mc-blur {
@@ -60,11 +61,12 @@ p {
 }
 
 .theme-dark {
-    --color-primary: #f1f1f1;
+    --color-primary: #0c0c0c;
     --color-secondary: #242424;
     --color-text: #f5f5f5;
     --color-secondary-text: #f9f9f9;
     --color-primary-bg: #282828;
+    --color-main-bg: #292423;
 }
 
 .theme-light {
@@ -73,6 +75,7 @@ p {
     --color-text: #1f1f1f;
     --color-secondary-text: #272727;
     --color-primary-bg: #fefefe;
+    --color-main-bg: #d6dbdc;
 }
 
 .icon-blue {

@@ -5,8 +5,7 @@ import { responseKeys } from "@/ev-const/response-keys";
 import PageTemplate from "@/components/templates/PageTemplate";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import apiResponse from "@/ev-const/api-response.json";
-import OLF, { ElectroVisionError } from "@/ev-lib/ElectroVisionFetch";
+import OLF from "@/ev-lib/ElectroVisionFetch";
 
 type VerificationToken = string | string[] | undefined;
 
@@ -36,22 +35,11 @@ const VerifiAccountPage = ({ params }: VerifiAccountPageProps) => {
         console.log(response);
         toast.success("Account validated!", { duration: 3000 });
       } catch (error) {
-        const e = error as ElectroVisionError;
-        console.log(e.error);
-        const errorMessage = JSON.parse(e.error);
-        console.log(errorMessage.message);
-        console.log(
-          apiResponse.auth.validate.account_validation_token_invalid.message,
+        console.error("Registration error:", error);
+        toast.error(
+          error instanceof Error ? error.message : "Account validation failed",
+          { duration: 5000 },
         );
-        if (
-          errorMessage.message ===
-          apiResponse.auth.validate.account_validation_token_invalid.message
-        ) {
-          console.log("Token is invalid!");
-          toast.error("Token is invalid!");
-          return;
-        }
-        toast.error("Token is invalid", { duration: 3000 });
       }
     };
 
@@ -59,7 +47,7 @@ const VerifiAccountPage = ({ params }: VerifiAccountPageProps) => {
   }, [apiVerificationToken]);
 
   return (
-    <PageTemplate>
+    <PageTemplate allowUnauthenticated={true}>
       <article>Validate your Electro Vision account</article>
       <article>Token {apiVerificationToken}</article>
     </PageTemplate>

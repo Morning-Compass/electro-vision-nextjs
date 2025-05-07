@@ -8,7 +8,7 @@ function Sidebar({ children, ...props }: SidebarProps) {
   return (
     <nav
       {...props}
-      className="flex flex-col self-start ml-8 bg-white p-4 rounded-[0.9em]"
+      className="flex flex-col self-start ml-8 bg-ev-primary p-4 rounded-[0.9em]"
     >
       {children}
     </nav>

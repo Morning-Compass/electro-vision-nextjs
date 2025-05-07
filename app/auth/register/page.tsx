@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import OLF, { ElectroVisionError } from "@/ev-lib/ElectroVisionFetch";
+import OLF from "@/ev-lib/ElectroVisionFetch";
 import ApiLinks from "@/ev-const/api-links";
 import Link from "next/link";
 import PageTemplate from "@/components/templates/PageTemplate";
@@ -68,7 +68,7 @@ export default function Register() {
 
       UserDispatch({ type: "setUser", value: user });
       toast.success("Registration Successful!");
-      router.push("/");
+      router.push("/hub");
       router.refresh();
     } catch (error) {
       console.error("Registration error:", error);
@@ -80,17 +80,17 @@ export default function Register() {
   };
 
   return (
-    <PageTemplate>
+    <PageTemplate allowUnauthenticated={true}>
       <NavbarTemplate />
-      <section className="flex flex-row justify-around text-mc-text bg-mc-primary w-[58vw] min-w-72 opacity-95 rounded-[1.5rem] mt-auto mb-auto mc-blur transition-colors duration-500 p-6 max-h-[75vh]">
+      <section className="flex flex-row justify-around text-ev-text bg-ev-primary-bg w-[58vw] min-w-72 opacity-95 rounded-[1.5rem] mt-auto mb-auto ev-blur transition-colors duration-500 p-6 max-h-[90vh]">
         <Image
-          src="./login_register_image.svg"
+          src="/login_register_image.svg"
           className="flex2 w-[calc(50%-10em)] h-auto object-contain"
           alt="Register"
           width={13}
           height={13}
         />
-        <article className="flex flex-col items-center justify-between h-auto w-[53%] mt-28 mb-12">
+        <article className="flex flex-col items-center justify-evenly h-auto w-[53%] mb-12">
           <header className="text0xl font-bold mb-8 mt-8 mr-2 ml-2 text-center">
             Welcome!
           </header>
@@ -104,7 +104,7 @@ export default function Register() {
                 type="text"
                 name="username"
                 placeholder="Username"
-                className="border-1 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
+                className="border-4 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
                 error={errors.username?.message}
                 register={register("username", {
                   validate: (username) => {
@@ -129,7 +129,7 @@ export default function Register() {
                 type="text"
                 name="email"
                 placeholder="Email"
-                className="border-1 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
+                className="border-4 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
                 error={errors.email?.message}
                 register={register("email", {
                   validate: (email) => {
@@ -154,7 +154,7 @@ export default function Register() {
                 type="password"
                 name="password"
                 placeholder="Password"
-                className="border-1 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
+                className="border-4 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
                 error={errors.password?.message}
                 register={register("password", {
                   minLength: {
@@ -194,7 +194,7 @@ export default function Register() {
                 type="password"
                 name="repPassword"
                 placeholder="Repeat Password"
-                className="border-1 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
+                className="border-4 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
                 error={errors.repPassword?.message}
                 register={register("repPassword", {
                   required: {
@@ -225,8 +225,8 @@ export default function Register() {
               Already have account?
             </p>
             <Link
-              href={"/login"}
-              className="text-mc-text hover:scale-107 duration-300 ml-4 mr-4 font-bold"
+              href={"/auth/login"}
+              className="text-ev-text hover:scale-107 duration-300 ml-4 mr-4 font-bold"
             >
               Login here
             </Link>

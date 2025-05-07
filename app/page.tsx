@@ -80,7 +80,7 @@ export default function Home() {
   const OPTIONS: EmblaOptionsType = { loop: true };
 
   return (
-    <PageTemplate bgClass="#F1F2F6">
+    <PageTemplate bgClass="#F1F2F6" allowUnauthenticated={true}>
       {/*<NavbarTemplate />*/}
       <div className="flex flex-row top-12 right-16 z-10 absolute">
         <div className="flex justify-center items-center rounded-lg border-2 border-ev-border-blue text-mc-darkwhite text-xl p-3 pl-9 pr-9 bg-ev-blue-fill/40 mr-16">
