@@ -35,7 +35,10 @@ export default function Register() {
     formState: { errors, isSubmitting },
     getValues,
     setError,
-  } = useForm<formProps>();
+  } = useForm<formProps>({
+    mode: "onTouched",
+    reValidateMode: "onChange",
+  });
 
   //const [response, setResponse] = useState<any>();
   const { User, UserDispatch } = useUserContext();

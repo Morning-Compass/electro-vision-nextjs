@@ -39,7 +39,10 @@ export default function Login() {
     handleSubmit,
     formState: { errors },
     getValues,
-  } = useForm<FormProps>();
+  } = useForm<FormProps>({
+    mode: "onTouched",
+    reValidateMode: "onChange",
+  });
 
   const [loginOption, setLoginOption] = useState<"email" | "username">("email");
 
@@ -78,7 +81,7 @@ export default function Login() {
 
       UserDispatch({ type: "setUser", value: user });
       toast.success("Login Successfull");
-      router.push("/");
+      router.push("/hub");
       router.refresh();
     } catch {}
   };
