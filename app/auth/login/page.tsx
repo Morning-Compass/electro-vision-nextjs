@@ -10,7 +10,7 @@ import NavbarTemplate from "@/components/templates/NavbarTemplate";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import { FooterSmall } from "@/components/templates/FooterSmall";
-import { User as UserEntityType } from "@/ev-types/user-types";
+import { User, User as UserEntityType } from "@/ev-types/user-types";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { LogOptions } from "vite";
 import FormErrorWrap from "@/components/templates/FormErrorWrap";
@@ -18,6 +18,10 @@ import FormErrorParahraph from "@/components/templates/FormErrorParagraph";
 import Regex from "@/ev-const/regex";
 import AuthConst from "@/ev-const/authconst";
 import Image from "next/image";
+import Themes from "@/ev-const/themes";
+import useUserContext from "@/ev-contexts/userContextProvider";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 export default function Login() {
   type FormProps = {
@@ -39,20 +43,44 @@ export default function Login() {
 
   const [loginOption, setLoginOption] = useState<"email" | "username">("email");
 
+  const { User, UserDispatch } = useUserContext();
+  const router = useRouter();
+
   const onSubmit: SubmitHandler<FormProps> = async (data) => {
     const loginLink =
       loginOption === loginOptions.email
         ? ApiLinks.loginEmail
         : ApiLinks.loginUsername;
 
-    const response = await OLF.post(loginLink, {
-      [loginOption === loginOptions.email
-        ? loginOptions.email
-        : loginOptions.username]: data.credential,
-      password: data.password,
-    });
-    console.log(response);
-    redirect("/");
+    console.log(loginLink);
+
+    try {
+      const response = await OLF.post(loginLink, {
+        [loginOption === loginOptions.email
+          ? loginOptions.email
+          : loginOptions.username]: data.credential,
+        password: data.password,
+      });
+
+      const user: User = {
+        authUser: {
+          id: response.id,
+          username: response.username,
+          accountVerified: response.account_valid,
+          email: response.email,
+          token: response.token,
+          createdAt: response.created_at,
+          roles: response.roles,
+        },
+        fullUser: null,
+        theme: Themes.light,
+      };
+
+      UserDispatch({ type: "setUser", value: user });
+      toast.success("Login Successfull");
+      router.push("/");
+      router.refresh();
+    } catch {}
   };
 
   return (

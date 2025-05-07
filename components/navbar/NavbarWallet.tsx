@@ -6,6 +6,7 @@ import ThemeSwitcher from "../ThemeSwitcher";
 import useUserContext from "@/ev-contexts/userContextProvider";
 import SearchButton from "../SearchButton";
 import CalendarButton from "../CalendarButton";
+import LogoutButton from "../LogoutButton";
 
 type NavbarUserProps = {
   children?: ReactNode;
@@ -29,6 +30,9 @@ const NavbarWallet = ({ children }: NavbarUserProps) => {
               className="border-gray-700 border-solid border-2 rounded-3xl pr-2 pl-2"
             >
               <ThemeSwitcher />
+            </div>
+            <div>
+              <LogoutButton />
             </div>
           </div>
         </li>

@@ -9,7 +9,7 @@ const NavbarTemplate = () => {
     <Navbar>
       <NavbarMain>
         {/* temporary image*/}
-        <NavbarElement link={"/"}>
+        <NavbarElement link={"/hub"}>
           <div className="flex flex-row items-center justify-center gap-4">
             <Image
               src="/images-landing-page/Lightning.png"
