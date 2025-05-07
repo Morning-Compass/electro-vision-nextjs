@@ -21,7 +21,7 @@ const PageTemplate = ({
     return !!User.authUser?.id && !!User.authUser?.email;
   };
 
-  const baseClasses = `bg-center bg-ev-main-bg bg-fixed bg-cover text-ev-text min-h-screen w-screen font-mono gap-5 theme-${User.theme} flex flex-col items-center ${bgClass || ""}`;
+  const baseClasses = `bg-center bg-ev-main-bg bg-fixed bg-cover text-ev-text min-h-screen w-screen font-mono gap-5 theme-${User.theme} flex flex-col items-center h-[100vh] ${bgClass || ""}`;
 
   if (allowUnauthenticated || isUserValid()) {
     return <main className={baseClasses}>{children}</main>;

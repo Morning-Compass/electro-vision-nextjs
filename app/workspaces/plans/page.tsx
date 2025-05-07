@@ -48,14 +48,17 @@ export default function WorkersOverview() {
         <p className="text-4xl mb-10">Change Data</p>
         <div className="flex flex-col gap-6 w-full">
           {[
-            { label: 'Name', placeholder: 'Electrician...' },
-            { label: 'Start Date', placeholder: '29/01/2025' },
-            { label: 'Due Date', placeholder: '25/08/2027' },
+            { label: "Name", placeholder: "Electrician..." },
+            { label: "Start Date", placeholder: "29/01/2025" },
+            { label: "Due Date", placeholder: "25/08/2027" },
           ].map(({ label, placeholder }) => (
-            <div key={label} className="flex justify-between items-center w-full">
+            <div
+              key={label}
+              className="flex justify-between items-center w-full"
+            >
               <p className="text-xl">{label}:</p>
               <Input
-                name={label.toLowerCase().replace(' ', '_')}
+                name={label.toLowerCase().replace(" ", "_")}
                 type="text"
                 placeholder={placeholder}
                 className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg"
@@ -74,7 +77,7 @@ export default function WorkersOverview() {
         </div>
       </Overlay>
 
-      <section className="flex w-full mt-10">
+      <section className="flex flex-row items-center h-full gap-8 w-[90vw]">
         <SidebarTemplate activeIcon="map" />
         <ContentBlock>
           <div className="flex w-full">
@@ -111,7 +114,10 @@ export default function WorkersOverview() {
               </div>
               <div className="flex flex-col gap-4 mb-10">
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="flex justify-between items-center px-4">
+                  <div
+                    key={i}
+                    className="flex justify-between items-center px-4"
+                  >
                     <Image
                       src="/employee.png"
                       alt="Employee"

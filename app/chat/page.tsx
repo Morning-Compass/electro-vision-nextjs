@@ -17,7 +17,7 @@ export default function Chat() {
   return (
     <PageTemplate>
       <NavbarTemplate />
-      <section className="flex flex-row  w-full mt-10 h-full">
+      <section className="flex flex-row items-center h-full gap-8 w-[90vw]">
         <SidebarTemplate activeIcon="chat" />
         <ContentBlock>
           <section className="w-full flex flex-row items-center justify-between align-middle gap-4 mt-2">
@@ -30,7 +30,7 @@ export default function Chat() {
               <Input
                 name="add_button"
                 type="button"
-                className="text-white border-4 bg-mc-blue border-none rounded-[0.9rem] max-w-[10rem] min-w-20 w-[10vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 hover:scale-110 duration-300"
+                className="text-ev-white border-4 bg-ev-blue border-none rounded-[0.9rem] max-w-[10rem] min-w-20 w-[10vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 hover:scale-110 duration-300"
                 value="New Message"
               />
             </section>
@@ -43,6 +43,102 @@ export default function Chat() {
               <section className="font-semibold">Department</section>
             </section>
           </section>
+          <ContentBlockElement
+            id={2341421}
+            employee="Ahmed Rashdan"
+            role="Help Desk Executive"
+            department="IT Department"
+            link={subPage}
+            linkValue={linkValue}
+          />
+          <ContentBlockElement
+            id={2341421}
+            employee="Ahmed Rashdan"
+            role="Help Desk Executive"
+            department="IT Department"
+            link={subPage}
+            linkValue={linkValue}
+          />
+          <ContentBlockElement
+            id={2341421}
+            employee="Ahmed Rashdan"
+            role="Help Desk Executive"
+            department="IT Department"
+            link={subPage}
+            linkValue={linkValue}
+          />
+          <ContentBlockElement
+            id={2341421}
+            employee="Ahmed Rashdan"
+            role="Help Desk Executive"
+            department="IT Department"
+            link={subPage}
+            linkValue={linkValue}
+          />
+          <ContentBlockElement
+            id={2341421}
+            employee="Ahmed Rashdan"
+            role="Help Desk Executive"
+            department="IT Department"
+            link={subPage}
+            linkValue={linkValue}
+          />
+          <ContentBlockElement
+            id={2341421}
+            employee="Ahmed Rashdan"
+            role="Help Desk Executive"
+            department="IT Department"
+            link={subPage}
+            linkValue={linkValue}
+          />
+          <ContentBlockElement
+            id={2341421}
+            employee="Ahmed Rashdan"
+            role="Help Desk Executive"
+            department="IT Department"
+            link={subPage}
+            linkValue={linkValue}
+          />
+          <ContentBlockElement
+            id={2341421}
+            employee="Ahmed Rashdan"
+            role="Help Desk Executive"
+            department="IT Department"
+            link={subPage}
+            linkValue={linkValue}
+          />
+          <ContentBlockElement
+            id={2341421}
+            employee="Ahmed Rashdan"
+            role="Help Desk Executive"
+            department="IT Department"
+            link={subPage}
+            linkValue={linkValue}
+          />
+          <ContentBlockElement
+            id={2341421}
+            employee="Ahmed Rashdan"
+            role="Help Desk Executive"
+            department="IT Department"
+            link={subPage}
+            linkValue={linkValue}
+          />
+          <ContentBlockElement
+            id={2341421}
+            employee="Ahmed Rashdan"
+            role="Help Desk Executive"
+            department="IT Department"
+            link={subPage}
+            linkValue={linkValue}
+          />
+          <ContentBlockElement
+            id={2341421}
+            employee="Ahmed Rashdan"
+            role="Help Desk Executive"
+            department="IT Department"
+            link={subPage}
+            linkValue={linkValue}
+          />
           <ContentBlockElement
             id={2341421}
             employee="Ahmed Rashdan"

@@ -11,12 +11,14 @@ export default function EmployeesOverview() {
   return (
     <PageTemplate>
       <NavbarTemplate />
-      <section className="flex flex-row w-full mt-10">
+      <section className="flex flex-row items-center h-full gap-8 w-[90vw]">
         <SidebarTemplate activeIcon="people" />
         <ContentBlock>
           <section className="w-full flex flex-col justify-between align-middle gap-4 mt-2">
             <section className="flex flex-col items-center w-full">
-              <p className="font-semibold text-5xl pl-32 pr-32 pb-4 border-b-4">Add an Employee</p>
+              <p className="font-semibold text-5xl pl-32 pr-32 pb-4 border-b-4">
+                Add an Employee
+              </p>
             </section>
             <section className="flex flex-col w-1/2 ml-3 gap-5">
               <section className="flex flex-row items-center w-full justify-between">
@@ -47,7 +49,9 @@ export default function EmployeesOverview() {
                 />
               </section>
               <section className="flex flex-row items-center w-full justify-between">
-                <p className="text-2xl">Invite link: https://electro-vision/invite</p>
+                <p className="text-2xl">
+                  Invite link: https://electro-vision/invite
+                </p>
                 <Input
                   name="edit"
                   type="button"

@@ -13,7 +13,7 @@ function CalendarButton({ className }: CalendarButtonProps) {
         alt={"calendar icon"}
         width={28}
         height={28}
-        className={`object-contain`}
+        className={`object-contain mr-4`}
       />
       <Input
         type="date"

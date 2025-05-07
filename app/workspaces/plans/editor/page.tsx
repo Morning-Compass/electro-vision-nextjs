@@ -23,8 +23,12 @@ export default function EmployeesOverview() {
 
   return (
     <PageTemplate>
-      <NavbarTemplate />    
-      <Overlay isOpen={isOverlayOpen} onClose={handleClose} blockClassName="max-w-lg">
+      <NavbarTemplate />
+      <Overlay
+        isOpen={isOverlayOpen}
+        onClose={handleClose}
+        blockClassName="max-w-lg"
+      >
         <p className="text-4xl mb-10">Add Custom Task</p>
         <section className="flex flex-col justify-center items-center gap-6 w-full">
           <textarea
@@ -52,7 +56,7 @@ export default function EmployeesOverview() {
         </section>
       </Overlay>
 
-      <section className="flex flex-row w-full mt-10">
+      <section className="flex flex-row items-center h-full gap-8 w-[90vw]">
         <SidebarTemplate activeIcon="map" />
         <section className="flex flex-row w-full justify-center h-auto">
           <section className="flex flex-col gap-6 h-full bg-white mr-20 p-4 rounded-xl">

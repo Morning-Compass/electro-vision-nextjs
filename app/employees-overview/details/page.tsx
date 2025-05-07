@@ -5,7 +5,7 @@ import NavbarTemplate from "@/components/templates/NavbarTemplate";
 import { FooterSmall } from "@/components/templates/FooterSmall";
 import SidebarTemplate from "@/components/templates/SidebarTemplate";
 import Image from "next/image";
-import {useSearchParams} from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Input from "@/components/Input";
 
 export default function EmployeesOverview() {
@@ -15,12 +15,13 @@ export default function EmployeesOverview() {
   const employee: string = searchParams.get("employee") ?? "employee";
   const role: string = searchParams.get("role") ?? "role";
   const department: string = searchParams.get("department") ?? "department";
-  const profilePicture: string = searchParams.get("profilePicture") ?? "profilePicture";
+  const profilePicture: string =
+    searchParams.get("profilePicture") ?? "profilePicture";
 
   return (
     <PageTemplate>
       <NavbarTemplate />
-      <section className="flex flex-row w-full mt-10">
+      <section className="flex flex-row items-center h-full gap-8 w-[90vw]">
         <SidebarTemplate activeIcon="people" />
         <section className="flex flex-auto flex-wrap justify-center">
           <section className="h-auto flex flex-col items-center justify-center p-6 bg-mc-bg-primary rounded-3xl mr-10 mb-10">
@@ -30,7 +31,8 @@ export default function EmployeesOverview() {
               alt="Employee profile picture"
               width={0}
               height={0}
-              className="rounded-3xl w-80 h-auto"/>
+              className="rounded-3xl w-80 h-auto"
+            />
           </section>
           <section className="h-auto flex flex-col justify-evenly p-6 bg-mc-bg-primary rounded-3xl mr-10 mb-10">
             <p className="text-2xl font-semibold">Personal Information</p>
@@ -50,8 +52,9 @@ export default function EmployeesOverview() {
           </section>
           <section className="h-auto flex flex-col justify-evenly p-6 bg-mc-bg-primary rounded-3xl mr-10 mb-10">
             <p className="text-2xl font-semibold">Billing Information</p>
-            <p className="text-lg">Account number:
-              PL 17 2490 1233 5678 9091 2272  9396</p>
+            <p className="text-lg">
+              Account number: PL 17 2490 1233 5678 9091 2272 9396
+            </p>
             <p className="text-lg">Salary per year: $30 000</p>
             <p className="text-lg">Salary per hour: $35</p>
             <p className="text-lg">Insurance number: 85051212345</p>

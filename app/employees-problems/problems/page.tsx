@@ -11,7 +11,7 @@ export default function EmployeesOverview() {
   return (
     <PageTemplate>
       <NavbarTemplate />
-      <section className="flex flex-row w-full mt-10">
+      <section className="flex flex-row items-center h-full gap-8 w-[90vw]">
         <SidebarTemplate activeIcon="alert" />
         <ContentBlock>
           <section className="flex flex-row w-full">

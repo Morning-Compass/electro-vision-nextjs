@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState, useEffect, ChangeEvent } from "react";
 import PageTemplate from "@/components/templates/PageTemplate";
@@ -41,16 +41,16 @@ export default function EmployeesOverview() {
       console.error("No file selected.");
       return;
     }
-  
+
     const userId = 1;
-  
+
     const formData = new FormData();
     formData.append("file", selectedFile);
     formData.append("user_id", userId.toString());
-  
+
     try {
       const response = await OLF.post(ApiLinks.uploadImage, formData);
-  
+
       console.log("Upload response:", response.data);
       setIsOverlayOpen(false);
       setSelectedFile(null);
@@ -59,7 +59,6 @@ export default function EmployeesOverview() {
       console.error("Upload failed:", error);
     }
   };
-  
 
   return (
     <PageTemplate>
@@ -132,7 +131,7 @@ export default function EmployeesOverview() {
         />
       </Overlay>
 
-      <section className="flex flex-row w-full mt-10">
+      <section className="flex flex-row items-center h-full gap-8 w-[90vw]">
         <SidebarTemplate activeIcon="map" />
         <ContentBlock>
           <section className="flex items-center justify-between mt-2 ml-6 mr-6">

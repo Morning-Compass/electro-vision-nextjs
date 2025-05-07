@@ -18,7 +18,7 @@ export default function EmployeesOverview() {
   return (
     <PageTemplate>
       <NavbarTemplate />
-      <section className="flex flex-row w-full mt-10">
+      <section className="flex flex-row items-center h-full gap-8 w-[90vw]">
         <SidebarTemplate activeIcon="people" />
         <ContentBlock>
           <section className="w-full flex flex-row items-center justify-between align-middle gap-4 mt-2">
@@ -35,9 +35,10 @@ export default function EmployeesOverview() {
                 value="Filter"
               />
               <Link
-              href={{
-                pathname: `employees-overview/add`,
-              }}>
+                href={{
+                  pathname: `employees-overview/add`,
+                }}
+              >
                 <Input
                   name="add_button"
                   type="button"
@@ -98,9 +99,7 @@ export default function EmployeesOverview() {
             link={subPage}
             linkValue={linkValue}
           />
-          <section className="border-t-2 text-left pt-4">
-            Page 1 of 100
-          </section>
+          <section className="border-t-2 text-left pt-4">Page 1 of 100</section>
         </ContentBlock>
       </section>
       <FooterSmall />

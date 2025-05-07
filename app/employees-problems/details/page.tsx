@@ -13,7 +13,7 @@ export default function EmployeesOverview() {
   return (
     <PageTemplate>
       <NavbarTemplate />
-      <section className="flex flex-row w-full mt-10">
+      <section className="flex flex-row items-center h-full gap-8 w-[90vw]">
         <SidebarTemplate activeIcon="alert" />
         <ContentBlock>
           <section className="w-full flex flex-row items-center justify-between align-middle gap-4 mt-2">
@@ -26,9 +26,11 @@ export default function EmployeesOverview() {
           </section>
           <section className="flex flex-auto flex-wrap justify-between">
             <section className="h-auto flex flex-col items-center justify-center p-6  gap-5">
-              <Link href={{
-                pathname: "../employees-problems/problems",
-              }}>
+              <Link
+                href={{
+                  pathname: "../employees-problems/problems",
+                }}
+              >
                 <Image
                   src="/problem.png"
                   alt="problem"
@@ -40,9 +42,11 @@ export default function EmployeesOverview() {
               <p className="text-xl">Hangar 1</p>
             </section>
             <section className="h-auto flex flex-col items-center justify-center p-6 gap-5">
-              <Link href={{
-                pathname: "../employees-problems/problems",
-              }}>
+              <Link
+                href={{
+                  pathname: "../employees-problems/problems",
+                }}
+              >
                 <Image
                   src="/problem.png"
                   alt="problem"
@@ -54,9 +58,11 @@ export default function EmployeesOverview() {
               <p className="text-xl">Hangar 1</p>
             </section>
             <section className="h-auto flex flex-col items-center justify-center p-6 gap-5">
-              <Link href={{
-                pathname: "../employees-problems/problems",
-              }}>
+              <Link
+                href={{
+                  pathname: "../employees-problems/problems",
+                }}
+              >
                 <Image
                   src="/problem.png"
                   alt="problem"
@@ -68,9 +74,11 @@ export default function EmployeesOverview() {
               <p className="text-xl">Hangar 1</p>
             </section>
             <section className="h-auto flex flex-col items-center justify-center p-6 gap-5">
-              <Link href={{
-                pathname: "../employees-problems/problems",
-              }}>
+              <Link
+                href={{
+                  pathname: "../employees-problems/problems",
+                }}
+              >
                 <Image
                   src="/problem.png"
                   alt="problem"
@@ -82,9 +90,11 @@ export default function EmployeesOverview() {
               <p className="text-xl">Hangar 1</p>
             </section>
             <section className="h-auto flex flex-col items-center justify-center p-6 gap-5">
-              <Link href={{
-                pathname: "../employees-problems/problems",
-              }}>
+              <Link
+                href={{
+                  pathname: "../employees-problems/problems",
+                }}
+              >
                 <Image
                   src="/problem.png"
                   alt="problem"
@@ -96,9 +106,11 @@ export default function EmployeesOverview() {
               <p className="text-xl">Hangar 1</p>
             </section>
             <section className="h-auto flex flex-col items-center justify-center p-6 gap-5">
-              <Link href={{
-                pathname: "../employees-problems/problems",
-              }}>
+              <Link
+                href={{
+                  pathname: "../employees-problems/problems",
+                }}
+              >
                 <Image
                   src="/problem.png"
                   alt="problem"

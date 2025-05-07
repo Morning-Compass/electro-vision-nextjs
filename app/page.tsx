@@ -94,18 +94,16 @@ export default function Home() {
           </Link>
         </div>
       </div>
-      <section className="flex items-center justify-center w-screen h-screen -mb-24">
-        <a className="text-ev-darkblue z-10 text-9xl text-center">
+      <section className="flex items-center justify-center mt-96 mb-96 z-10 h-[30vh] ">
+        <a className="text-ev-darkblue text-8xl text-center z-10">
           Welcome to Electro Vision
         </a>
         <Image
           src="/images-landing-page/Lightning.png"
           alt="Lighting Image"
-          width={0}
-          height={0}
+          width={768}
+          height={768}
           style={{
-            width: "auto",
-            height: "auto",
             position: "absolute",
             zIndex: "5",
           }}

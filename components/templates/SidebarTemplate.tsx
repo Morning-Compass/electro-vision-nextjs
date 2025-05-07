@@ -18,6 +18,7 @@ export default function SidebarTemplate({ activeIcon }: SidebarProps) {
       <SidebarElement
         imageSrc="/category.svg"
         imageClassName={getIconClass("./category.svg")}
+        link="/hub"
       />
       <SidebarElement
         imageSrc="/timeline.svg"
