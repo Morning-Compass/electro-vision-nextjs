@@ -10,7 +10,7 @@ import NavbarTemplate from "@/components/templates/NavbarTemplate";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import { FooterSmall } from "@/components/templates/FooterSmall";
-import { User as UserEntityType } from "@/ev-types/user-types";
+import { User, User as UserEntityType } from "@/ev-types/user-types";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { LogOptions } from "vite";
 import FormErrorWrap from "@/components/templates/FormErrorWrap";
@@ -18,6 +18,10 @@ import FormErrorParahraph from "@/components/templates/FormErrorParagraph";
 import Regex from "@/ev-const/regex";
 import AuthConst from "@/ev-const/authconst";
 import Image from "next/image";
+import Themes from "@/ev-const/themes";
+import useUserContext from "@/ev-contexts/userContextProvider";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 export default function Login() {
   type FormProps = {
@@ -35,9 +39,15 @@ export default function Login() {
     handleSubmit,
     formState: { errors },
     getValues,
-  } = useForm<FormProps>();
+  } = useForm<FormProps>({
+    mode: "onTouched",
+    reValidateMode: "onChange",
+  });
 
   const [loginOption, setLoginOption] = useState<"email" | "username">("email");
+
+  const { User, UserDispatch } = useUserContext();
+  const router = useRouter();
 
   const onSubmit: SubmitHandler<FormProps> = async (data) => {
     const loginLink =
@@ -45,13 +55,35 @@ export default function Login() {
         ? ApiLinks.loginEmail
         : ApiLinks.loginUsername;
 
-    const response = await OLF.post(loginLink, {
-      [loginOption === loginOptions.email
-        ? loginOptions.email
-        : loginOptions.username]: data.credential,
-      password: data.password,
-    });
-    redirect("/");
+    console.log(loginLink);
+
+    try {
+      const response = await OLF.post(loginLink, {
+        [loginOption === loginOptions.email
+          ? loginOptions.email
+          : loginOptions.username]: data.credential,
+        password: data.password,
+      });
+
+      const user: User = {
+        authUser: {
+          id: response.id,
+          username: response.username,
+          accountVerified: response.account_valid,
+          email: response.email,
+          token: response.token,
+          createdAt: response.created_at,
+          roles: response.roles,
+        },
+        fullUser: null,
+        theme: Themes.light,
+      };
+
+      UserDispatch({ type: "setUser", value: user });
+      toast.success("Login Successfull");
+      router.push("/hub");
+      router.refresh();
+    } catch {}
   };
 
   return (
@@ -74,22 +106,26 @@ export default function Login() {
             onSubmit={handleSubmit(onSubmit)}
           >
             <FormErrorWrap>
-              <h1 className="font-bold text-lg pl-4">Email</h1>
+              <h1 className="font-bold text-lg pl-4">Email or Username</h1>
               <Input
                 type="text"
                 name="credential"
-                placeholder="Email"
+                placeholder="Email or Username"
                 className="border-4 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
                 error={errors.credential?.message}
                 register={register("credential", {
                   validate: (cred) => {
                     if (cred && cred.includes("@")) {
+                      setLoginOption("email");
                       const regexResult = Regex.emailRegistration.test(cred);
                       if (!regexResult) {
                         return "Email must be correct";
                       }
+                      console.log("optin email");
                       return true;
                     }
+                    setLoginOption("username");
+                    console.log("optin username");
                   },
                   required: {
                     value: true,

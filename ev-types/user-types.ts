@@ -1,14 +1,26 @@
 export type User = {
-  username: string | null;
-  profilePicture: string | null;
   theme: string;
-  userId: string | number | null;
+  authUser: AuthUser | null;
+  fullUser: FullUser | null;
+};
+
+export type AuthUser = {
+  id: string | null;
+  username: string | null;
   email: string | null;
+  createdAt: Date | null;
   accountVerified: boolean | null;
-  passwordLength: number | null;
-  authorities: string | string[] | null;
-  accountNonExpired: boolean | null;
-  accountNonLocked: boolean | null;
-  credentialsNonExpired: boolean | null;
+  roles: string[] | null;
   token: string | null;
+};
+
+export type FullUser = {
+  authUserId: Pick<AuthUser, "id">;
+  phone: string | null;
+  phoneDialCode: string | null;
+  title: string | null;
+  education: string | null;
+  birthDate: Date | null;
+  accountBankNumber: string | null;
+  profile_picture: string | null;
 };

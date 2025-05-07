@@ -1,7 +1,11 @@
 "use client";
 
 import Themes from "@/ev-const/themes";
-import { User as UserEntityType } from "@/ev-types/user-types";
+import {
+  AuthUser,
+  FullUser,
+  User as UserEntityType,
+} from "@/ev-types/user-types";
 import React, { ReactNode, createContext, useContext, useReducer } from "react";
 
 type UserContextProviderProps = {
@@ -28,7 +32,10 @@ type UserAction =
   | {
       type: "setId";
       value: string | null;
-    };
+    }
+  | { type: "setAuthUser"; value: AuthUser | null }
+  | { type: "setFullUser"; value: FullUser | null }
+  | { type: "setUser"; value: UserEntityType };
 
 const UserReducer = (
   state: UserEntityType,
@@ -36,15 +43,41 @@ const UserReducer = (
 ): UserEntityType => {
   switch (action.type) {
     case "setUsername":
-      return { ...state, username: action.value };
+      return {
+        ...state,
+        authUser: state.authUser
+          ? { ...state.authUser, username: action.value }
+          : null,
+      };
     case "setTheme":
       return { ...state, theme: action.value };
     case "setProfilePicture":
-      return { ...state, profilePicture: action.value };
+      return {
+        ...state,
+        fullUser: state.fullUser
+          ? { ...state.fullUser, profile_picture: action.value }
+          : null,
+      };
     case "setEmail":
-      return { ...state, email: action.value };
+      return {
+        ...state,
+        authUser: state.authUser
+          ? { ...state.authUser, email: action.value }
+          : null,
+      };
     case "setId":
-      return { ...state, userId: action.value };
+      return {
+        ...state,
+        authUser: state.authUser
+          ? { ...state.authUser, id: action.value }
+          : null,
+      };
+    case "setAuthUser":
+      return { ...state, authUser: action.value };
+    case "setFullUser":
+      return { ...state, fullUser: action.value };
+    case "setUser":
+      return { ...action.value };
     default:
       return state;
   }
@@ -59,17 +92,10 @@ export const UserContext = createContext<UserContextType | null>(null);
 
 export const UserContextProvider = ({ children }: UserContextProviderProps) => {
   const [User, UserDispatch] = useReducer(UserReducer, {
-    username: null,
-    email: null,
-    profilePicture: null,
     theme: Themes.light,
-    userId: null,
-    accountVerified: null,
     passwordLength: null,
-    authorities: null,
-    accountNonExpired: null,
-    accountNonLocked: null,
-    credentialsNonExpired: null,
+    authUser: null,
+    fullUser: null,
   } as UserEntityType);
 
   return (
@@ -81,6 +107,6 @@ export const UserContextProvider = ({ children }: UserContextProviderProps) => {
 
 export default function useUserContext() {
   const context = useContext(UserContext);
-  if (!context) throw new Error("User context musnt be null");
+  if (!context) throw new Error("User context must not be null");
   return context;
 }
