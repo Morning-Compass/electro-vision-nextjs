@@ -1,24 +1,43 @@
 "use client";
 
-import { useState, useEffect, ChangeEvent } from "react";
+import { useState, useEffect, ChangeEvent, useLayoutEffect } from "react";
 import PageTemplate from "@/components/templates/PageTemplate";
 import NavbarTemplate from "@/components/templates/NavbarTemplate";
 import { FooterSmall } from "@/components/templates/FooterSmall";
 import SidebarTemplate from "@/components/templates/SidebarTemplate";
 import ContentBlock from "@/components/ContentBlock";
 import SearchButton from "@/components/SearchButton";
-import Link from "next/link";
 import Image from "next/image";
 import Input from "@/components/Input";
 import Overlay from "@/components/Overlay";
 import OLF from "@/ev-lib/ElectroVisionFetch";
 import ApiLinks from "@/ev-const/api-links";
+import useUserContext from "@/ev-contexts/userContextProvider";
+import { Workspace } from "@/ev-types/workspace-types";
+import WorkspaceEntry from "@/components/WorkspaceEntry";
 
-export default function EmployeesOverview() {
+export default function Workspaces() {
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [workspaceName, setWorkspaceName] = useState<string>("");
+  const { User } = useUserContext();
+  const [workspaces, setWorkspaces] = useState<Workspace[] | null>(null);
+
+  const getWorkspaces = async () => {
+    console.log("getting workspaces...");
+    const res = await OLF.post(ApiLinks.listWorkspaces, {
+      email: User.authUser?.email,
+    });
+
+    const workspaces: Workspace[] = res;
+    setWorkspaces(workspaces);
+  };
+
+  useEffect(() => {
+    getWorkspaces();
+  }, []);
+  console.log(workspaces);
 
   useEffect(() => {
     if (!selectedFile) {
@@ -141,36 +160,28 @@ export default function EmployeesOverview() {
               <Input
                 name="add"
                 type="button"
-                className="text-white bg-ev-green rounded-lg px-4 py-2 hover:scale-110 duration-300"
+                className="text-white bg-ev-green rounded-lg px-4 py-2 hover:scale-110 duration-300 w-[6vw]"
                 value="Add"
                 onClick={() => setIsOverlayOpen(true)}
               />
               <Input
                 name="remove"
                 type="button"
-                className="text-white bg-ev-red rounded-lg px-4 py-2 hover:scale-110 duration-300"
+                className="text-white bg-ev-red rounded-lg px-4 py-2 hover:scale-110 duration-300 w-[6vw]"
                 value="Remove"
               />
             </section>
           </section>
           <section className="flex flex-wrap justify-between p-6 gap-5">
-            {Array.from({ length: 6 }).map((_, idx) => (
-              <section
-                key={idx}
-                className="flex flex-col items-center justify-center p-6 gap-5"
-              >
-                <Link href="/workspaces/plans">
-                  <Image
-                    src="/problem.png"
-                    alt="Workspace"
-                    width={480}
-                    height={0}
-                    className="w-[30rem] h-auto"
-                  />
-                </Link>
-                <p className="text-xl">Hangar {idx + 1}</p>
-              </section>
-            ))}
+            {workspaces === null ? (
+              <div>No workspaces aviable</div>
+            ) : (
+              <>
+                {workspaces.map((workspace) => (
+                  <WorkspaceEntry workspace={workspace} />
+                ))}
+              </>
+            )}
           </section>
         </ContentBlock>
       </section>

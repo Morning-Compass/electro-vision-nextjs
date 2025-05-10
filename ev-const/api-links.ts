@@ -9,8 +9,9 @@ const ApiLinks = {
   resetPasswordRequest: rustHost + "/auth/reset/password/", //token after /
   resetPassword: rustHost + "/auth/reset/password",
   verifySession: rustHost + "/auth/validate/session",
-  createWorkspace: rustHost + "/create/workspace",
+  createWorkspace: rustHost + "/workspace/create",
   uploadImage: pythonHost + "/images/upload/",
+  listWorkspaces: rustHost + "/workspace/list",
 } as const;
 
 export default ApiLinks;
