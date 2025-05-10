@@ -1,13 +1,16 @@
+import useUserContext from "@/ev-contexts/userContextProvider";
 import { Workspace } from "@/ev-types/workspace-types";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
 type WorkspaceEntryProps = {
-  workspace: Pick<Workspace, "id" | "name" | "coverPhoto">;
+  workspace: Workspace;
 };
 
 const WorkspaceEntry = ({ workspace }: WorkspaceEntryProps) => {
+  const { UserDispatch } = useUserContext();
+
   const isSvg =
     typeof workspace.coverPhoto === "string" &&
     workspace.coverPhoto?.trim().startsWith("<svg");
@@ -18,8 +21,17 @@ const WorkspaceEntry = ({ workspace }: WorkspaceEntryProps) => {
       : "/problem.png";
 
   return (
-    <section className="flex flex-col items-center group p-4 bg-ev-primary-bg rounded-xl">
-      <Link href={`/workspaces/plans/${workspace.id.toString()}`}>
+    <section
+      key={workspace.id}
+      onClick={() =>
+        UserDispatch({
+          type: "setCurrentWorkspace",
+          value: workspace,
+        })
+      }
+      className="flex flex-col items-center group p-4 bg-ev-primary-bg rounded-xl"
+    >
+      <Link href={`/workspaces/plans/`}>
         <div className="relative w-[30rem] h-64 overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow bg-gray-100">
           {isSvg ? (
             <div

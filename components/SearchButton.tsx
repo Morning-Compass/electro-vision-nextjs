@@ -19,7 +19,7 @@ function SearchButton({ className, text }: SearchButtonProps) {
       <Input
         type="text"
         name="search"
-        className="border-4 bg-ev-white text-black border-solid rounded-[0.9rem] max-w-[20rem] min-w-40 w-[20vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300"
+        className="border-4 bg-ev-primary-bg text-ev-text border-solid rounded-[0.9rem] max-w-[20rem] min-w-40 w-[20vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300"
         placeholder={text ?? "search..."}
       />
     </section>

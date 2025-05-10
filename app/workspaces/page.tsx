@@ -24,6 +24,14 @@ export default function Workspaces() {
   const { User } = useUserContext();
   const [workspaces, setWorkspaces] = useState<Workspace[] | null>(null);
 
+  if (!User.authUser?.id || User.authUser.id === null) {
+    return (
+      <PageTemplate>
+        <></>
+      </PageTemplate>
+    );
+  }
+
   const getWorkspaces = async () => {
     console.log("getting workspaces...");
     const res = await OLF.post(ApiLinks.listWorkspaces, {
@@ -32,6 +40,10 @@ export default function Workspaces() {
 
     const workspaces: Workspace[] = res;
     setWorkspaces(workspaces);
+  };
+
+  const getWorkspacesCoverPhotos = async () => {
+    // python api yap yap
   };
 
   useEffect(() => {
@@ -61,11 +73,15 @@ export default function Workspaces() {
       return;
     }
 
-    const userId = 1;
+    let userId = User.authUser?.id;
+    if (!userId) {
+      userId = "-1";
+    }
+    userId = userId.toString();
 
     const formData = new FormData();
     formData.append("file", selectedFile);
-    formData.append("user_id", userId.toString());
+    formData.append("user_id", userId);
 
     try {
       const response = await OLF.post(ApiLinks.uploadImage, formData);

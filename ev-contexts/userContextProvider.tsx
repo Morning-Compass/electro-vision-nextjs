@@ -6,6 +6,7 @@ import {
   FullUser,
   User as UserEntityType,
 } from "@/ev-types/user-types";
+import { Workspace } from "@/ev-types/workspace-types";
 import React, { ReactNode, createContext, useContext, useReducer } from "react";
 
 type UserContextProviderProps = {
@@ -35,7 +36,8 @@ type UserAction =
     }
   | { type: "setAuthUser"; value: AuthUser | null }
   | { type: "setFullUser"; value: FullUser | null }
-  | { type: "setUser"; value: UserEntityType };
+  | { type: "setUser"; value: UserEntityType }
+  | { type: "setCurrentWorkspace"; value: Workspace | null };
 
 const UserReducer = (
   state: UserEntityType,
@@ -78,6 +80,8 @@ const UserReducer = (
       return { ...state, fullUser: action.value };
     case "setUser":
       return { ...action.value };
+    case "setCurrentWorkspace":
+      return { ...state, currentWorkspace: action.value };
     default:
       return state;
   }
@@ -96,6 +100,7 @@ export const UserContextProvider = ({ children }: UserContextProviderProps) => {
     passwordLength: null,
     authUser: null,
     fullUser: null,
+    currentWorkspace: null,
   } as UserEntityType);
 
   return (

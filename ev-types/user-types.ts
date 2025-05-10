@@ -1,7 +1,10 @@
+import { Workspace } from "./workspace-types";
+
 export type User = {
   theme: string;
   authUser: AuthUser | null;
   fullUser: FullUser | null;
+  currentWorkspace: Workspace | null;
 };
 
 export type AuthUser = {
