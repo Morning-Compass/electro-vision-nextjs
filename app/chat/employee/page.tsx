@@ -19,12 +19,12 @@ export default function ChatEmployee() {
   return (
     <PageTemplate>
       <NavbarTemplate />
-      <section className="flex flex-row w-full mt-10">
+      <section className="flex flex-row items-center h-full gap-8 w-[90vw]">
         <SidebarTemplate activeIcon="chat" />
         <ContentBlock>
-          <section className="bg-gray-200 w-full p-1 h-[90%] rounded-[0.9em]">
+          <section className="bg-gray-200 w-full p-1 h-[5%] rounded-[0.9em] flex items-center justify-center ">
             <section
-              className={`flex justify-around text-[1.2em] text-[#3354F4] font-semibold`}
+              className={`flex justify-around text-[1.2em] text-[#3354F4] font-semibold w-full`}
             >
               <Link href={"/chat"}>Back</Link>
               <p>{id}</p>

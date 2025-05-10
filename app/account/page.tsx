@@ -64,10 +64,10 @@ type ChangeCredentialAction =
       value: boolean;
     };
 
-type ChangeCredentialUser = Pick<
-  UserEntityType,
-  "username" | "email" | "profilePicture"
-> & {
+type ChangeCredentialUser = {
+  username: string | null;
+  email: string | null;
+  profilePicture: string | null;
   usernameEditEnabled: boolean;
   emailEditEnabled: boolean;
   newPassword: string | null;
@@ -116,13 +116,9 @@ const AccountPage = () => {
   const [newCredentials, newCredentialsDispatch] = useReducer(
     changeCredentialReducer,
     {
-      username: User.username,
-      email: User.email,
-      profilePicture: User.profilePicture,
+      username: User.authUser?.username,
+      profilePicture: User.fullUser?.profile_picture,
       usernameEditEnabled: false,
-      emailEditEnabled: false,
-      newPassword: null,
-      newRepeatPassword: null,
     } as ChangeCredentialUser,
   );
 
@@ -132,9 +128,13 @@ const AccountPage = () => {
     formState: { errors },
     getValues,
     setValue,
-  } = useForm<ChangeCredentialUserForm>();
+  } = useForm<ChangeCredentialUserForm>({
+    mode: "onTouched",
+    reValidateMode: "onChange",
+  });
 
   const onSubmit: SubmitHandler<ChangeCredentialUserForm> = async (data) => {
+    console.log(data);
     try {
       await OLF.put("future change credentials", {
         token: "future jwt roken",
@@ -178,11 +178,11 @@ const AccountPage = () => {
 
   const setUserImage = async () => {
     try {
-      if (!User.profilePicture) throw new Error();
+      if (!User.fullUser?.profile_picture) throw new Error();
 
       await OLF.post("future api link", {
         token: "future JWT token",
-        user_image: User.profilePicture,
+        user_image: User.fullUser?.profile_picture,
       });
     } catch (e) {
       toast.error("Setting photo went wrong", { duration: 3000 });
@@ -196,16 +196,18 @@ const AccountPage = () => {
     setUserImage();
   };
 
-  const [prevUserImage, setPrevUserImage] = useState(User.profilePicture);
+  const [prevUserImage, setPrevUserImage] = useState(
+    User.fullUser?.profile_picture,
+  );
 
   useEffect(() => {
-    if (User.profilePicture !== prevUserImage) {
-      setPrevUserImage(User.profilePicture);
+    if (User.fullUser?.profile_picture !== prevUserImage) {
+      setPrevUserImage(User.fullUser?.profile_picture);
     }
-  }, [User.profilePicture, prevUserImage]);
+  }, [User.fullUser?.profile_picture, prevUserImage]);
 
   return (
-    <PageTemplate userVerification={true}>
+    <PageTemplate>
       <NavbarTemplate />
       <section className="text-ev-text bg-mc-primary w-[45vw] min-w-72 opacity-95 rounded-[3rem] mt-auto mb-auto transition-colors duration-500">
         <article className="flex flex-col items-center justify-center mt-12 mb-12 gap-12">
@@ -214,7 +216,7 @@ const AccountPage = () => {
           </header>
           <figure className="mr-4 ml-4 flex items-center justify-center flex-col gap-6">
             <Image
-              src={User.profilePicture ?? "/default-user.png"}
+              src={User.fullUser?.profile_picture ?? "/default-user.png"}
               alt="pfp"
               height={300}
               width={300}
@@ -230,7 +232,7 @@ const AccountPage = () => {
                 hidden={true}
                 onChange={handleUserProfilePictureSet}
               />
-              {User.profilePicture !== prevUserImage ? (
+              {User.fullUser?.profile_picture !== prevUserImage ? (
                 <Button type="submit" value="OK" customWidth="w-14" />
               ) : null}
             </form>
@@ -279,7 +281,7 @@ const AccountPage = () => {
                         },
                       })}
                       type="text"
-                      placeholder={newCredentials.username ?? User.username}
+                      placeholder="New Username"
                       disabled={!newCredentials.usernameEditEnabled}
                       className={`border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800 ${newCredentials.usernameEditEnabled ? "border-6 border-emerald-500" : ""}`}
                     />
@@ -317,7 +319,7 @@ const AccountPage = () => {
                         return true;
                       },
                     })}
-                    placeholder={newCredentials.email ?? User.email}
+                    placeholder="New Email"
                     disabled={!newCredentials.emailEditEnabled}
                     className={`border-4 bg-white text-black border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800 ${newCredentials.emailEditEnabled ? "border-6 border-emerald-500" : ""}`}
                   />

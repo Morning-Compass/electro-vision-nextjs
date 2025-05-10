@@ -24,7 +24,7 @@ export default function Chat() {
             <h2 className="text-[1.75rem] font-semibold p-0 m-0 leading-none">
               Messages
             </h2>
-            <section className="flex flex-row justify-around w-[90%]">
+            <section className="flex flex-row justify-end gap-8 w-[90%]">
               <SearchButton />
               <CalendarButton />
               <Input
@@ -59,7 +59,7 @@ export default function Chat() {
             link={subPage}
             linkValue={linkValue}
           />
-          <ContentBlockElement
+          {/* <ContentBlockElement
             id={2341421}
             employee="Ahmed Rashdan"
             role="Help Desk Executive"
@@ -106,8 +106,7 @@ export default function Chat() {
             department="IT Department"
             link={subPage}
             linkValue={linkValue}
-          />
-          <ContentBlockElement
+          /><ContentBlockElement
             id={2341421}
             employee="Ahmed Rashdan"
             role="Help Desk Executive"
@@ -138,8 +137,7 @@ export default function Chat() {
             department="IT Department"
             link={subPage}
             linkValue={linkValue}
-          />
-          <ContentBlockElement
+          /><ContentBlockElement
             id={2341421}
             employee="Ahmed Rashdan"
             role="Help Desk Executive"
@@ -170,7 +168,7 @@ export default function Chat() {
             department="IT Department"
             link={subPage}
             linkValue={linkValue}
-          />
+          /> */}
           <section className="border-t-2 text-left pt-4">Page 1 of 100</section>
         </ContentBlock>
       </section>
