@@ -16,6 +16,8 @@ type ButtonProps = {
   hoverEffect?: boolean;
   onClick?: () => void | unknown;
   src?: string;
+  disabled?: boolean;
+  additionalClassName?: string;
 };
 
 const Button = ({
@@ -30,6 +32,8 @@ const Button = ({
   hoverEffect = false,
   onClick = undefined,
   src = undefined,
+  disabled = false,
+  additionalClassName = undefined,
   ...props
 }: ButtonProps) => {
   const { User } = useUserContext();
@@ -43,9 +47,10 @@ const Button = ({
       value={value}
       onClick={onClick}
       src={type === "image" ? src : ""}
+      disabled={disabled}
       className={
         className ??
-        ` ${bgColor ?? "bg-ev-blue"} ${textColor ?? "text-white"} ${rounded === true ? "rounded-[0.9rem]" : ""} max-w-64 min-w-30 ${customWidth ?? "w-[30vw]"} max-h-12 min-h-8 ${customHeight ?? "h-[10vh]"} font-bold  ${hoverEffect === true ? "hover:scale-110" : ""} duration-300 cursor-pointer`
+        ` ${bgColor ?? "bg-ev-blue"} ${textColor ?? "text-white"} ${rounded === true ? "rounded-[0.9rem]" : ""} max-w-64 min-w-30 ${customWidth ?? "w-[30vw]"} max-h-12 min-h-8 ${customHeight ?? "h-[10vh]"} font-bold  ${hoverEffect === true ? "hover:scale-110" : ""} duration-300 cursor-pointer ${additionalClassName ?? ""}`
       }
     />
   );

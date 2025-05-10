@@ -24,13 +24,13 @@ export default function EmployeesProblems() {
             <h2 className="text-[1.75rem] font-semibold p-0 m-0 leading-none w-96">
               Employees Problems
             </h2>
-            <section className="flex flex-row justify-around w-[90%]">
+            <section className="flex flex-row justify-end gap-8 w-[90%]">
               <SearchButton />
               <CalendarButton />
               <Input
                 name="filter_button"
                 type="button"
-                className="text-white border-4 bg-mc-blue border-none rounded-[0.9rem] max-w-[10rem] min-w-20 w-[10vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 hover:scale-110 duration-300"
+                className="text-white border-4 bg-ev-blue border-none rounded-[0.9rem] max-w-[10rem] min-w-20 w-[10vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 hover:scale-110 duration-300"
                 value="Filter"
               />
             </section>

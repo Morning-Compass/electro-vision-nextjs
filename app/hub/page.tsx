@@ -18,7 +18,7 @@ export default function Home() {
     <PageTemplate bgClass="#F1F2F6">
       <NavbarTemplate />
       <section className="flex flex-row items-center h-full gap-8 w-[90vw]">
-        <SidebarTemplate activeIcon="hub" />
+        <SidebarTemplate activeIcon="category" />
         <div className=" bg-ev-primary w-full h-full flex items-center rounded-3xl"></div>
       </section>
       <FooterSmall />
