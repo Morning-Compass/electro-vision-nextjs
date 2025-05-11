@@ -106,7 +106,21 @@ export default function Workspaces() {
       console.log("Upload response:", response);
       setIsOverlayOpen(false);
       setSelectedFile(null);
-      setWorkspaceName("");
+      try {
+        const response_workspace = await OLF.post(
+          ApiLinks.createWorkspace,
+          JSON.stringify({
+            owner_email: User.authUser ?? "tomek@el-jot.eu",
+            geolocation: null,
+            name: workspaceName ?? "workspace_name",
+            plan_file_name: selectedFile.name ?? "file_name.svg",
+            finish_date: null,
+          }),
+        );
+        console.log(response_workspace);
+      } catch (error_inner) {
+        console.error("Workspace Creation failed:", error_inner);
+      }
     } catch (error) {
       console.error("Upload failed:", error);
     }
