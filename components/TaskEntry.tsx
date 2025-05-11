@@ -78,7 +78,11 @@ export default function TaskEntry({
           />
           */}
           <p className="text-xl text-nowrap m-2">{title}</p>
-          <p className="text-xl text-nowrap m-2">{importance}</p>
+          <p
+            className={`text-xl text-nowrap m-2 ${importance === "LOW" ? "text-green-400" : importance === "MEDIUM" ? "text-yellow-500" : "text-red-600"}`}
+          >
+            {importance}
+          </p>
         </div>
       </Link>
     </>
