@@ -17,6 +17,11 @@ import WorkerEntry from "@/components/WorkerEntry";
 import OLF from "@/ev-lib/ElectroVisionFetch";
 import ApiLinks from "@/ev-const/api-links";
 import { WorkspaceUser } from "@/ev-types/user-types";
+import { FormProps, SubmitHandler, useForm } from "react-hook-form";
+import FormErrorWrap from "@/components/templates/FormErrorWrap";
+import Regex from "@/ev-const/regex";
+import toast from "react-hot-toast";
+import { error } from "console";
 
 export default function WorkspaceDetails() {
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -25,6 +30,85 @@ export default function WorkspaceDetails() {
   const [workspaceUsers, setWorkspaceUsers] = useState<WorkspaceUser[] | null>(
     null,
   );
+
+  type addWorkerFormProps = {
+    invited_email: string | null;
+  };
+
+  const AddWorkerLogic = () => {
+    const {
+      handleSubmit,
+      formState: { errors, isSubmitting },
+      register,
+    } = useForm<addWorkerFormProps>({
+      mode: "onTouched",
+      reValidateMode: "onChange",
+    });
+
+    const onSubmit: SubmitHandler<addWorkerFormProps> = async (data) => {
+      try {
+        const res = await OLF.post(ApiLinks.inviteWorker, {
+          workspace_id: User.currentWorkspace?.id,
+          inviter_email: User.authUser?.email,
+          invited_email: data.invited_email,
+        });
+        console.log(res);
+        toast.success(res.response);
+        setIsAddOpen(false);
+      } catch (e) {
+        console.error(e);
+        toast.error(e instanceof Error ? e.message : "Adding worker failed", {
+          duration: 5000,
+        });
+      }
+    };
+
+    return (
+      <Overlay isOpen={isAddOpen} onClose={() => setIsAddOpen(false)}>
+        <form
+          className="flex flex-col gap-6 w-full"
+          onSubmit={handleSubmit(onSubmit)}
+          noValidate // Add this to prevent browser validation
+        >
+          <p className="text-4xl mb-10">Add Worker</p>
+
+          <FormErrorWrap>
+            <div className="flex flex-col gap-4">
+              <p className="text-xl">Invited Email</p>
+              <Input
+                type="text"
+                placeholder="email..."
+                className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg w-full"
+                error={errors.invited_email?.message}
+                register={register("invited_email", {
+                  validate: (cred) => {
+                    const regexResult = Regex.emailRegistration.test(
+                      cred ?? "",
+                    );
+                    if (!regexResult) return "Email must be correct";
+                    return true;
+                  },
+                  required: {
+                    value: true,
+                    message: "Email is required",
+                  },
+                })}
+              />
+            </div>
+          </FormErrorWrap>
+
+          <div className="flex justify-end gap-4 mt-4">
+            <Input
+              type="submit"
+              disabled={isSubmitting}
+              className="px-4 py-2 bg-ev-blue text-ev-white rounded-lg hover:scale-105 duration-300 disabled:opacity-50"
+              value={isSubmitting ? "Adding..." : "Add Worker"}
+            />
+          </div>
+        </form>
+      </Overlay>
+    );
+  };
 
   const getWorkers = async () => {
     const res = await OLF.post(
@@ -47,31 +131,7 @@ export default function WorkspaceDetails() {
   return (
     <PageTemplate>
       <NavbarTemplate />
-
-      <Overlay isOpen={isAddOpen} onClose={() => setIsAddOpen(false)}>
-        <p className="text-4xl mb-10">Add Worker</p>
-        <div className="flex flex-col gap-6 w-full">
-          <div className="flex justify-between items-center w-full">
-            <p className="text-xl">Role:</p>
-            <Input
-              name="role_text"
-              type="text"
-              placeholder="Electrician..."
-              className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg"
-            />
-          </div>
-          <div className="flex justify-between items-center w-full">
-            <p className="text-xl">Invite link:</p>
-            <Input
-              name="copy"
-              type="button"
-              value="Copy"
-              className="px-4 py-2 bg-mc-blue text-white rounded-lg hover:scale-110 duration-300"
-            />
-          </div>
-        </div>
-      </Overlay>
-
+      <AddWorkerLogic />
       <Overlay isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)}>
         <p className="text-4xl mb-10">Change Data</p>
         <div className="flex flex-col gap-6 w-full">
@@ -105,12 +165,12 @@ export default function WorkspaceDetails() {
         </div>
       </Overlay>
 
-      <section className="flex flex-row items-center h-full gap-8 w-[90vw]">
+      <section className="flex flex-row items-center justify-start h-full gap-8 w-[90vw]">
         <SidebarTemplate activeIcon="map" />
         <ContentBlock>
           {/* <p>WorkspaceId: {User.currentWorkspace}</p> */}
           <div className="flex w-full">
-            <div className="flex flex-col w-3/4 p-6 gap-8">
+            <div className="flex flex-col w-3/4 px-6 gap-8">
               <Image
                 src="/problem.png"
                 alt="problem"
@@ -119,7 +179,7 @@ export default function WorkspaceDetails() {
                 className="rounded-3xl w-full h-auto object-cover shadow-lg"
               />
 
-              <div className="flex flex-col gap-2 px-4">
+              <div className="flex flex-col gap-2 p-6 bg-ev-primary-bg rounded-xl">
                 <p className="text-3xl font-semibold mb-2">Workspace Details</p>
                 <p>
                   Start Date: {User.currentWorkspace?.start_date?.toString()}
@@ -137,66 +197,104 @@ export default function WorkspaceDetails() {
                   {User.currentWorkspace?.geolocation || "Not yet established"}
                 </p>
                 <p>Filename: {User.currentWorkspace?.plan_file_name}</p>
-              </div>
-
-              <div className="flex justify-around mt-6">
                 <Input
                   name="settings"
                   type="button"
                   value="Settings"
                   onClick={() => setIsSettingsOpen(true)}
-                  className="px-4 py-2 bg-ev-blue text-white rounded-lg hover:scale-110 duration-300"
+                  className="px-4 py-2 bg-ev-blue text-white rounded-lg hover:scale-105 duration-300 w-[80%] p-2 m-4"
                 />
-                <Link href="./plans/editor">
-                  <Input
-                    name="add_tasks"
-                    type="button"
-                    value="Add Tasks"
-                    className="px-4 py-2 bg-ev-blue text-white rounded-lg hover:scale-110 duration-300"
-                  />
-                </Link>
               </div>
             </div>
-
-            <div className="w-1/4 p-6">
-              <div className="flex justify-between items-center mb-10 border-b-4 gap-4 pb-4">
-                <p className="text-2xl">Workers</p>
-                <SearchButton customWidth="w-full" />
-              </div>
-              <div className="flex justify-around mb-10 items-center">
-                <Input
-                  name="add"
-                  type="button"
-                  value="Add"
-                  onClick={() => setIsAddOpen(true)}
-                  className="px-4 py-2 bg-ev-green text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                />
-                <Input
-                  name="remove"
-                  type="button"
-                  value="Remove"
-                  className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                />
-              </div>
-              <div className="flex flex-col gap-4 mb-10 w-full">
-                {/*
+            <div className="flex flex-col gap-8 w-1/4">
+              <div className=" p-6 bg-ev-primary-bg overflow-x-scroll rounded-xl h-1/2">
+                <div className="flex justify-between items-center mb-10 border-b-4 gap-4 pb-4">
+                  <p className="text-2xl">Workers</p>
+                  <SearchButton customWidth="w-full" />
+                </div>
+                <div className="flex justify-around mb-10 items-center">
+                  <Input
+                    name="add"
+                    type="button"
+                    value="Add"
+                    onClick={() => setIsAddOpen(true)}
+                    customWidth="w-3/4"
+                    className="px-4 py-2 bg-ev-green text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                  />
+                  <Input
+                    name="remove"
+                    type="button"
+                    value="Remove"
+                    customWidth="w-3/4"
+                    className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                  />
+                </div>
+                <div className="flex flex-col gap-4 mb-10 w-full">
+                  {/*
                 {Array.from({ length: 6 }).map((_, i) => (
                   <WorkerEntry username={"Worker " + i} id={i} key={i} />
                 ))}
                 */}
-                {workspaceUsers !== null ? (
-                  <>
-                    {workspaceUsers.map((workspaceUser) => (
-                      // no photo since backend is stupid ill need to get that
-                      <WorkerEntry
-                        id={workspaceUser.id}
-                        username={workspaceUser.username}
-                      />
-                    ))}
-                  </>
-                ) : (
-                  <p>Workspace doesnt have any users</p>
-                )}
+                  {workspaceUsers !== null ? (
+                    <>
+                      {workspaceUsers.map((workspaceUser, i) => (
+                        // no photo since backend is stupid ill need to get that
+                        <WorkerEntry
+                          id={workspaceUser.id}
+                          username={workspaceUser.username}
+                          key={i}
+                        />
+                      ))}
+                    </>
+                  ) : (
+                    <p>Workspace doesnt have any users</p>
+                  )}
+                </div>
+              </div>
+
+              <div className=" p-6 bg-ev-primary-bg overflow-x-scroll rounded-xl h-1/2">
+                <div className="flex justify-between items-center mb-10 border-b-4 gap-4 pb-4">
+                  <p className="text-2xl">Tasks</p>
+                  <SearchButton customWidth="w-full" />
+                </div>
+                <div className="flex justify-around mb-10 items-center">
+                  <Input
+                    name="add"
+                    type="button"
+                    value="Add"
+                    onClick={() => setIsAddOpen(true)}
+                    customWidth="w-3/4"
+                    className="px-4 py-2 bg-ev-green text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                  />
+                  <Input
+                    name="remove"
+                    type="button"
+                    value="Remove"
+                    customWidth="w-3/4"
+                    className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                  />
+                </div>
+                <div className="flex flex-col gap-4 mb-10 w-full">
+                  {/*
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <WorkerEntry username={"Worker " + i} id={i} key={i} />
+                ))}
+                */}
+                  {workspaceUsers !== null ? (
+                    <>
+                      {workspaceUsers.map((workspaceUser, i) => (
+                        // no photo since backend is stupid ill need to get that
+                        <WorkerEntry
+                          id={workspaceUser.id}
+                          username={workspaceUser.username}
+                          key={i}
+                        />
+                      ))}
+                    </>
+                  ) : (
+                    <p>Workspace doesnt have any users</p>
+                  )}
+                </div>
               </div>
             </div>
           </div>

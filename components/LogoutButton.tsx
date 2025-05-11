@@ -10,7 +10,12 @@ const LogoutButton = () => {
   const logout = () => {
     UserDispatch({
       type: "setUser",
-      value: { authUser: null, fullUser: null, theme: Themes.light } as User,
+      value: {
+        authUser: null,
+        fullUser: null,
+        theme: Themes.light,
+        currentWorkspace: null,
+      } as User,
     });
     router.push("/");
     router.refresh();

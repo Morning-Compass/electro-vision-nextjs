@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Input from "./Input";
 import Link from "next/link";
+import useUserContext from "@/ev-contexts/userContextProvider";
 
 type WorkerEntryProps = {
   username: string;
@@ -13,26 +14,24 @@ export default function WorkerEntry({
   photo = undefined,
   id,
 }: WorkerEntryProps) {
+  const { User } = useUserContext();
+
   return (
     <>
-      <div className="flex justify-between items-center gap-6 flex-row w-full">
-        <Image
-          src={photo ?? "/employee.png"}
-          alt="Employee"
-          width={56}
-          height={56}
-          className="rounded-full"
-        />
-        <p className="text-xl text-nowrap">{username}</p>
-        <Link href={"/workspace/user/details"}>
-          <Input
-            name="details"
-            type="button"
-            value="..."
-            className="px-4 py-2 bg-ev-blue text-white rounded-lg hover:scale-110 duration-300 ml-2"
+      <Link href={"/workspace/user/details"}>
+        <div className="flex justify-start items-center gap-2 flex-row w-full hover:bg-ev-primary-bg hover:scale-110 duration-300  rounded-xl p-1">
+          <Image
+            src={photo ?? "/employee.png"}
+            alt="Employee"
+            width={56}
+            height={56}
+            className="rounded-full m-2"
           />
-        </Link>
-      </div>
+          <p className="text-xl text-nowrap m-2">
+            {id === (User.authUser?.id ?? -1) ? "(You) " + username : username}
+          </p>
+        </div>
+      </Link>
     </>
   );
 }

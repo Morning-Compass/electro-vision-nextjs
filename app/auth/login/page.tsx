@@ -77,6 +77,7 @@ export default function Login() {
         },
         fullUser: null,
         theme: Themes.light,
+        currentWorkspace: null,
       };
 
       UserDispatch({ type: "setUser", value: user });
