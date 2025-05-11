@@ -23,6 +23,7 @@ import Regex from "@/ev-const/regex";
 import toast from "react-hot-toast";
 import { error } from "console";
 import { Task } from "@/ev-types/workspace-types";
+import TaskEntry from "@/components/TaskEntry";
 
 export default function WorkspaceDetails() {
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -31,6 +32,7 @@ export default function WorkspaceDetails() {
   const [workspaceUsers, setWorkspaceUsers] = useState<WorkspaceUser[] | null>(
     null,
   );
+  const [tasks, setTasks] = useState<Task[] | null>(null);
 
   type addWorkerFormProps = {
     invited_email: string | null;
@@ -126,15 +128,38 @@ export default function WorkspaceDetails() {
     setWorkspaceUsers(workers);
   };
 
+  /*
+     for some reason it doesnt works
+     const res = await OLF.post(
+     ApiLinks.listTasks(User.currentWorkspace?.id.toString() ?? "-1"),
+     { owner_email: User.authUser?.email },
+     );
+     */
   const getTasks = async () => {
-    const res = await OLF.post(
-      ApiLinks.listTasks(User.currentWorkspace?.id.toString() ?? "-1"),
-      { owner_email: User.authUser?.email },
-    );
-    console.log("tasks:");
-    console.log(res);
+    try {
+      const res = await fetch(
+        ApiLinks.listTasks(User.currentWorkspace?.id.toString() ?? "-1"),
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            owner_email: User.authUser?.email,
+          }),
+        },
+      );
 
-    const tasks: Task[] = res;
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
+      const tasks: Task[] = await res.json();
+      setTasks(tasks);
+      console.log("tasks:", tasks);
+    } catch (error) {
+      console.error("Failed to fetch tasks:", error);
+    }
   };
 
   useEffect(() => {
@@ -184,7 +209,7 @@ export default function WorkspaceDetails() {
         <ContentBlock>
           {/* <p>WorkspaceId: {User.currentWorkspace}</p> */}
           <div className="flex w-full">
-            <div className="flex flex-col w-3/4 px-6 gap-8">
+            <div className="flex flex-col w-3/4 mr-8 gap-8">
               <Image
                 src="/problem.png"
                 alt="problem"
@@ -294,19 +319,19 @@ export default function WorkspaceDetails() {
                   <WorkerEntry username={"Worker " + i} id={i} key={i} />
                 ))}
                 */}
-                  {workspaceUsers !== null ? (
+                  {tasks !== null ? (
                     <>
-                      {workspaceUsers.map((workspaceUser, i) => (
+                      {tasks.map((task, i) => (
                         // no photo since backend is stupid ill need to get that
-                        <WorkerEntry
-                          id={workspaceUser.id}
-                          username={workspaceUser.username}
-                          key={i}
+                        <TaskEntry
+                          title={task.title}
+                          status={task.status}
+                          importance={task.importance}
                         />
                       ))}
                     </>
                   ) : (
-                    <p>Workspace doesnt have any users</p>
+                    <p>Workspace doesnt have any tasks</p>
                   )}
                 </div>
               </div>
