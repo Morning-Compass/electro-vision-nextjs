@@ -15,6 +15,8 @@ const ApiLinks = {
   listWorkspaceUsersByWorkspaceId: (id: string) => {
     return rustHost + "/workspace/" + id + "/users/list";
   },
+  listFiles: pythonHost + "/images/list-files/",
+  retrieveFiles: pythonHost + "/images/all-files/"
 } as const;
 
 export default ApiLinks;

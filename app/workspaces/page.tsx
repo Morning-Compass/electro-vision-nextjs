@@ -22,6 +22,7 @@ export default function Workspaces() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [workspaceName, setWorkspaceName] = useState<string>("");
   const { User } = useUserContext();
+  const [coverImages, setCoverImages] = useState<string[]>;
   const [workspaces, setWorkspaces] = useState<Workspace[] | null>(null);
 
   if (!User.authUser?.id || User.authUser.id === null) {
@@ -43,10 +44,27 @@ export default function Workspaces() {
   };
 
   const getWorkspacesCoverPhotos = async () => {
-    // python api yap yap
-  };
+    const userId = User.authUser?.id;
+  
+    if (!userId || userId === null) {
+      console.error("Invalid user ID");
+      return;
+    }
+  
+    try {
+      const response = await OLF.get(`${ApiLinks.retrieveFiles}/${userId}`);
+      console.log(response);
+      const fileNames: string[] = response?.data?.file_names;
+      console.log(fileNames);
 
+      if (!fileNames || !workspaces) return;
+    } catch (error) {
+      console.error("Failed to get workspace cover photos:", error);
+    }
+  };
+  
   useEffect(() => {
+    getWorkspacesCoverPhotos();
     getWorkspaces();
   }, []);
   console.log(workspaces);
