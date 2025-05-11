@@ -21,7 +21,7 @@ export default function WorkerEntry({
       <Link href={"/workspace/user/details"}>
         <div className="flex justify-start items-center gap-2 flex-row w-full hover:bg-ev-primary-bg hover:scale-110 duration-300  rounded-xl p-1">
           <Image
-            src={photo ?? "/employee.png"}
+            src={photo ?? "/default-user.png"}
             alt="Employee"
             width={56}
             height={56}

@@ -21,6 +21,12 @@ const ApiLinks = {
   invitationWorkerAccept: (token: string) => {
     return rustHost + "/workspace/invitation/accept/" + token;
   },
+  listTasks: (id: string) => {
+    return rustHost + "/workspace/" + id + "/tasks/list";
+  },
+  createTasks: (id: string) => {
+    return rustHost + "/workspace/" + id + "/tasks/create";
+  },
 } as const;
 
 export default ApiLinks;

@@ -22,6 +22,7 @@ import FormErrorWrap from "@/components/templates/FormErrorWrap";
 import Regex from "@/ev-const/regex";
 import toast from "react-hot-toast";
 import { error } from "console";
+import { Task } from "@/ev-types/workspace-types";
 
 export default function WorkspaceDetails() {
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -97,11 +98,12 @@ export default function WorkspaceDetails() {
             </div>
           </FormErrorWrap>
 
-          <div className="flex justify-end gap-4 mt-4">
+          <div className="flex items-center justify-center  gap-4 mt-4 w-full">
             <Input
+              customWidth="w-1/2"
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 bg-ev-blue text-ev-white rounded-lg hover:scale-105 duration-300 disabled:opacity-50"
+              className="px-4 py-2 bg-ev-blue text-ev-white rounded-lg hover:scale-105 duration-300 disabled:opacity-50 w-full"
               value={isSubmitting ? "Adding..." : "Add Worker"}
             />
           </div>
@@ -124,8 +126,20 @@ export default function WorkspaceDetails() {
     setWorkspaceUsers(workers);
   };
 
+  const getTasks = async () => {
+    const res = await OLF.post(
+      ApiLinks.listTasks(User.currentWorkspace?.id.toString() ?? "-1"),
+      { owner_email: User.authUser?.email },
+    );
+    console.log("tasks:");
+    console.log(res);
+
+    const tasks: Task[] = res;
+  };
+
   useEffect(() => {
     getWorkers();
+    getTasks();
   }, []);
 
   return (
@@ -207,7 +221,7 @@ export default function WorkspaceDetails() {
               </div>
             </div>
             <div className="flex flex-col gap-8 w-1/4">
-              <div className=" p-6 bg-ev-primary-bg overflow-x-scroll rounded-xl h-1/2">
+              <div className=" p-6 bg-ev-primary-bg overflow-y-scroll rounded-xl h-1/2">
                 <div className="flex justify-between items-center mb-10 border-b-4 gap-4 pb-4">
                   <p className="text-2xl">Workers</p>
                   <SearchButton customWidth="w-full" />
@@ -252,7 +266,7 @@ export default function WorkspaceDetails() {
                 </div>
               </div>
 
-              <div className=" p-6 bg-ev-primary-bg overflow-x-scroll rounded-xl h-1/2">
+              <div className=" p-6 bg-ev-primary-bg overflow-y-scroll rounded-xl h-1/2">
                 <div className="flex justify-between items-center mb-10 border-b-4 gap-4 pb-4">
                   <p className="text-2xl">Tasks</p>
                   <SearchButton customWidth="w-full" />

@@ -8,3 +8,17 @@ export type Workspace = {
   name: string;
   coverPhoto: string | File | null;
 };
+
+export type Task = {
+  id: number;
+  title: string;
+  description: string | null;
+  assigner_username: string;
+  assignee_username: string;
+  category: string;
+  created_at: Date;
+  due_date: Date | null;
+  status: "HELP_NEEDED" | "TODO" | "IN_PROGRESS" | "COMPLETED" | "CANCELED";
+  importance: "LOW" | "MEDIUM" | "HIGH";
+  //future multimedium
+};
