@@ -1,5 +1,5 @@
 const rustHost = "http://localhost:3501";
-const pythonHost = "http://localhost:8080";
+const pythonHost = "http://localhost:8000";
 
 const ApiLinks = {
   register: rustHost + "/auth/register",
@@ -16,7 +16,7 @@ const ApiLinks = {
     return rustHost + "/workspace/" + id + "/users/list";
   },
   listFiles: pythonHost + "/images/list-files/",
-  retrieveFiles: pythonHost + "/images/all-files/",
+  retrieveFiles: pythonHost + "/images/all-files",
   inviteWorker: rustHost + "/workspace/invitation/create",
   invitationWorkerAccept: (token: string) => {
     return rustHost + "/workspace/invitation/accept/" + token;

@@ -11,14 +11,16 @@ export class ElectroVisionFetch {
     data?: TData | TPutData,
     headers?: THeaders,
   ): Promise<any> {
-    const requestHeaders = headers
-      ? new Headers(headers)
-      : new Headers(this.defaultHeaders);
+    const isFormData = data instanceof FormData;
+
+    const requestHeaders = isFormData
+      ? new Headers(headers) // let browser handle it
+      : new Headers(headers || this.defaultHeaders);
 
     const response = await fetch(endpointUrl, {
       method,
       headers: requestHeaders,
-      body: data ? JSON.stringify(data) : undefined,
+      body: isFormData ? data : data ? JSON.stringify(data) : undefined,
     });
 
     const responseData = await response.json();
@@ -30,7 +32,7 @@ export class ElectroVisionFetch {
       throw new Error(errorMessage);
     }
 
-    return responseData.response;
+    return responseData.response ?? responseData;
   }
 
   async get(endpointUrl: string, headers?: THeaders): Promise<any> {

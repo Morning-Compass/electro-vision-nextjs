@@ -55,7 +55,7 @@ export default function Workspaces() {
       const response = await OLF.get(`${ApiLinks.retrieveFiles}/${userId}`);
       console.log(response);
       const fileNames: string[] = response?.data?.file_names;
-      console.log(fileNames);
+      console.log("Filenames:", fileNames);
 
       if (!fileNames || !workspaces) return;
     } catch (error) {
@@ -103,8 +103,7 @@ export default function Workspaces() {
 
     try {
       const response = await OLF.post(ApiLinks.uploadImage, formData);
-
-      console.log("Upload response:", response.data);
+      console.log("Upload response:", response);
       setIsOverlayOpen(false);
       setSelectedFile(null);
       setWorkspaceName("");
@@ -125,7 +124,7 @@ export default function Workspaces() {
         <p className="text-4xl mb-8">Add Workspace</p>
 
         {/* Image placeholder or preview */}
-        <div className="relative w-96 h-64 mb-6 border-2 border-dashed border-gray-300 rounded-xl overflow-hidden bg-ev-gray">
+        <div className="relative w-96 h-64 mb-6 border-2 border-dashed border-gray-300 rounded-xl overflow-hidden bg-ev-primary-bg">
           {previewUrl ? (
             <Image
               src={previewUrl}
@@ -146,14 +145,14 @@ export default function Workspaces() {
           <Input
             name="file_input"
             type="file"
-            accept="image/*"
+            accept=".svg,.pdf"
             id="file_input"
             className="hidden"
             onChange={handleFileChange}
           />
           <label
             htmlFor="file_input"
-            className="text-white text-center bg-mc-blue rounded-lg px-4 py-2 hover:scale-110 duration-300"
+            className="text-ev-white text-center bg-ev-blue rounded-lg px-4 py-2 hover:scale-110 duration-300"
           >
             Choose Image
           </label>
@@ -170,7 +169,7 @@ export default function Workspaces() {
             id="name_text"
             value={workspaceName}
             onChange={(e) => setWorkspaceName(e.target.value)}
-            className="text-ev-dark-gray bg-ev-gray rounded-lg px-3 py-2"
+            className="text-ev-dark-gray bg-ev-primary-bg rounded-lg px-3 py-2 border-2 border-blue-500"
             placeholder="e.g. Hangar 1"
           />
         </section>
@@ -178,7 +177,7 @@ export default function Workspaces() {
         <Input
           name="ok_button"
           type="button"
-          className="mt-4 text-white bg-ev-green rounded-lg w-full h-12 hover:scale-110 duration-300"
+          className="mt-4 text-white bg-ev-green rounded-lg w-full h-12 hover:scale-110 duration-300 px-4"
           value="Add Workspace"
           onClick={handleAddWorkspace}
         />
