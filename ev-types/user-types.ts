@@ -27,3 +27,11 @@ export type FullUser = {
   accountBankNumber: string | null;
   profile_picture: string | null;
 };
+
+export type WorkspaceUser = {
+  id: number;
+  username: string;
+  email: string;
+  position: string | null;
+  workspaceRole: string;
+};

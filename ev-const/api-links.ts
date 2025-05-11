@@ -12,7 +12,7 @@ const ApiLinks = {
   createWorkspace: rustHost + "/workspace/create",
   uploadImage: pythonHost + "/images/upload/",
   listWorkspaces: rustHost + "/workspace/list",
-  listWorkspaceUsersByWorkspaceId: (id: string) => {
+  listWorkspaceUsersByWorkspaceIdAndEmail: (id: string) => {
     return rustHost + "/workspace/" + id + "/users/list";
   },
   listFiles: pythonHost + "/images/list-files/",

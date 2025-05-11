@@ -8,7 +8,7 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 
 const Input = ({ error, register, ...props }: InputProps) => {
   return (
-    <div className="flex flex-col items-center justify-center">
+    <div className="flex flex-col items-center justify-center w-3/4">
       <input {...register} {...props} />
       {error && <span className="text-red-500 text-sm ">{error}</span>}
     </div>

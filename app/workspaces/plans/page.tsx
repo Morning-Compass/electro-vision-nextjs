@@ -13,11 +13,36 @@ import Overlay from "@/components/Overlay";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import useUserContext from "@/ev-contexts/userContextProvider";
+import WorkerEntry from "@/components/WorkerEntry";
+import OLF from "@/ev-lib/ElectroVisionFetch";
+import ApiLinks from "@/ev-const/api-links";
+import { WorkspaceUser } from "@/ev-types/user-types";
 
 export default function WorkspaceDetails() {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { User } = useUserContext();
+  const [workspaceUsers, setWorkspaceUsers] = useState<WorkspaceUser[] | null>(
+    null,
+  );
+
+  const getWorkers = async () => {
+    const res = await OLF.post(
+      ApiLinks.listWorkspaceUsersByWorkspaceIdAndEmail(
+        User.currentWorkspace?.id.toString() ?? "-1",
+      ),
+      {
+        email: User.authUser?.email,
+      },
+    );
+    console.log(res);
+    const workers: WorkspaceUser[] = res;
+    setWorkspaceUsers(workers);
+  };
+
+  useEffect(() => {
+    getWorkers();
+  }, []);
 
   return (
     <PageTemplate>
@@ -84,7 +109,7 @@ export default function WorkspaceDetails() {
         <SidebarTemplate activeIcon="map" />
         <ContentBlock>
           {/* <p>WorkspaceId: {User.currentWorkspace}</p> */}
-          <div className="flex w-[90%]">
+          <div className="flex w-full">
             <div className="flex flex-col w-3/4 p-6 gap-8">
               <Image
                 src="/problem.png"
@@ -134,47 +159,44 @@ export default function WorkspaceDetails() {
             </div>
 
             <div className="w-1/4 p-6">
-              <div className="flex justify-between items-center mb-10 border-b-4 pb-5">
-                <p className="text-3xl">Workers</p>
-                <SearchButton />
+              <div className="flex justify-between items-center mb-10 border-b-4 gap-4 pb-4">
+                <p className="text-2xl">Workers</p>
+                <SearchButton customWidth="w-full" />
               </div>
-              <div className="flex flex-col gap-4 mb-10">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="flex justify-between items-center gap-4 flex-row"
-                  >
-                    <Image
-                      src="/employee.png"
-                      alt="Employee"
-                      width={56}
-                      height={56}
-                      className="rounded-full"
-                    />
-                    <p className="text-2xl">Ahmed Rash</p>
-                    <Input
-                      name="details"
-                      type="button"
-                      value="Details"
-                      className="px-4 py-2 bg-ev-blue text-white rounded-lg hover:scale-110 duration-300"
-                    />
-                  </div>
-                ))}
-              </div>
-              <div className="flex justify-around mb-10">
+              <div className="flex justify-around mb-10 items-center">
                 <Input
                   name="add"
                   type="button"
                   value="Add"
                   onClick={() => setIsAddOpen(true)}
-                  className="px-4 py-2 bg-ev-green text-white rounded-lg hover:scale-110 duration-300"
+                  className="px-4 py-2 bg-ev-green text-white rounded-lg hover:scale-110 duration-300 w-3/4"
                 />
                 <Input
                   name="remove"
                   type="button"
                   value="Remove"
-                  className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300"
+                  className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
                 />
+              </div>
+              <div className="flex flex-col gap-4 mb-10 w-full">
+                {/*
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <WorkerEntry username={"Worker " + i} id={i} key={i} />
+                ))}
+                */}
+                {workspaceUsers !== null ? (
+                  <>
+                    {workspaceUsers.map((workspaceUser) => (
+                      // no photo since backend is stupid ill need to get that
+                      <WorkerEntry
+                        id={workspaceUser.id}
+                        username={workspaceUser.username}
+                      />
+                    ))}
+                  </>
+                ) : (
+                  <p>Workspace doesnt have any users</p>
+                )}
               </div>
             </div>
           </div>
