@@ -72,21 +72,27 @@ export default function Workspaces() {
           const isPdf = workspace.plan_file_name
             ?.toLowerCase()
             .endsWith(".pdf");
-          const searchFileName = isPdf
-            ? "page_1.svg"
-            : workspace.plan_file_name;
-          console.log(searchFileName);
+
+          let searchPath = "";
+          if (isPdf && workspace.plan_file_name) {
+            const filenameWithoutPdf = workspace.plan_file_name.replace(
+              /\.pdf$/i,
+              "",
+            );
+            searchPath = `${userId}/${filenameWithoutPdf}/page_1.svg`;
+          } else {
+            searchPath = `${userId}/${workspace.plan_file_name}`;
+          }
+
           const match = imageMetadataResponse?.files?.find(
-            (file) => file.file_name === searchFileName,
+            (file) => file.storage_path === searchPath,
           );
 
           if (match && match.svg_content) {
             return { ...workspace, coverPhoto: match.svg_content };
           } else {
             if (match && !match.svg_content) {
-              console.warn(
-                `Found match for ${searchFileName} but no svg_content.`,
-              );
+              console.warn(`Found match for ${searchPath} but no svg_content.`);
             }
             return workspace;
           }

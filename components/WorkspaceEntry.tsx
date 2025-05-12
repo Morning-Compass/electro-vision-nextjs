@@ -1,8 +1,8 @@
+// components/WorkspaceEntry.tsx
 import useUserContext from "@/ev-contexts/userContextProvider";
 import { Workspace } from "@/ev-types/workspace-types";
 import Image from "next/image";
 import Link from "next/link";
-import { copyFileSync } from "node:fs";
 import React from "react";
 
 type WorkspaceEntryProps = {
@@ -11,28 +11,33 @@ type WorkspaceEntryProps = {
 
 const WorkspaceEntry = ({ workspace }: WorkspaceEntryProps) => {
   const { UserDispatch } = useUserContext();
+
+  const getSvgDataUri = (rawSvg: string): string => {
+    const withoutProlog = rawSvg.replace(/<\?xml[\s\S]*?\?>/, "").trim();
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(withoutProlog)}`;
+  };
+
   const isSvg =
     typeof workspace.coverPhoto === "string" &&
-    (workspace.coverPhoto?.trim().startsWith("<svg") ||
-      workspace.coverPhoto?.trim().startsWith("<?xml"));
+    workspace.coverPhoto.trim().startsWith("<");
 
-  // Convert SVG string to data URL
-  const imageSrc = isSvg
-    ? `data:image/svg+xml,${encodeURIComponent(workspace.coverPhoto)}`
-    : "/problem.png";
+  const imageSrc = isSvg ? getSvgDataUri(workspace.coverPhoto) : "/problem.png";
 
   return (
     <section
       key={workspace.id}
       onClick={() =>
-        UserDispatch({ type: "setCurrentWorkspace", value: workspace })
+        UserDispatch({
+          type: "setCurrentWorkspace",
+          value: {
+            ...workspace,
+            coverPhoto: imageSrc, // Store the processed image source in context
+          },
+        })
       }
-      className="flex flex-col items-center p-6 bg-ev-primary-bg rounded-xl hover:bg-ev-primary-hover transition-colors cursor-pointer "
+      className="flex flex-col items-center p-6 bg-ev-primary-bg rounded-xl hover:bg-ev-primary-hover transition-colors cursor-pointer"
     >
-      <Link
-        href={`/workspaces/plans/?coverImage=${encodeURIComponent(imageSrc)}`}
-        className="w-full"
-      >
+      <Link href={`/workspaces/plans`} prefetch={false} className="w-full">
         <div className="relative aspect-video w-full overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow bg-gray-100">
           <Image
             src={imageSrc}
@@ -43,7 +48,7 @@ const WorkspaceEntry = ({ workspace }: WorkspaceEntryProps) => {
             onError={(e) => {
               (e.target as HTMLImageElement).src = "/problem.png";
             }}
-            unoptimized={isSvg} // Disable optimization for SVG
+            unoptimized={isSvg}
           />
         </div>
       </Link>

@@ -33,10 +33,9 @@ export default function WorkspaceDetails() {
     null,
   );
   const [tasks, setTasks] = useState<Task[] | null>(null);
-
   // Changed from useRouter to useSearchParams
   const searchParams = useSearchParams();
-  const coverImage = searchParams.get("coverImage");
+  const coverImage = User.currentWorkspace?.coverPhoto || "/problem.png";
   const [receivedCoverImage, setReceivedCoverImage] = useState<string | null>(
     null,
   );

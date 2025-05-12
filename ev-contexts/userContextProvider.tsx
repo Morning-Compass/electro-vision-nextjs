@@ -13,37 +13,38 @@ type UserContextProviderProps = {
   children: ReactNode;
 };
 
+// Update UserAction type to properly handle workspaces
 type UserAction =
-  | {
-      type: "setUsername";
-      value: string | null;
-    }
-  | {
-      type: "setTheme";
-      value: "light" | "dark";
-    }
-  | {
-      type: "setProfilePicture";
-      value: string | null;
-    }
-  | {
-      type: "setEmail";
-      value: string | null;
-    }
-  | {
-      type: "setId";
-      value: string | null;
-    }
+  | { type: "setUsername"; value: string | null }
+  | { type: "setTheme"; value: "light" | "dark" }
+  | { type: "setProfilePicture"; value: string | null }
+  | { type: "setEmail"; value: string | null }
+  | { type: "setId"; value: string | null }
   | { type: "setAuthUser"; value: AuthUser | null }
   | { type: "setFullUser"; value: FullUser | null }
   | { type: "setUser"; value: UserEntityType }
   | { type: "setCurrentWorkspace"; value: Workspace | null };
+
+// Update UserEntityType to include currentWorkspace
+declare module "@/ev-types/user-types" {
+  interface UserEntityType {
+    currentWorkspace?: Workspace | null;
+  }
+}
 
 const UserReducer = (
   state: UserEntityType,
   action: UserAction,
 ): UserEntityType => {
   switch (action.type) {
+    case "setCurrentWorkspace":
+      return {
+        ...state,
+        currentWorkspace: action.value
+          ? { ...action.value, coverPhoto: action.value.coverPhoto }
+          : null,
+      };
+    // Other cases remain the same
     case "setUsername":
       return {
         ...state,
@@ -80,8 +81,6 @@ const UserReducer = (
       return { ...state, fullUser: action.value };
     case "setUser":
       return { ...action.value };
-    case "setCurrentWorkspace":
-      return { ...state, currentWorkspace: action.value };
     default:
       return state;
   }
