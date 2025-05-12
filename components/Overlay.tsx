@@ -7,7 +7,9 @@ export type OverlayProps = {
   blockClassName?: string;
   isOpen: boolean;
   onClose: () => void;
-  okButtonType?: string;
+  buttons?: ReactNode; // Add this for custom buttons
+  closeButton?: ReactNode; // Add this for custom close button
+  hideDefaultCloseButton?: boolean; // Add this to hide default close button
 };
 
 function Overlay({
@@ -15,7 +17,9 @@ function Overlay({
   blockClassName,
   isOpen,
   onClose,
-  okButtonType = "button",
+  buttons,
+  closeButton,
+  hideDefaultCloseButton = false,
 }: OverlayProps) {
   if (!isOpen) return null;
 
@@ -24,22 +28,23 @@ function Overlay({
       <section
         className={`relative w-auto h-auto p-10 flex flex-col items-center bg-ev-primary-bg rounded-3xl ${blockClassName || ""}`}
       >
-        <Image
-          src="/cancel.png"
-          alt="Cancel"
-          width={48}
-          height={48}
-          className="absolute top-5 right-5 cursor-pointer"
-          onClick={onClose}
-        />
+        {!hideDefaultCloseButton &&
+          (closeButton || (
+            <Image
+              src="/cancel.png"
+              alt="Cancel"
+              width={48}
+              height={48}
+              className="absolute top-5 right-5 cursor-pointer hover:scale-110 active:scale-95 transition-transform duration-200"
+              onClick={onClose}
+            />
+          ))}
         {children}
-        <Input
-          name="ok_button"
-          type={okButtonType}
-          className="mt-10 text-white border-4 bg-ev-green rounded-lg w-96 h-12 hover:scale-110 duration-300"
-          value="Ok"
-          onClick={onClose}
-        />
+        {buttons && (
+          <div className="mt-10 flex gap-4 w-full justify-center">
+            {buttons}
+          </div>
+        )}
       </section>
     </section>
   );

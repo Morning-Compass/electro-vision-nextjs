@@ -10,6 +10,7 @@ import EmblaCarousel from "@/components/carousel/EmblaCarousel";
 import { EmblaOptionsType } from "embla-carousel";
 import PageTemplate from "@/components/templates/PageTemplate";
 import SidebarTemplate from "@/components/templates/SidebarTemplate";
+import ContentBlock from "@/components/ContentBlock";
 
 export default function Home() {
   const { User, UserDispatch } = useUserContext();
@@ -19,7 +20,11 @@ export default function Home() {
       <NavbarTemplate />
       <section className="flex flex-row items-center h-full gap-8 w-[90vw]">
         <SidebarTemplate activeIcon="category" />
-        <div className=" bg-ev-primary w-full h-full flex items-center rounded-3xl"></div>
+        <ContentBlock>
+          <div className=" bg-ev-primary w-full flex items-center rounded-3xl">
+            Future Hub
+          </div>
+        </ContentBlock>
       </section>
       <FooterSmall />
     </PageTemplate>

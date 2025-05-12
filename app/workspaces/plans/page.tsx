@@ -216,7 +216,7 @@ export default function WorkspaceDetails() {
                 alt="problem"
                 width={1200}
                 height={600}
-                className="rounded-3xl w-full h-auto object-cover shadow-lg"
+                className="rounded-3xl w-full h-auto object-cover shadow-lg p-6 bg-ev-white"
               />
 
               <div className="flex flex-col gap-2 p-6 bg-ev-primary-bg rounded-xl">

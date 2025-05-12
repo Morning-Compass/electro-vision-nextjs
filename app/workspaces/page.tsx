@@ -28,6 +28,31 @@ export default function Workspaces() {
     null,
   );
   const [workspaces, setWorkspaces] = useState<Workspace[] | null>(null);
+  const [isCreatingWorkspace, setIsCreatingWorkspace] = useState(false);
+
+  const loadingMessages = [
+    "Preparing your space...",
+    "Uploading blueprints...",
+    "Setting up dimensions...",
+    "Almost there...",
+    "Final touches...",
+  ];
+
+  const [currentLoadingMessage, setCurrentLoadingMessage] = useState(
+    loadingMessages[0],
+  );
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isCreatingWorkspace) {
+      let counter = 0;
+      interval = setInterval(() => {
+        counter = (counter + 1) % loadingMessages.length;
+        setCurrentLoadingMessage(loadingMessages[counter]);
+      }, 2000);
+    }
+    return () => clearInterval(interval);
+  }, [isCreatingWorkspace]);
 
   if (!User.authUser?.id) {
     return (
@@ -40,73 +65,70 @@ export default function Workspaces() {
       </PageTemplate>
     );
   }
+  const fetchData = async () => {
+    const userId = User.authUser?.id;
+    const userEmail = User.authUser?.email;
+
+    if (!userId || !userEmail) {
+      console.error("Missing user ID or email in context.");
+      setWorkspaces([]);
+      return;
+    }
+
+    setWorkspaces(null);
+
+    try {
+      const fetchedWorkspaces: Workspace[] = await OLF.post(
+        ApiLinks.listWorkspaces,
+        { email: userEmail },
+      );
+
+      const imageMetadataResponse: PythonReponse = await OLF.get(
+        `${ApiLinks.retrieveFiles}/${userId}`,
+      );
+
+      setCoverImagesData(imageMetadataResponse);
+      console.log("API Response for images:", imageMetadataResponse);
+
+      const mergedWorkspaces = fetchedWorkspaces.map((workspace) => {
+        // Check if the file is a PDF
+        const isPdf = workspace.plan_file_name?.toLowerCase().endsWith(".pdf");
+
+        let searchPath = "";
+        if (isPdf && workspace.plan_file_name) {
+          const filenameWithoutPdf = workspace.plan_file_name.replace(
+            /\.pdf$/i,
+            "",
+          );
+          searchPath = `${userId}/${filenameWithoutPdf}/page_1.svg`;
+        } else {
+          searchPath = `${userId}/${workspace.plan_file_name}`;
+        }
+
+        const match = imageMetadataResponse?.files?.find(
+          (file) => file.storage_path === searchPath,
+        );
+
+        if (match && match.svg_content) {
+          return { ...workspace, coverPhoto: match.svg_content };
+        } else {
+          if (match && !match.svg_content) {
+            console.warn(`Found match for ${searchPath} but no svg_content.`);
+          }
+          return workspace;
+        }
+      });
+
+      console.log("Merged Workspaces:", mergedWorkspaces);
+      setWorkspaces(mergedWorkspaces);
+    } catch (error) {
+      console.error("Failed to fetch workspaces or cover images", error);
+      toast.error("Error loading workspace data.");
+      setWorkspaces([]);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      const userId = User.authUser?.id;
-      const userEmail = User.authUser?.email;
-
-      if (!userId || !userEmail) {
-        console.error("Missing user ID or email in context.");
-        setWorkspaces([]);
-        return;
-      }
-
-      setWorkspaces(null);
-
-      try {
-        const fetchedWorkspaces: Workspace[] = await OLF.post(
-          ApiLinks.listWorkspaces,
-          { email: userEmail },
-        );
-
-        const imageMetadataResponse: PythonReponse = await OLF.get(
-          `${ApiLinks.retrieveFiles}/${userId}`,
-        );
-
-        setCoverImagesData(imageMetadataResponse);
-        console.log("API Response for images:", imageMetadataResponse);
-
-        const mergedWorkspaces = fetchedWorkspaces.map((workspace) => {
-          // Check if the file is a PDF
-          const isPdf = workspace.plan_file_name
-            ?.toLowerCase()
-            .endsWith(".pdf");
-
-          let searchPath = "";
-          if (isPdf && workspace.plan_file_name) {
-            const filenameWithoutPdf = workspace.plan_file_name.replace(
-              /\.pdf$/i,
-              "",
-            );
-            searchPath = `${userId}/${filenameWithoutPdf}/page_1.svg`;
-          } else {
-            searchPath = `${userId}/${workspace.plan_file_name}`;
-          }
-
-          const match = imageMetadataResponse?.files?.find(
-            (file) => file.storage_path === searchPath,
-          );
-
-          if (match && match.svg_content) {
-            return { ...workspace, coverPhoto: match.svg_content };
-          } else {
-            if (match && !match.svg_content) {
-              console.warn(`Found match for ${searchPath} but no svg_content.`);
-            }
-            return workspace;
-          }
-        });
-
-        console.log("Merged Workspaces:", mergedWorkspaces);
-        setWorkspaces(mergedWorkspaces);
-      } catch (error) {
-        console.error("Failed to fetch workspaces or cover images", error);
-        toast.error("Error loading workspace data.");
-        setWorkspaces([]);
-      }
-    };
-
     fetchData();
   }, [User.authUser?.id, User.authUser?.email]);
 
@@ -121,7 +143,7 @@ export default function Workspaces() {
     return () => URL.revokeObjectURL(objectUrl);
   }, [selectedFile]);
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setSelectedFile(e.target.files[0]);
     }
@@ -181,6 +203,8 @@ export default function Workspaces() {
         console.log("Rust created workspace response:", response_workspace);
         toast.success("Workspace added successfully!");
 
+        await fetchData();
+
         setIsOverlayOpen(false);
         setSelectedFile(null);
         setWorkspaceName("");
@@ -198,7 +222,7 @@ export default function Workspaces() {
             {},
           );
           console.log(`Successfully removed image: ${selectedFile.name}`);
-          toast.info("Image upload canceled.");
+          toast.error("Image upload canceled.");
         } catch (delete_error) {
           console.error(
             "Failed to remove uploaded image after workspace creation error:",
@@ -235,7 +259,7 @@ export default function Workspaces() {
           )}
         </div>
 
-        <section className="flex flex-col sm:flex-row justify-between items-center w-full mb-4 gap-4">
+        <section className="flex flex-col sm:flex-row justify-start items-center w-full mb-4 gap-4">
           <p className="text-xl whitespace-nowrap">Choose file</p>
           <div className="flex flex-col items-end w-full sm:w-auto">
             <Input
@@ -252,15 +276,15 @@ export default function Workspaces() {
             >
               Choose file (.svg or .pdf)
             </label>
-            {selectedFile && (
-              <p
-                className="text-sm text-gray-500 mt-1 truncate w-full text-right"
-                title={selectedFile.name}
-              >
-                Selected: {selectedFile.name}
-              </p>
-            )}
           </div>
+        </section>
+
+        <section className="flex flex-col sm:flex-row justify-start items-center w-full mb-4 gap-4">
+          {selectedFile && (
+            <p className="text-sm text-gray-500 mt-1 w-full text-left break-all whitespace-normal">
+              Selected: {selectedFile.name}
+            </p>
+          )}
         </section>
 
         <section className="flex flex-col sm:flex-row justify-between items-center w-full mb-6 gap-4">
@@ -299,14 +323,14 @@ export default function Workspaces() {
               <Input
                 name="add"
                 type="button"
-                className="text-white bg-ev-green rounded-lg px-4 py-2 hover:scale-105 active:scale-95 duration-200 whitespace-nowrap"
+                className="text-white bg-ev-green rounded-lg px-4 py-2 hover:scale-105 active:scale-95 duration-200 whitespace-nowrap w-[6vw] min-w-12"
                 value="Add"
                 onClick={() => setIsOverlayOpen(true)}
               />
               <Input
                 name="remove"
                 type="button"
-                className="text-white bg-ev-red rounded-lg px-4 py-2 hover:scale-105 active:scale-95 duration-200 whitespace-nowrap"
+                className="text-white bg-ev-red rounded-lg px-4 py-2 hover:scale-105 active:scale-95 duration-200 whitespace-nowrap w-[6vw] min-w-12 "
                 value="Remove"
                 onClick={() =>
                   toast.error("Delete functionality not implemented.")
