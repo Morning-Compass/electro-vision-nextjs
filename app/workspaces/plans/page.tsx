@@ -44,6 +44,192 @@ export default function WorkspaceDetails() {
     invited_email: string | null;
   };
 
+  type TaskFormProps = {
+    title: string;
+    description: string;
+    assignee_email: string;
+    importance: "LOW" | "MEDIUM" | "HIGH";
+    category: string;
+    due_date?: string;
+  };
+
+  const AddTaskLogic = () => {
+    const [isTaskOpen, setIsTaskOpen] = useState(false);
+    const { User } = useUserContext();
+    const {
+      handleSubmit,
+      formState: { errors, isSubmitting },
+      register,
+      reset,
+    } = useForm<TaskFormProps>({
+      mode: "onTouched",
+      reValidateMode: "onChange",
+      defaultValues: {
+        importance: "LOW",
+      },
+    });
+
+    const onSubmit: SubmitHandler<TaskFormProps> = async (data) => {
+      try {
+        const taskPayload = {
+          assigner_email: User.authUser?.email,
+          assignee_email: data.assignee_email,
+          title: data.title,
+          description: data.description,
+          importance: data.importance,
+          category: data.category,
+          status: "TODO", // Default status
+          due_date: data.due_date || null,
+          description_multimedia: null,
+        };
+
+        const res = await OLF.post(
+          ApiLinks.createTasks(User.currentWorkspace?.id.toString() ?? "-1"),
+          taskPayload,
+        );
+
+        toast.success("Task created successfully!");
+        console.log(res);
+        setIsTaskOpen(false);
+        reset();
+        getTasks(); // Refresh the tasks list
+      } catch (error) {
+        console.error("Error creating task:", error);
+        toast.error(
+          error instanceof Error ? error.message : "Failed to create task",
+        );
+      }
+    };
+
+    return (
+      <>
+        <Input
+          name="add_task"
+          type="button"
+          value="Add"
+          onClick={() => setIsTaskOpen(true)}
+          customWidth="w-3/4"
+          className="px-4 py-2 bg-ev-green text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+        />
+
+        <Overlay isOpen={isTaskOpen} onClose={() => setIsTaskOpen(false)}>
+          <form
+            className="flex flex-col gap-6 w-full"
+            onSubmit={handleSubmit(onSubmit)}
+            noValidate
+          >
+            <p className="text-4xl mb-10">Create New Task</p>
+
+            <FormErrorWrap>
+              <div className="flex flex-col gap-4">
+                <p className="text-xl">Title*</p>
+                <Input
+                  type="text"
+                  placeholder="Task title..."
+                  className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg w-full"
+                  error={errors.title?.message}
+                  register={register("title", {
+                    required: "Title is required",
+                    minLength: {
+                      value: 3,
+                      message: "Title must be at least 3 characters",
+                    },
+                  })}
+                />
+              </div>
+            </FormErrorWrap>
+
+            <FormErrorWrap>
+              <div className="flex flex-col gap-4">
+                <p className="text-xl">Description</p>
+                <Input
+                  type="text"
+                  placeholder="Task description..."
+                  className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg w-full"
+                  error={errors.description?.message}
+                  register={register("description")}
+                />
+              </div>
+            </FormErrorWrap>
+
+            <FormErrorWrap>
+              <div className="flex flex-col gap-4">
+                <p className="text-xl">Assignee Email*</p>
+                <Input
+                  type="text"
+                  placeholder="assignee@example.com"
+                  className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg w-full"
+                  error={errors.assignee_email?.message}
+                  register={register("assignee_email", {
+                    required: "Assignee email is required",
+                    pattern: {
+                      value: Regex.emailRegistration,
+                      message: "Invalid email format",
+                    },
+                  })}
+                />
+              </div>
+            </FormErrorWrap>
+
+            <FormErrorWrap>
+              <div className="flex flex-col gap-4">
+                <p className="text-xl">Importance*</p>
+                <select
+                  className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg w-full"
+                  {...register("importance", {
+                    required: "Importance is required",
+                  })}
+                >
+                  <option value="LOW">Low</option>
+                  <option value="MEDIUM">Medium</option>
+                  <option value="HIGH">High</option>
+                </select>
+                {errors.importance && (
+                  <p className="text-ev-red text-sm">
+                    {errors.importance.message}
+                  </p>
+                )}
+              </div>
+            </FormErrorWrap>
+
+            <FormErrorWrap>
+              <div className="flex flex-col gap-4">
+                <p className="text-xl">Category</p>
+                <Input
+                  type="text"
+                  placeholder="e.g., Lamps, Sockets"
+                  className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg w-full"
+                  error={errors.category?.message}
+                  register={register("category")}
+                />
+              </div>
+            </FormErrorWrap>
+
+            <FormErrorWrap>
+              <div className="flex flex-col gap-4">
+                <p className="text-xl">Due Date</p>
+                <Input
+                  type="date"
+                  className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg w-full"
+                  register={register("due_date")}
+                />
+              </div>
+            </FormErrorWrap>
+
+            <div className="flex items-center justify-center gap-4 mt-4 w-full">
+              <Input
+                type="submit"
+                disabled={isSubmitting}
+                className="px-4 py-2 bg-ev-blue text-white rounded-lg hover:scale-105 duration-300 disabled:opacity-50 w-full"
+                value={isSubmitting ? "Creating..." : "Create Task"}
+              />
+            </div>
+          </form>
+        </Overlay>
+      </>
+    );
+  };
+
   const AddWorkerLogic = () => {
     const {
       handleSubmit,
@@ -62,7 +248,7 @@ export default function WorkspaceDetails() {
           invited_email: data.invited_email,
         });
         console.log(res);
-        toast.success(res.response);
+        toast.success("Worker invited successfully");
         setIsAddOpen(false);
       } catch (e) {
         console.error(e);
@@ -111,7 +297,7 @@ export default function WorkspaceDetails() {
               customWidth="w-1/2"
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 bg-ev-blue text-ev-white rounded-lg hover:scale-105 duration-300 disabled:opacity-50 w-full"
+              className="px-4 py-2 bg-ev-blue text-ev-white rounded-lg hover:scale-105 duration-300 disabled:opacity-50 w-full text-center flex items-center justify-center"
               value={isSubmitting ? "Adding..." : "Add Worker"}
             />
           </div>
@@ -169,42 +355,12 @@ export default function WorkspaceDetails() {
     getTasks();
   }, [coverImage]);
 
+  setInterval(() => getWorkers(), 100000);
+
   return (
     <PageTemplate>
       <NavbarTemplate />
       <AddWorkerLogic />
-      <Overlay isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)}>
-        <p className="text-4xl mb-10">Change Data</p>
-        <div className="flex flex-col gap-6 w-full">
-          {[
-            { label: "Name", placeholder: "Electrician..." },
-            { label: "Start Date", placeholder: "29/01/2025" },
-            { label: "Due Date", placeholder: "25/08/2027" },
-          ].map(({ label, placeholder }) => (
-            <div
-              key={label}
-              className="flex justify-between items-center w-full"
-            >
-              <p className="text-xl">{label}:</p>
-              <Input
-                name={label.toLowerCase().replace(" ", "_")}
-                type="text"
-                placeholder={placeholder}
-                className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg"
-              />
-            </div>
-          ))}
-          <div className="flex justify-between items-center w-full">
-            <p className="text-xl">Plan file:</p>
-            <Input
-              name="select_file"
-              type="button"
-              value="Select"
-              className="px-4 py-2 bg-mc-blue text-white rounded-lg hover:scale-110 duration-300"
-            />
-          </div>
-        </div>
-      </Overlay>
 
       <section className="flex flex-row items-center justify-start h-full gap-8 w-[90vw]">
         <SidebarTemplate activeIcon="map" />
@@ -292,14 +448,7 @@ export default function WorkspaceDetails() {
                   <SearchButton customWidth="w-full" />
                 </div>
                 <div className="flex justify-around mb-10 items-center">
-                  <Input
-                    name="add"
-                    type="button"
-                    value="Add"
-                    onClick={() => setIsAddOpen(true)}
-                    customWidth="w-3/4"
-                    className="px-4 py-2 bg-ev-green text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                  />
+                  <AddTaskLogic />
                   <Input
                     name="remove"
                     type="button"

@@ -24,7 +24,7 @@ function Overlay({
   if (!isOpen) return null;
 
   return (
-    <section className="fixed inset-0 bg-overlay z-10 flex justify-center items-center">
+    <section className="fixed inset-0 bg-overlay z-10 flex justify-center items-center overflow-y-scroll">
       <section
         className={`relative w-auto h-auto p-10 flex flex-col items-center bg-ev-primary-bg rounded-3xl ${blockClassName || ""}`}
       >
@@ -39,7 +39,7 @@ function Overlay({
               onClick={onClose}
             />
           ))}
-        {children}
+        <div className="mt-16">{children}</div>
         {buttons && (
           <div className="mt-10 flex gap-4 w-full justify-center">
             {buttons}
