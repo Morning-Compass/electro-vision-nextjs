@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, ChangeEvent, useLayoutEffect } from "react";
+import { useState, useEffect, ChangeEvent } from "react";
 import PageTemplate from "@/components/templates/PageTemplate";
 import NavbarTemplate from "@/components/templates/NavbarTemplate";
 import { FooterSmall } from "@/components/templates/FooterSmall";
@@ -34,7 +34,7 @@ export default function Workspaces() {
       <PageTemplate>
         <NavbarTemplate />
         <div className="flex justify-center items-center h-screen">
-          <p>Proszę się zalogować, aby zobaczyć przestrzenie robocze.</p>
+          <p>Please log in to view workspaces.</p>
         </div>
         <FooterSmall />
       </PageTemplate>
@@ -47,7 +47,7 @@ export default function Workspaces() {
       const userEmail = User.authUser?.email;
 
       if (!userId || !userEmail) {
-        console.error("Brak ID użytkownika lub emaila w kontekście.");
+        console.error("Missing user ID or email in context.");
         setWorkspaces([]);
         return;
       }
@@ -77,7 +77,7 @@ export default function Workspaces() {
           } else {
             if (match && !match.svg_content) {
               console.warn(
-                `Znaleziono dopasowanie dla ${workspace.plan_file_name}, ale brak svg_content.`,
+                `Found match for ${workspace.plan_file_name} but no svg_content.`,
               );
             }
             return workspace;
@@ -87,11 +87,8 @@ export default function Workspaces() {
         console.log("Merged Workspaces:", mergedWorkspaces);
         setWorkspaces(mergedWorkspaces);
       } catch (error) {
-        console.error(
-          "Nie udało się pobrać workspaces lub zdjęć okładek",
-          error,
-        );
-        toast.error("Błąd podczas ładowania danych przestrzeni roboczych.");
+        console.error("Failed to fetch workspaces or cover images", error);
+        toast.error("Error loading workspace data.");
         setWorkspaces([]);
       }
     };
@@ -118,19 +115,19 @@ export default function Workspaces() {
 
   const handleAddWorkspace = async () => {
     if (!selectedFile) {
-      toast.error("Proszę wybrać plik obrazu.");
+      toast.error("Please select an image file.");
       console.error("No file selected.");
       return;
     }
     if (!workspaceName.trim()) {
-      toast.error("Proszę wprowadzić nazwę przestrzeni roboczej.");
+      toast.error("Please enter a workspace name.");
       console.error("Workspace name is empty.");
       return;
     }
 
     let userId = User.authUser?.id;
     if (!userId) {
-      toast.error("Błąd: Brak ID użytkownika.");
+      toast.error("Error: Missing user ID.");
       return;
     }
     const userIdStr = userId.toString();
@@ -145,10 +142,10 @@ export default function Workspaces() {
       const uploadResponse = await OLF.post(ApiLinks.uploadImage, formData);
       console.log("Image Upload response:", uploadResponse);
       imageUploadedSuccessfully = true;
-      toast.success("Obrazek przesłany pomyślnie.");
+      toast.success("Image uploaded successfully.");
     } catch (error) {
       console.error("Image Upload failed:", error);
-      toast.error("Problem podczas przesyłania obrazka.");
+      toast.error("Problem uploading image.");
       return;
     }
 
@@ -168,14 +165,14 @@ export default function Workspaces() {
           workspacePayload,
         );
         console.log("Rust created workspace response:", response_workspace);
-        toast.success("Przestrzeń robocza dodana pomyślnie!");
+        toast.success("Workspace added successfully!");
 
         setIsOverlayOpen(false);
         setSelectedFile(null);
         setWorkspaceName("");
         setPreviewUrl(null);
       } catch (error_inner) {
-        toast.error("Problem podczas tworzenia wpisu przestrzeni roboczej.");
+        toast.error("Problem creating workspace entry.");
         console.error("Workspace Creation failed:", error_inner);
 
         console.log(
@@ -187,15 +184,13 @@ export default function Workspaces() {
             {},
           );
           console.log(`Successfully removed image: ${selectedFile.name}`);
-          toast.info("Anulowano przesyłanie obrazka.");
+          toast.info("Image upload canceled.");
         } catch (delete_error) {
           console.error(
             "Failed to remove uploaded image after workspace creation error:",
             delete_error,
           );
-          toast.error(
-            "Nie udało się usunąć obrazka po błędzie tworzenia workspace.",
-          );
+          toast.error("Failed to remove image after workspace creation error.");
         }
       }
     }
@@ -221,18 +216,18 @@ export default function Workspaces() {
             />
           ) : (
             <p className="text-ev-dark-gray text-center p-4">
-              Podgląd obrazu pojawi się tutaj
+              Preview will be shown here
             </p>
           )}
         </div>
 
         <section className="flex flex-col sm:flex-row justify-between items-center w-full mb-4 gap-4">
-          <p className="text-xl whitespace-nowrap">Wybierz obraz:</p>
+          <p className="text-xl whitespace-nowrap">Choose file</p>
           <div className="flex flex-col items-end w-full sm:w-auto">
             <Input
               name="file_input"
               type="file"
-              accept=".svg"
+              accept=".svg,.pdf"
               id="file_input"
               className="hidden"
               onChange={handleFileChange}
@@ -241,14 +236,14 @@ export default function Workspaces() {
               htmlFor="file_input"
               className="cursor-pointer text-ev-white text-center bg-ev-blue rounded-lg px-4 py-2 hover:scale-105 active:scale-95 duration-200 w-full sm:w-auto"
             >
-              Wybierz plik (.svg)
+              Choose file (.svg or .pdf)
             </label>
             {selectedFile && (
               <p
                 className="text-sm text-gray-500 mt-1 truncate w-full text-right"
                 title={selectedFile.name}
               >
-                Wybrano: {selectedFile.name}
+                Selected: {selectedFile.name}
               </p>
             )}
           </div>
@@ -256,7 +251,7 @@ export default function Workspaces() {
 
         <section className="flex flex-col sm:flex-row justify-between items-center w-full mb-6 gap-4">
           <label htmlFor="name_text" className="text-xl whitespace-nowrap">
-            Nazwa:
+            Name:
           </label>
           <Input
             name="name_text"
@@ -265,7 +260,7 @@ export default function Workspaces() {
             value={workspaceName}
             onChange={(e) => setWorkspaceName(e.target.value)}
             className="text-ev-dark-gray bg-ev-primary-bg rounded-lg px-3 py-2 border-2 border-gray-300 focus:border-blue-500 outline-none w-full sm:w-auto flex-grow"
-            placeholder="np. Hangar 1"
+            placeholder="e.g., Hangar 1"
             required
           />
         </section>
@@ -280,7 +275,7 @@ export default function Workspaces() {
         />
       </Overlay>
 
-      <section className="flex flex-row items-start h-full gap-8 w-full px-4 sm:px-8 md:px-12">
+      <section className="flex flex-row items-center h-full gap-8 w-[90vw]">
         <SidebarTemplate activeIcon="map" />
         <ContentBlock>
           <section className="flex flex-col sm:flex-row items-center justify-between mt-4 mb-6 ml-6 mr-6 gap-4">
@@ -300,7 +295,7 @@ export default function Workspaces() {
                 className="text-white bg-ev-red rounded-lg px-4 py-2 hover:scale-105 active:scale-95 duration-200 whitespace-nowrap"
                 value="Remove"
                 onClick={() =>
-                  toast.error("Funkcja usuwania niezaimplementowana.")
+                  toast.error("Delete functionality not implemented.")
                 }
               />
             </section>
@@ -320,7 +315,7 @@ export default function Workspaces() {
 
             {workspaces !== null && workspaces.length === 0 && (
               <div className="w-full h-full flex items-center justify-center text-2xl text-center text-gray-500 py-10">
-                Brak dostępnych przestrzeni roboczych. Dodaj nową!
+                No workspaces available. Add a new one!
               </div>
             )}
 
