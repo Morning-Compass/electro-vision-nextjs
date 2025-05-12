@@ -13,7 +13,8 @@ const WorkspaceEntry = ({ workspace }: WorkspaceEntryProps) => {
   const { UserDispatch } = useUserContext();
   const isSvg =
     typeof workspace.coverPhoto === "string" &&
-    workspace.coverPhoto?.trim().startsWith("<svg");
+    (workspace.coverPhoto?.trim().startsWith("<svg") ||
+      workspace.coverPhoto?.trim().startsWith("<?xml"));
 
   // Convert SVG string to data URL
   const imageSrc = isSvg

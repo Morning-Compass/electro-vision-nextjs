@@ -68,8 +68,16 @@ export default function Workspaces() {
         console.log("API Response for images:", imageMetadataResponse);
 
         const mergedWorkspaces = fetchedWorkspaces.map((workspace) => {
+          // Check if the file is a PDF
+          const isPdf = workspace.plan_file_name
+            ?.toLowerCase()
+            .endsWith(".pdf");
+          const searchFileName = isPdf
+            ? "page_1.svg"
+            : workspace.plan_file_name;
+          console.log(searchFileName);
           const match = imageMetadataResponse?.files?.find(
-            (file) => file.file_name === workspace.plan_file_name,
+            (file) => file.file_name === searchFileName,
           );
 
           if (match && match.svg_content) {
@@ -77,7 +85,7 @@ export default function Workspaces() {
           } else {
             if (match && !match.svg_content) {
               console.warn(
-                `Found match for ${workspace.plan_file_name} but no svg_content.`,
+                `Found match for ${searchFileName} but no svg_content.`,
               );
             }
             return workspace;
