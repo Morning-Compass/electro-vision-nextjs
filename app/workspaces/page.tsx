@@ -121,10 +121,10 @@ export default function Workspaces() {
 
         const response_workspace = await OLF.post(ApiLinks.createWorkspace, {
           owner_email: User.authUser?.email ?? "tomek@el-jot.eu",
-          geolocation: null,
           name: workspaceName ?? "workspace_name",
-          plan_file_name: selectedFile.name ?? "file_name.svg",
           finish_date: null,
+          plan_file_name: selectedFile.name ?? "file_name.svg",
+          geolocation: null,
         });
         console.log(response_workspace);
       } catch (error_inner) {
