@@ -106,12 +106,10 @@ export default function Workspaces() {
     formData.append("file", selectedFile);
     formData.append("user_id", userId);
 
-    try {
-      const response = await OLF.post(ApiLinks.uploadImage, formData);
-      console.log("Upload response:", response);
-      setIsOverlayOpen(false);
-      setSelectedFile(null);
+    const rustCreateWorkspace = async () => {
+      console.log("rust 1");
       try {
+        console.log("rust 2");
         const response_workspace = await OLF.post(
           ApiLinks.createWorkspace,
           JSON.stringify({
@@ -122,6 +120,7 @@ export default function Workspaces() {
             finish_date: null,
           }),
         );
+        console.log("rust created workspace");
         console.log(response_workspace);
       } catch (error_inner) {
         toast.error("R problem creating workspace ");
@@ -131,7 +130,16 @@ export default function Workspaces() {
           {},
         );
       }
+    };
+
+    try {
+      const response = await OLF.post(ApiLinks.uploadImage, formData);
+      console.log("Upload response:", response);
+      setIsOverlayOpen(false);
+      setSelectedFile(null);
+      console.log("Python created workspace");
       toast.success("Workspace added successfully");
+      rustCreateWorkspace();
     } catch (error) {
       console.error("Upload failed:", error);
       toast.error("Problem while adding workspace");
@@ -205,7 +213,7 @@ export default function Workspaces() {
           type="button"
           className="mt-4 text-white bg-ev-green rounded-lg w-full h-12 hover:scale-110 duration-300 px-4"
           value="Add Workspace"
-          onClick={handleAddWorkspace}
+          onClick={() => handleAddWorkspace()}
         />
       </Overlay>
 
