@@ -64,10 +64,14 @@ export default function Workspaces() {
   };
 
   useEffect(() => {
-    getWorkspacesCoverPhotos();
     getWorkspaces();
   }, []);
   console.log(workspaces);
+  useEffect(() => {
+    if (workspaces) {
+      getWorkspacesCoverPhotos();
+    }
+  }, [workspaces]);
 
   useEffect(() => {
     if (!selectedFile) {
@@ -107,19 +111,28 @@ export default function Workspaces() {
       setIsOverlayOpen(false);
       setSelectedFile(null);
       try {
-        const response_workspace = await OLF.post(
-          ApiLinks.createWorkspace,
-          JSON.stringify({
-            owner_email: User.authUser ?? "tomek@el-jot.eu",
-            geolocation: null,
-            name: workspaceName ?? "workspace_name",
-            plan_file_name: selectedFile.name ?? "file_name.svg",
-            finish_date: null,
-          }),
-        );
+        console.log({
+          owner_email: User.authUser?.email ?? "tomek@el-jot.eu",
+          geolocation: null,
+          name: workspaceName ?? "workspace_name",
+          plan_file_name: selectedFile.name ?? "file_name.svg",
+          finish_date: null,
+        });
+
+        const response_workspace = await OLF.post(ApiLinks.createWorkspace, {
+          owner_email: User.authUser?.email ?? "tomek@el-jot.eu",
+          geolocation: null,
+          name: workspaceName ?? "workspace_name",
+          plan_file_name: selectedFile.name ?? "file_name.svg",
+          finish_date: null,
+        });
         console.log(response_workspace);
       } catch (error_inner) {
         console.error("Workspace Creation failed:", error_inner);
+        await OLF.delete(
+          `${ApiLinks.removeFile}/${userId}/${selectedFile.name}`,
+          {},
+        );
       }
     } catch (error) {
       console.error("Upload failed:", error);
