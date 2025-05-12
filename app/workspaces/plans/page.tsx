@@ -11,7 +11,7 @@ import SearchButton from "@/components/SearchButton";
 import Input from "@/components/Input";
 import Overlay from "@/components/Overlay";
 import Link from "next/link";
-import { useRouter } from "next/router";
+import { useSearchParams } from "next/navigation"; // Changed from useRouter
 import useUserContext from "@/ev-contexts/userContextProvider";
 import WorkerEntry from "@/components/WorkerEntry";
 import OLF from "@/ev-lib/ElectroVisionFetch";
@@ -33,6 +33,13 @@ export default function WorkspaceDetails() {
     null,
   );
   const [tasks, setTasks] = useState<Task[] | null>(null);
+
+  // Changed from useRouter to useSearchParams
+  const searchParams = useSearchParams();
+  const coverImage = searchParams.get("coverImage");
+  const [receivedCoverImage, setReceivedCoverImage] = useState<string | null>(
+    null,
+  );
 
   type addWorkerFormProps = {
     invited_email: string | null;
@@ -71,7 +78,7 @@ export default function WorkspaceDetails() {
         <form
           className="flex flex-col gap-6 w-full"
           onSubmit={handleSubmit(onSubmit)}
-          noValidate // Add this to prevent browser validation
+          noValidate
         >
           <p className="text-4xl mb-10">Add Worker</p>
 
@@ -128,13 +135,6 @@ export default function WorkspaceDetails() {
     setWorkspaceUsers(workers);
   };
 
-  /*
-     for some reason it doesnt works
-     const res = await OLF.post(
-     ApiLinks.listTasks(User.currentWorkspace?.id.toString() ?? "-1"),
-     { owner_email: User.authUser?.email },
-     );
-     */
   const getTasks = async () => {
     try {
       const res = await fetch(
@@ -163,9 +163,12 @@ export default function WorkspaceDetails() {
   };
 
   useEffect(() => {
+    if (coverImage) {
+      setReceivedCoverImage(coverImage);
+    }
     getWorkers();
     getTasks();
-  }, []);
+  }, [coverImage]);
 
   return (
     <PageTemplate>
@@ -207,11 +210,10 @@ export default function WorkspaceDetails() {
       <section className="flex flex-row items-center justify-start h-full gap-8 w-[90vw]">
         <SidebarTemplate activeIcon="map" />
         <ContentBlock>
-          {/* <p>WorkspaceId: {User.currentWorkspace}</p> */}
           <div className="flex w-full">
             <div className="flex flex-col w-3/4 mr-8 gap-8">
               <Image
-                src="/problem.png"
+                src={receivedCoverImage || "/problem.png"}
                 alt="problem"
                 width={1200}
                 height={600}
@@ -269,15 +271,9 @@ export default function WorkspaceDetails() {
                   />
                 </div>
                 <div className="flex flex-col gap-4 mb-10 w-full">
-                  {/*
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <WorkerEntry username={"Worker " + i} id={i} key={i} />
-                ))}
-                */}
                   {workspaceUsers !== null ? (
                     <>
                       {workspaceUsers.map((workspaceUser, i) => (
-                        // no photo since backend is stupid ill need to get that
                         <WorkerEntry
                           id={workspaceUser.id}
                           username={workspaceUser.username}
@@ -286,7 +282,7 @@ export default function WorkspaceDetails() {
                       ))}
                     </>
                   ) : (
-                    <p>Workspace doesnt have any users</p>
+                    <p>Workspace doesn't have any users</p>
                   )}
                 </div>
               </div>
@@ -314,24 +310,19 @@ export default function WorkspaceDetails() {
                   />
                 </div>
                 <div className="flex flex-col gap-4 mb-10 w-full">
-                  {/*
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <WorkerEntry username={"Worker " + i} id={i} key={i} />
-                ))}
-                */}
                   {tasks !== null ? (
                     <>
                       {tasks.map((task, i) => (
-                        // no photo since backend is stupid ill need to get that
                         <TaskEntry
                           title={task.title}
                           status={task.status}
                           importance={task.importance}
+                          key={i}
                         />
                       ))}
                     </>
                   ) : (
-                    <p>Workspace doesnt have any tasks</p>
+                    <p>Workspace doesn't have any tasks</p>
                   )}
                 </div>
               </div>

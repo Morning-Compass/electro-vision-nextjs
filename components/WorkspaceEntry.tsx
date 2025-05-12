@@ -28,7 +28,10 @@ const WorkspaceEntry = ({ workspace }: WorkspaceEntryProps) => {
       }
       className="flex flex-col items-center p-6 bg-ev-primary-bg rounded-xl hover:bg-ev-primary-hover transition-colors cursor-pointer "
     >
-      <Link href={`/workspaces/plans/`} className="w-full">
+      <Link
+        href={`/workspaces/plans/?coverImage=${encodeURIComponent(imageSrc)}`}
+        className="w-full"
+      >
         <div className="relative aspect-video w-full overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow bg-gray-100">
           <Image
             src={imageSrc}
