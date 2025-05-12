@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, ChangeEvent } from "react";
+import { useState, useEffect, ChangeEvent, useLayoutEffect } from "react";
 import PageTemplate from "@/components/templates/PageTemplate";
 import NavbarTemplate from "@/components/templates/NavbarTemplate";
 import { FooterSmall } from "@/components/templates/FooterSmall";
@@ -24,13 +24,19 @@ export default function Workspaces() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [workspaceName, setWorkspaceName] = useState<string>("");
   const { User } = useUserContext();
-  const [coverImages, setCoverImages] = useState<PythonReponse | null>(null);
+  const [coverImagesData, setCoverImagesData] = useState<PythonReponse | null>(
+    null,
+  );
   const [workspaces, setWorkspaces] = useState<Workspace[] | null>(null);
 
   if (!User.authUser?.id) {
     return (
       <PageTemplate>
-        <></>
+        <NavbarTemplate />
+        <div className="flex justify-center items-center h-screen">
+          <p>Proszę się zalogować, aby zobaczyć przestrzenie robocze.</p>
+        </div>
+        <FooterSmall />
       </PageTemplate>
     );
   }
@@ -40,38 +46,53 @@ export default function Workspaces() {
       const userId = User.authUser?.id;
       const userEmail = User.authUser?.email;
 
-      if (!userId || !userEmail) return;
+      if (!userId || !userEmail) {
+        console.error("Brak ID użytkownika lub emaila w kontekście.");
+        setWorkspaces([]);
+        return;
+      }
+
+      setWorkspaces(null);
 
       try {
-        // 1. Get workspaces
         const fetchedWorkspaces: Workspace[] = await OLF.post(
           ApiLinks.listWorkspaces,
-          {
-            email: userEmail,
-          },
+          { email: userEmail },
         );
 
-        // 2. Get cover image metadata
-        const response: PythonReponse = await OLF.get(
+        const imageMetadataResponse: PythonReponse = await OLF.get(
           `${ApiLinks.retrieveFiles}/${userId}`,
         );
-        setCoverImages(response);
 
-        // 3. Merge cover photos into workspaces
+        setCoverImagesData(imageMetadataResponse);
+        console.log("API Response for images:", imageMetadataResponse);
+
         const mergedWorkspaces = fetchedWorkspaces.map((workspace) => {
-          const match = response?.files?.find(
+          const match = imageMetadataResponse?.files?.find(
             (file) => file.file_name === workspace.plan_file_name,
           );
-          return {
-            ...workspace,
-            coverPhoto: match?.svg_content,
-          };
+
+          if (match && match.svg_content) {
+            return { ...workspace, coverPhoto: match.svg_content };
+          } else {
+            if (match && !match.svg_content) {
+              console.warn(
+                `Znaleziono dopasowanie dla ${workspace.plan_file_name}, ale brak svg_content.`,
+              );
+            }
+            return workspace;
+          }
         });
 
+        console.log("Merged Workspaces:", mergedWorkspaces);
         setWorkspaces(mergedWorkspaces);
       } catch (error) {
-        console.error("Failed to fetch workspaces or cover photos", error);
-        toast.error("Error loading workspace data");
+        console.error(
+          "Nie udało się pobrać workspaces lub zdjęć okładek",
+          error,
+        );
+        toast.error("Błąd podczas ładowania danych przestrzeni roboczych.");
+        setWorkspaces([]);
       }
     };
 
@@ -85,6 +106,7 @@ export default function Workspaces() {
     }
     const objectUrl = URL.createObjectURL(selectedFile);
     setPreviewUrl(objectUrl);
+
     return () => URL.revokeObjectURL(objectUrl);
   }, [selectedFile]);
 
@@ -96,66 +118,84 @@ export default function Workspaces() {
 
   const handleAddWorkspace = async () => {
     if (!selectedFile) {
-      toast.error("Please select an image file");
+      toast.error("Proszę wybrać plik obrazu.");
+      console.error("No file selected.");
       return;
     }
     if (!workspaceName.trim()) {
-      toast.error("Please enter a workspace name");
+      toast.error("Proszę wprowadzić nazwę przestrzeni roboczej.");
+      console.error("Workspace name is empty.");
       return;
     }
 
-    const userId = User.authUser?.id?.toString();
+    let userId = User.authUser?.id;
     if (!userId) {
-      toast.error("Error: Missing user ID");
+      toast.error("Błąd: Brak ID użytkownika.");
       return;
     }
+    const userIdStr = userId.toString();
 
-    // Upload image to Python backend
     const formData = new FormData();
     formData.append("file", selectedFile);
-    formData.append("user_id", userId);
+    formData.append("user_id", userIdStr);
 
+    let imageUploadedSuccessfully = false;
     try {
-      await OLF.post(ApiLinks.uploadImage, formData);
-
-      // Create workspace in Rust backend
-      const workspacePayload = {
-        owner_email: User.authUser?.email ?? "",
-        geolocation: null,
-        name: workspaceName,
-        plan_file_name: selectedFile.name,
-        finish_date: null,
-      };
-
-      await OLF.post(ApiLinks.createWorkspace, workspacePayload);
-
-      toast.success("Workspace added successfully!");
-      setIsOverlayOpen(false);
-      setSelectedFile(null);
-      setWorkspaceName("");
-      setPreviewUrl(null);
-
-      // Refresh workspaces list
-      const fetchedWorkspaces: Workspace[] = await OLF.post(
-        ApiLinks.listWorkspaces,
-        {
-          email: User.authUser?.email ?? "",
-        },
-      );
-      setWorkspaces(fetchedWorkspaces);
+      console.log("Uploading image via Python backend...");
+      const uploadResponse = await OLF.post(ApiLinks.uploadImage, formData);
+      console.log("Image Upload response:", uploadResponse);
+      imageUploadedSuccessfully = true;
+      toast.success("Obrazek przesłany pomyślnie.");
     } catch (error) {
-      console.error("Error adding workspace:", error);
-      toast.error("Problem while adding workspace");
+      console.error("Image Upload failed:", error);
+      toast.error("Problem podczas przesyłania obrazka.");
+      return;
+    }
 
-      // Attempt to remove uploaded file if workspace creation failed
-      if (userId && selectedFile) {
+    if (imageUploadedSuccessfully) {
+      console.log("Creating workspace via Rust backend...");
+      try {
+        const workspacePayload = {
+          owner_email: User.authUser?.email ?? "",
+          geolocation: null,
+          name: workspaceName,
+          plan_file_name: selectedFile.name,
+          finish_date: null,
+        };
+        console.log("Sending workspace payload:", workspacePayload);
+        const response_workspace = await OLF.post(
+          ApiLinks.createWorkspace,
+          workspacePayload,
+        );
+        console.log("Rust created workspace response:", response_workspace);
+        toast.success("Przestrzeń robocza dodana pomyślnie!");
+
+        setIsOverlayOpen(false);
+        setSelectedFile(null);
+        setWorkspaceName("");
+        setPreviewUrl(null);
+      } catch (error_inner) {
+        toast.error("Problem podczas tworzenia wpisu przestrzeni roboczej.");
+        console.error("Workspace Creation failed:", error_inner);
+
+        console.log(
+          "Attempting to remove uploaded image due to workspace creation failure...",
+        );
         try {
           await OLF.delete(
-            `${ApiLinks.removeFile}/${userId}/${selectedFile.name}`,
+            `${ApiLinks.removeFile}/${userIdStr}/${selectedFile.name}`,
             {},
           );
-        } catch (deleteError) {
-          console.error("Failed to remove uploaded image:", deleteError);
+          console.log(`Successfully removed image: ${selectedFile.name}`);
+          toast.info("Anulowano przesyłanie obrazka.");
+        } catch (delete_error) {
+          console.error(
+            "Failed to remove uploaded image after workspace creation error:",
+            delete_error,
+          );
+          toast.error(
+            "Nie udało się usunąć obrazka po błędzie tworzenia workspace.",
+          );
         }
       }
     }
@@ -164,7 +204,6 @@ export default function Workspaces() {
   return (
     <PageTemplate>
       <NavbarTemplate />
-
       <Overlay
         isOpen={isOverlayOpen}
         onClose={() => setIsOverlayOpen(false)}
@@ -182,13 +221,13 @@ export default function Workspaces() {
             />
           ) : (
             <p className="text-ev-dark-gray text-center p-4">
-              Image preview will appear here
+              Podgląd obrazu pojawi się tutaj
             </p>
           )}
         </div>
 
         <section className="flex flex-col sm:flex-row justify-between items-center w-full mb-4 gap-4">
-          <p className="text-xl whitespace-nowrap">Select image:</p>
+          <p className="text-xl whitespace-nowrap">Wybierz obraz:</p>
           <div className="flex flex-col items-end w-full sm:w-auto">
             <Input
               name="file_input"
@@ -202,14 +241,14 @@ export default function Workspaces() {
               htmlFor="file_input"
               className="cursor-pointer text-ev-white text-center bg-ev-blue rounded-lg px-4 py-2 hover:scale-105 active:scale-95 duration-200 w-full sm:w-auto"
             >
-              Choose file (.svg)
+              Wybierz plik (.svg)
             </label>
             {selectedFile && (
               <p
                 className="text-sm text-gray-500 mt-1 truncate w-full text-right"
                 title={selectedFile.name}
               >
-                Selected: {selectedFile.name}
+                Wybrano: {selectedFile.name}
               </p>
             )}
           </div>
@@ -217,7 +256,7 @@ export default function Workspaces() {
 
         <section className="flex flex-col sm:flex-row justify-between items-center w-full mb-6 gap-4">
           <label htmlFor="name_text" className="text-xl whitespace-nowrap">
-            Name:
+            Nazwa:
           </label>
           <Input
             name="name_text"
@@ -226,7 +265,7 @@ export default function Workspaces() {
             value={workspaceName}
             onChange={(e) => setWorkspaceName(e.target.value)}
             className="text-ev-dark-gray bg-ev-primary-bg rounded-lg px-3 py-2 border-2 border-gray-300 focus:border-blue-500 outline-none w-full sm:w-auto flex-grow"
-            placeholder="e.g. Hangar 1"
+            placeholder="np. Hangar 1"
             required
           />
         </section>
@@ -261,7 +300,7 @@ export default function Workspaces() {
                 className="text-white bg-ev-red rounded-lg px-4 py-2 hover:scale-105 active:scale-95 duration-200 whitespace-nowrap"
                 value="Remove"
                 onClick={() =>
-                  toast.error("Remove functionality not implemented")
+                  toast.error("Funkcja usuwania niezaimplementowana.")
                 }
               />
             </section>
@@ -281,7 +320,7 @@ export default function Workspaces() {
 
             {workspaces !== null && workspaces.length === 0 && (
               <div className="w-full h-full flex items-center justify-center text-2xl text-center text-gray-500 py-10">
-                No workspaces available. Add a new one!
+                Brak dostępnych przestrzeni roboczych. Dodaj nową!
               </div>
             )}
 
