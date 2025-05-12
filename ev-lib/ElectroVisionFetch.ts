@@ -1,5 +1,5 @@
-type TData = string | object;
-type TPutData = string | object | undefined;
+type TData = string | object | FormData;
+type TPutData = string | object | FormData | undefined;
 type THeaders = HeadersInit | undefined;
 
 export class ElectroVisionFetch {
@@ -14,25 +14,39 @@ export class ElectroVisionFetch {
     const isFormData = data instanceof FormData;
 
     const requestHeaders = isFormData
-      ? new Headers(headers) // let browser handle it
+      ? new Headers(headers)
       : new Headers(headers || this.defaultHeaders);
+
+    const body = isFormData
+      ? data
+      : data && typeof data !== "string"
+        ? JSON.stringify(data)
+        : data;
 
     const response = await fetch(endpointUrl, {
       method,
       headers: requestHeaders,
-      body: isFormData ? data : data ? JSON.stringify(data) : undefined,
+      body,
     });
 
-    const responseData = await response.json();
-
     if (!response.ok) {
-      const errorMessage =
-        responseData?.response ||
-        `Request failed with status ${response.status}`;
+      let errorMessage = `Request failed with status ${response.status}`;
+      try {
+        const responseData = await response.json();
+        errorMessage = responseData?.response || errorMessage;
+      } catch (e) {
+        console.error("Failed to parse json res");
+        // Failed to parse JSON error response
+      }
       throw new Error(errorMessage);
     }
 
-    return responseData.response ?? responseData;
+    try {
+      const responseData = await response.json();
+      return responseData.response ?? responseData;
+    } catch (e) {
+      throw new Error("Failed to parse JSON response");
+    }
   }
 
   async get(endpointUrl: string, headers?: THeaders): Promise<any> {

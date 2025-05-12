@@ -15,6 +15,7 @@ import ApiLinks from "@/ev-const/api-links";
 import useUserContext from "@/ev-contexts/userContextProvider";
 import { Workspace } from "@/ev-types/workspace-types";
 import WorkspaceEntry from "@/components/WorkspaceEntry";
+import toast from "react-hot-toast";
 
 export default function Workspaces() {
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
@@ -111,31 +112,29 @@ export default function Workspaces() {
       setIsOverlayOpen(false);
       setSelectedFile(null);
       try {
-        console.log({
-          owner_email: User.authUser?.email ?? "tomek@el-jot.eu",
-          geolocation: null,
-          name: workspaceName ?? "workspace_name",
-          plan_file_name: selectedFile.name ?? "file_name.svg",
-          finish_date: null,
-        });
-
-        const response_workspace = await OLF.post(ApiLinks.createWorkspace, {
-          owner_email: User.authUser?.email ?? "tomek@el-jot.eu",
-          name: workspaceName ?? "workspace_name",
-          finish_date: null,
-          plan_file_name: selectedFile.name ?? "file_name.svg",
-          geolocation: null,
-        });
+        const response_workspace = await OLF.post(
+          ApiLinks.createWorkspace,
+          JSON.stringify({
+            owner_email: User.authUser?.email ?? "",
+            geolocation: null,
+            name: workspaceName ?? "",
+            plan_file_name: selectedFile.name ?? "",
+            finish_date: null,
+          }),
+        );
         console.log(response_workspace);
       } catch (error_inner) {
+        toast.error("R problem creating workspace ");
         console.error("Workspace Creation failed:", error_inner);
         await OLF.delete(
           `${ApiLinks.removeFile}/${userId}/${selectedFile.name}`,
           {},
         );
       }
+      toast.success("Workspace added successfully");
     } catch (error) {
       console.error("Upload failed:", error);
+      toast.error("Problem while adding workspace");
     }
   };
 
@@ -232,15 +231,27 @@ export default function Workspaces() {
               />
             </section>
           </section>
-          <section className="flex flex-wrap justify-between p-6 gap-5">
-            {workspaces === null ? (
-              <div>No workspaces aviable</div>
-            ) : (
-              <>
-                {workspaces.map((workspace) => (
-                  <WorkspaceEntry workspace={workspace} />
+          <section className="flex flex-wrap justify-between p-6 gap-5 ">
+            {!workspaces && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full">
+                {[...Array(6)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="bg-gray-200 rounded-xl aspect-square animate-pulse"
+                  />
                 ))}
-              </>
+              </div>
+            )}
+            {workspaces === null || workspaces.length === 0 ? (
+              <div className="w-full h-full flex items-center justify-center text-2xl text-center">
+                No workspaces available
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 w-full">
+                {workspaces.map((workspace) => (
+                  <WorkspaceEntry key={workspace.id} workspace={workspace} />
+                ))}
+              </div>
             )}
           </section>
         </ContentBlock>

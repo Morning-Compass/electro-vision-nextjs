@@ -24,37 +24,25 @@ const WorkspaceEntry = ({ workspace }: WorkspaceEntryProps) => {
     <section
       key={workspace.id}
       onClick={() =>
-        UserDispatch({
-          type: "setCurrentWorkspace",
-          value: workspace,
-        })
+        UserDispatch({ type: "setCurrentWorkspace", value: workspace })
       }
-      className="flex flex-col items-center group p-4 bg-ev-primary-bg rounded-xl"
+      className="flex flex-col items-center p-6 bg-ev-primary-bg rounded-xl hover:bg-ev-primary-hover transition-colors cursor-pointer "
     >
-      <Link href={`/workspaces/plans/`}>
-        <div className="relative w-[30rem] h-64 overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow bg-gray-100">
-          {isSvg ? (
-            <div
-              className="w-full h-full"
-              dangerouslySetInnerHTML={{
-                __html: workspace.coverPhoto as string,
-              }}
-            />
-          ) : (
-            <Image
-              src={imageSrc}
-              alt={workspace.name}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = "/problem.png";
-              }}
-            />
-          )}
+      <Link href={`/workspaces/plans/`} className="w-full">
+        <div className="relative aspect-video w-full overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow bg-gray-100">
+          <Image
+            src={imageSrc}
+            alt={workspace.name}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = "/problem.png";
+            }}
+          />{" "}
         </div>
       </Link>
-      <h3 className="mt-4 text-xl font-semibold text-center group-hover:text-blue-600 transition-colors">
+      <h3 className="mt-4 text-xl font-semibold text-center group-hover:text-blue-600 transition-colors truncate w-full">
         {workspace.name}
       </h3>
     </section>
