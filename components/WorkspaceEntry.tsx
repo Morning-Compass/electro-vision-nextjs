@@ -2,6 +2,7 @@ import useUserContext from "@/ev-contexts/userContextProvider";
 import { Workspace } from "@/ev-types/workspace-types";
 import Image from "next/image";
 import Link from "next/link";
+import { copyFileSync } from "node:fs";
 import React from "react";
 
 type WorkspaceEntryProps = {
@@ -10,15 +11,14 @@ type WorkspaceEntryProps = {
 
 const WorkspaceEntry = ({ workspace }: WorkspaceEntryProps) => {
   const { UserDispatch } = useUserContext();
-
   const isSvg =
     typeof workspace.coverPhoto === "string" &&
     workspace.coverPhoto?.trim().startsWith("<svg");
 
-  const imageSrc =
-    typeof workspace.coverPhoto === "string" && workspace.coverPhoto && !isSvg
-      ? workspace.coverPhoto
-      : "/problem.png";
+  // Convert SVG string to data URL
+  const imageSrc = isSvg
+    ? `data:image/svg+xml,${encodeURIComponent(workspace.coverPhoto)}`
+    : "/problem.png";
 
   return (
     <section
@@ -39,7 +39,8 @@ const WorkspaceEntry = ({ workspace }: WorkspaceEntryProps) => {
             onError={(e) => {
               (e.target as HTMLImageElement).src = "/problem.png";
             }}
-          />{" "}
+            unoptimized={isSvg} // Disable optimization for SVG
+          />
         </div>
       </Link>
       <h3 className="mt-4 text-xl font-semibold text-center group-hover:text-blue-600 transition-colors truncate w-full">
