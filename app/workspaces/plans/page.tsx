@@ -367,13 +367,15 @@ export default function WorkspaceDetails() {
         <ContentBlock>
           <div className="flex w-full">
             <div className="flex flex-col w-3/4 mr-8 gap-8">
-              <Image
-                src={receivedCoverImage || "/problem.png"}
-                alt="problem"
-                width={1200}
-                height={600}
-                className="rounded-3xl w-full h-auto object-cover shadow-lg p-6 bg-ev-white"
-              />
+              <Link href={"./plans/editor"}>
+                <Image
+                  src={receivedCoverImage || "/problem.png"}
+                  alt="problem"
+                  width={1200}
+                  height={600}
+                  className="rounded-3xl w-full h-auto object-cover shadow-lg p-6 bg-ev-white"
+                />
+              </Link>
 
               <div className="flex flex-col gap-2 p-6 bg-ev-primary-bg rounded-xl">
                 <p className="text-3xl font-semibold mb-2">Workspace Details</p>
