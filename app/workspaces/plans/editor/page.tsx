@@ -24,8 +24,8 @@ import ReactFlow, {
   NodeChange,
   EdgeChange,
   Connection,
-  ReactFlowProvider, // For precise drop
-  useReactFlow, // For precise drop
+  ReactFlowProvider,
+  useReactFlow,
 } from "reactflow";
 import "reactflow/dist/style.css";
 
@@ -36,8 +36,7 @@ interface TaskNodeData {
 }
 
 type AppNode = Node<TaskNodeData>;
-// Use the generic Edge type, you can also specify custom data for edges if needed
-type AppEdge = Edge; // Or Edge<MyEdgeData> if you have custom edge data
+type AppEdge = Edge;
 
 const initialNodes: AppNode[] = [
   {
@@ -58,17 +57,15 @@ const initialEdges: AppEdge[] = [
   { id: "e1-2", source: "1", target: "2", animated: true },
 ];
 
-// Component to be wrapped by ReactFlowProvider if using useReactFlow
 const FlowEditor = () => {
   const { User } = useUserContext();
-  const coverImage =
-    User.currentWorkspace?.coverPhoto?.toString() || "/problem.png";
+  // Get the raw value of coverPhoto
+  const coverPhotoValue = User.currentWorkspace?.coverPhoto;
 
   const [isOverlayOpen, setIsOverlayOpen] = useState<boolean>(false);
   const [nodes, setNodes] = useState<AppNode[]>(initialNodes);
   const [edges, setEdges] = useState<AppEdge[]>(initialEdges);
 
-  // For precise drop position
   const reactFlowInstance = useReactFlow();
 
   const [newTaskName, setNewTaskName] = useState<string>("");
@@ -135,7 +132,6 @@ const FlowEditor = () => {
         return;
       }
 
-      // Use reactFlowInstance.screenToFlowPosition for accurate positioning
       const position = reactFlowInstance.screenToFlowPosition({
         x: event.clientX,
         y: event.clientY,
@@ -152,8 +148,8 @@ const FlowEditor = () => {
       };
       setNodes((nds) => nds.concat(newNode));
     },
-    [reactFlowInstance, nodes.length, setNodes],
-  );
+    [reactFlowInstance, setNodes],
+  ); // Added setNodes dependency
 
   const handleDragStart = (
     event: DragEvent<HTMLDivElement>,
@@ -180,15 +176,28 @@ const FlowEditor = () => {
     }
   };
 
+  // --- Logic to handle SVG string or URL for background ---
+  const backgroundStyle: React.CSSProperties = {
+    backgroundSize: "contain",
+    backgroundPosition: "center",
+    minHeight: "500px",
+    backgroundImage: "/problem.png",
+  };
+
+  // background-size: cover;
+  // background-position: center center;
+  // min-height: 500px;
+  // background-image: url("/problem.png");
+
   return (
     <PageTemplate>
       <NavbarTemplate />
       <Overlay
         isOpen={isOverlayOpen}
         onClose={handleCloseOverlay}
-        blockClassName="max-w-lg bg-white rounded-xl shadow-2xl p-6"
+        blockClassName="max-w-lg bg-ev-primary rounded-xl shadow-2xl p-6"
       >
-        <h2 className="text-3xl font-semibold mb-6 text-gray-800">
+        <h2 className="text-3xl font-semibold mb-6 text-ev-text">
           Add Custom Task
         </h2>
         <section className="flex flex-col justify-center items-center gap-5 w-full">
@@ -212,11 +221,11 @@ const FlowEditor = () => {
             placeholder="Task description (optional)..."
           />
           <section className="flex flex-row justify-between items-center w-full">
-            <p className="text-lg text-gray-700">Select photo (optional):</p>
+            <p className="text-lg text-ev-text">Select photo (optional):</p>
             <Input
               name="select_photo_task"
               type="file"
-              className="text-gray-700"
+              className="text-ev-text"
               onChange={(e: ChangeEvent<HTMLInputElement>) => {
                 if (e.target.files && e.target.files[0]) {
                   setNewTaskPhoto(e.target.files[0]);
@@ -226,7 +235,7 @@ const FlowEditor = () => {
           </section>
           <button
             onClick={handleAddTaskFromOverlay}
-            className="mt-4 w-full text-white bg-mc-blue hover:bg-mc-blue-dark font-semibold rounded-lg px-6 py-3 hover:scale-105 duration-300 transition-all focus:outline-none focus:ring-2 focus:ring-mc-blue focus:ring-opacity-50"
+            className="mt-4 w-full text-ev-white bg-ev-blue hover:bg-ev-darkblue font-semibold rounded-lg px-6 py-3 hover:scale-105 duration-300 transition-all focus:outline-none focus:ring-2 focus:ring-mc-blue focus:ring-opacity-50"
           >
             Add Task to Workspace
           </button>
@@ -236,11 +245,11 @@ const FlowEditor = () => {
       <section className="flex flex-row items-start h-[calc(100vh-var(--navbar-height,64px)-var(--footer-height,50px))] gap-8 w-[95vw] mx-auto pt-4">
         <SidebarTemplate activeIcon="map" />
         <section className="flex flex-row w-full justify-center h-full gap-4">
-          <aside className="flex flex-col gap-4 h-full bg-white p-4 rounded-xl shadow-lg max-h-[calc(100vh-var(--navbar-height,64px)-var(--footer-height,50px)-3rem)] overflow-y-auto w-60 sticky top-4">
-            <h3 className="text-xl font-semibold mb-2 text-gray-700">
+          <aside className="flex flex-col gap-4 h-full bg-ev-primary p-4 rounded-xl shadow-lg max-h-[calc(100vh-var(--navbar-height,64px)-var(--footer-height,50px)-3rem)] overflow-y-auto w-60 sticky top-4">
+            <h3 className="text-xl font-semibold mb-2 text-ev-text">
               Task Types
             </h3>
-            <div
+            <section
               draggable
               onDragStart={(event: DragEvent<HTMLDivElement>) =>
                 handleDragStart(event, "defaultTask")
@@ -253,9 +262,9 @@ const FlowEditor = () => {
                 width={24}
                 height={24}
               />
-              <span className="text-gray-700">Default Task</span>
-            </div>
-            <div
+              <span className="text-ev-text">Default Task</span>
+            </section>
+            <section
               draggable
               onDragStart={(event: DragEvent<HTMLDivElement>) =>
                 handleDragStart(event, "customTask")
@@ -268,41 +277,35 @@ const FlowEditor = () => {
                 width={24}
                 height={24}
               />
-              <span className="text-gray-700">Custom Task</span>
-            </div>
+              <span className="text-ev-text">Custom Task</span>
+            </section>
           </aside>
           <main className="flex flex-col h-full flex-grow">
-            <section className="flex flex-wrap items-center w-full bg-white p-3 rounded-xl gap-3 mb-4 shadow-md">
+            <section className="flex flex-wrap items-center w-full bg-ev-primary p-3 rounded-xl gap-3 mb-4 shadow-md">
               <Input
                 name="add_task_button"
                 type="button"
-                className="text-white bg-ev-green hover:bg-ev-green-dark font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none focus:ring-2 focus:ring-ev-green-darker duration-300"
+                className="text-ev-white bg-ev-green hover:bg-ev-darkgreen font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none focus:ring-2 focus:ring-ev-green-darker duration-300"
                 value="Add Custom Task"
                 onClick={handleOpenOverlay}
               />
               <Input
                 name="remove_task_button"
                 type="button"
-                className="text-white bg-ev-red hover:bg-ev-red-dark font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none focus:ring-2 focus:ring-ev-red-darker duration-300"
+                className="text-ev-white bg-ev-red hover:bg-ev-darkred font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none focus:ring-2 focus:ring-ev-red-darker duration-300"
                 value="Remove Selected"
                 onClick={handleRemoveSelected}
               />
               <Input
                 name="change_plan_button"
                 type="button"
-                className="text-white bg-mc-blue hover:bg-mc-blue-dark font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none focus:ring-2 focus:ring-mc-blue-darker duration-300"
+                className="text-ev-white bg-ev-blue hover:bg-ev-darkblue font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none focus:ring-2 focus:ring-mc-blue-darker duration-300"
                 value="Change Plan"
               />
               <SearchButton />
             </section>
-            <div
+            <section
               className="flex-grow h-full rounded-2xl overflow-hidden shadow-lg relative"
-              style={{
-                backgroundImage: `url(${coverImage})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                minHeight: "500px",
-              }}
               onDragOver={handleDragOver}
               onDrop={handleDrop}
             >
@@ -313,20 +316,19 @@ const FlowEditor = () => {
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
                 fitView
-                // nodeTypes={nodeTypes} // If you define custom node components
-                // edgeTypes={edgeTypes} // If you define custom edge components
                 proOptions={{ hideAttribution: true }} // Hides the React Flow attribution for a cleaner look
               >
                 <Controls className="!bottom-4 !left-4" />
+                <Background style={backgroundStyle} />
               </ReactFlow>
-            </div>
+            </section>
           </main>
-          <aside className="flex flex-col gap-4 h-full bg-white p-4 rounded-xl shadow-lg max-h-[calc(100vh-var(--navbar-height,64px)-var(--footer-height,50px)-3rem)] overflow-y-auto w-72 sticky top-4">
-            <h3 className="text-xl font-semibold mb-2 text-gray-700">
+          <aside className="flex flex-col gap-4 h-full bg-ev-primary p-4 rounded-xl shadow-lg max-h-[calc(100vh-var(--navbar-height,64px)-var(--footer-height,50px)-3rem)] overflow-y-auto w-72 sticky top-4">
+            <h3 className="text-xl font-semibold mb-2 text-ev-text">
               Task Details
             </h3>
             {nodes.find((node) => node.selected) ? (
-              <div className="p-3 border border-gray-200 rounded-lg text-sm text-gray-600 space-y-2">
+              <section className="p-3 border border-gray-200 rounded-lg text-sm text-ev-text space-y-2">
                 <p>
                   <strong>ID:</strong> {nodes.find((node) => node.selected)!.id}
                 </p>
@@ -349,12 +351,13 @@ const FlowEditor = () => {
                     className="rounded mt-2 object-cover"
                   />
                 )}
-              </div>
+              </section>
             ) : (
-              <div className="p-3 border border-gray-200 rounded-md text-sm text-gray-500">
+              <section className="p-3 border border-gray-200 rounded-md text-sm text-ev-text">
                 Select a task on the map to see its details.
-              </div>
+              </section>
             )}
+            {/* Note: This image here is likely decorative for the sidebar, not the background */}
             <Image
               src="/outlet.png"
               alt="Task Detail Visual"

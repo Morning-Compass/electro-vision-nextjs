@@ -26,7 +26,7 @@ function Overlay({
   return (
     <section className="fixed inset-0 bg-overlay z-10 flex justify-center items-center overflow-y-scroll">
       <section
-        className={`relative w-auto h-auto p-10 flex flex-col items-center bg-ev-primary-bg rounded-3xl ${blockClassName || ""}`}
+        className={`relative w-auto h-auto p-10 flex flex-col items-center bg-ev-primary rounded-3xl ${blockClassName || ""}`}
       >
         {!hideDefaultCloseButton &&
           (closeButton || (
