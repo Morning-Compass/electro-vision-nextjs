@@ -98,7 +98,7 @@ export default function Register() {
             Welcome!
           </header>
           <form
-            className="flex flex-col items-stretch justify-between gap-1 h-[60%]"
+            className="flex flex-col items-stretch justify-between gap-1"
             onSubmit={handleSubmit(onSubmit)}
           >
             <FormErrorWrap>
