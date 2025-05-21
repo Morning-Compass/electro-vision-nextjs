@@ -4,9 +4,9 @@
 import { FooterSmall } from "@/components/templates/FooterSmall";
 import Link from "next/link";
 import Image from "next/image";
-import EmblaCarousel from "@/components/carousel/EmblaCarousel";
+// import EmblaCarousel from "@/components/carousel/EmblaCarousel";
 import PageTemplate from "@/components/templates/PageTemplate";
-import { EmblaOptionsType } from "embla-carousel";
+// import { EmblaOptionsType } from "embla-carousel";
 import useUserContext from "@/ev-contexts/userContextProvider";
 
 export default function Home() {
@@ -98,9 +98,9 @@ export default function Home() {
 
         {/* Carousel section */}
         {/* Changed h-[70vh] to min-h-[70vh] to allow vertical expansion */}
-        <section className="flex flex-col items-center justify-center rounded-3xl bg-white w-4/5 min-h-[70vh] mt-10 mb-10 p-4 sm:p-6 md:p-8 lg:p-11 max-sm:w-[95%]">
+        {/* <section className="flex flex-col items-center justify-center rounded-3xl bg-white w-4/5 min-h-[70vh] mt-10 mb-10 p-4 sm:p-6 md:p-8 lg:p-11 max-sm:w-[95%]">
           <EmblaCarousel slides={CarouselImages} options={OPTIONS} />
-        </section>
+        </section> */}
 
         <FooterSmall />
       </PageTemplate>

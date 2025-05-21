@@ -18,7 +18,7 @@ interface TaskNodeData {
   id: string;
   label: string;
   description?: string;
-  image?: string | null;
+  image?: string | File | null;
   position: [number, number];
   type: string;
 }
@@ -46,13 +46,13 @@ const initialTasks: TaskNodeData[] = [
     id: "1",
     type: "defaultTask",
     label: "Task 1 - Drag Me!",
-    position: [51.505, -0.09],
+    position: [51.45, -0.15],
   },
   {
     id: "2",
     type: "customTask",
     label: "Task 2",
-    position: [51.51, -0.1],
+    position: [51.55, -0.05],
   },
 ];
 
@@ -77,7 +77,7 @@ function MapEditor() {
   // New task form state
   const [newTaskName, setNewTaskName] = useState("");
   const [newTaskDescription, setNewTaskDescription] = useState("");
-  const [newTaskPhoto, setNewTaskPhoto] = useState<File | null>(null);
+  const [newTaskPhoto, setNewTaskPhoto] = useState<string | File | null>(null);
 
   // Connection handling
   const handleTaskSelect = useCallback(
@@ -132,9 +132,9 @@ function MapEditor() {
       type: "customTask",
       label: newTaskName,
       description: newTaskDescription,
-      image: newTaskPhoto ? URL.createObjectURL(newTaskPhoto) : null,
-      // Random position near the center of the map
-      position: [51.505 + Math.random() * 0.01, -0.09 + Math.random() * 0.01],
+      image: newTaskPhoto instanceof File ? URL.createObjectURL(newTaskPhoto) : newTaskPhoto,
+      // Random position within the custom background bounds
+      position: [51.4 + Math.random() * 0.2, -0.25 + Math.random() * 0.2],
     };
 
     setTasks((prev) => [...prev, newTask]);
@@ -235,7 +235,8 @@ function MapEditor() {
               className="text-ev-text"
               onChange={(e) => {
                 if (e.target.files && e.target.files[0]) {
-                  setNewTaskPhoto(e.target.files[0]);
+                  const file = e.target.files[0];
+                  setNewTaskPhoto(file);
                 }
               }}
             />
@@ -327,6 +328,9 @@ function MapEditor() {
 
             {/* Map Area */}
             <section className="flex-grow h-full rounded-2xl overflow-hidden shadow-lg relative">
+              <div className="absolute top-2 right-2 bg-black bg-opacity-50 text-white px-3 py-1 rounded-lg z-[999] text-sm">
+                Using custom background: problem.png
+              </div>
               {/* Leaflet Map */}
               <LeafletMap
                 tasks={tasks}
@@ -364,15 +368,15 @@ function MapEditor() {
                     <strong>Description:</strong> {selectedTask.description}
                   </p>
                 )}
-                {selectedTask.image && (
-                  <Image
-                    src={selectedTask.image}
-                    alt="Task image"
-                    width={64}
-                    height={64}
-                    className="rounded mt-2 object-cover"
-                  />
-                )}
+                {selectedTask.image && typeof selectedTask.image === 'string' && (
+                <Image
+                  src={selectedTask.image}
+                  alt="Task image"
+                  width={64}
+                  height={64}
+                  className="rounded mt-2 object-cover"
+                />
+              )}
                 <p>
                   <strong>Position:</strong> {selectedTask.position.join(", ")}
                 </p>

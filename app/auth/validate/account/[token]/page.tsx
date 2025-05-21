@@ -3,19 +3,20 @@
 import ApiLinks from "@/ev-const/api-links";
 import { responseKeys } from "@/ev-const/response-keys";
 import PageTemplate from "@/components/templates/PageTemplate";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, use } from "react";
 import toast from "react-hot-toast";
 import OLF from "@/ev-lib/ElectroVisionFetch";
 
 type VerificationToken = string | string[] | undefined;
 
 type VerifiAccountPageProps = {
-  params: {
+  params: Promise<{
     token: string;
-  };
+  }>;
 };
 
-const VerifiAccountPage = ({ params }: VerifiAccountPageProps) => {
+const VerifiAccountPage = (props: VerifiAccountPageProps) => {
+  const params = use(props.params);
   const [apiVerificationToken, setApiVerificationToken] = useState<
     string | null
   >(null);
