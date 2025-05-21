@@ -15,6 +15,8 @@ export type Task = {
   description: string | null;
   assigner_username: string;
   assignee_username: string;
+  description_multimedia: string | null;
+  description_multimedia_filename: string | null;
   category: string;
   created_at: Date;
   due_date: Date | null;

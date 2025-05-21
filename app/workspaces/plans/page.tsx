@@ -339,7 +339,8 @@ export default function WorkspaceDetails() {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
 
-      const tasks: Task[] = await res.json();
+      const resj = await res.json();
+      const tasks: Task[] = resj["response"];
       setTasks(tasks);
       console.log("tasks:", tasks);
     } catch (error) {

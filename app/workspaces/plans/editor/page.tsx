@@ -181,7 +181,7 @@ const FlowEditor = () => {
     backgroundSize: "contain",
     backgroundPosition: "center",
     minHeight: "500px",
-    backgroundImage: "/problem.png",
+    backgroundImage: 'url("/problem.png")',
   };
 
   // background-size: cover;
