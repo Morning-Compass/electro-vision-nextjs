@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback, DragEvent, ChangeEvent } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
+import dynamic from "next/dynamic";
 import PageTemplate from "@/components/templates/PageTemplate";
 import NavbarTemplate from "@/components/templates/NavbarTemplate";
 import { FooterSmall } from "@/components/templates/FooterSmall";
@@ -10,87 +11,107 @@ import SearchButton from "@/components/SearchButton";
 import Input from "@/components/Input";
 import Overlay from "@/components/Overlay";
 import useUserContext from "@/ev-contexts/userContextProvider";
-import ReactFlow, {
-  Controls,
-  Background,
-  addEdge,
-  applyNodeChanges,
-  applyEdgeChanges,
-  Node,
-  Edge,
-  OnNodesChange,
-  OnEdgesChange,
-  OnConnect,
-  NodeChange,
-  EdgeChange,
-  Connection,
-  ReactFlowProvider,
-  useReactFlow,
-} from "reactflow";
-import "reactflow/dist/style.css";
+import "leaflet/dist/leaflet.css";
 
+// Define types for our data structures
 interface TaskNodeData {
+  id: string;
   label: string;
-  image?: string | null;
   description?: string;
+  image?: string | null;
+  position: [number, number];
+  type: string;
 }
 
-type AppNode = Node<TaskNodeData>;
-type AppEdge = Edge;
+interface TaskConnection {
+  id: string;
+  source: string;
+  target: string;
+  animated?: boolean;
+}
 
-const initialNodes: AppNode[] = [
+// Dynamically import the Leaflet map to avoid SSR issues
+const LeafletMap = dynamic(() => import("./LeafletMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center bg-gray-100 rounded-xl">
+      Loading map editor...
+    </div>
+  ),
+});
+
+// Initial data
+const initialTasks: TaskNodeData[] = [
   {
     id: "1",
-    type: "default",
-    position: { x: 50, y: 50 },
-    data: { label: "Task 1 - Drag Me!" },
+    type: "defaultTask",
+    label: "Task 1 - Drag Me!",
+    position: [51.505, -0.09],
   },
   {
     id: "2",
-    type: "default",
-    position: { x: 250, y: 100 },
-    data: { label: "Task 2" },
+    type: "customTask",
+    label: "Task 2",
+    position: [51.51, -0.1],
   },
 ];
 
-const initialEdges: AppEdge[] = [
+const initialConnections: TaskConnection[] = [
   { id: "e1-2", source: "1", target: "2", animated: true },
 ];
 
-const FlowEditor = () => {
+// Main editor component
+function MapEditor() {
   const { User } = useUserContext();
-  // Get the raw value of coverPhoto
   const coverPhotoValue = User.currentWorkspace?.coverPhoto;
 
-  const [isOverlayOpen, setIsOverlayOpen] = useState<boolean>(false);
-  const [nodes, setNodes] = useState<AppNode[]>(initialNodes);
-  const [edges, setEdges] = useState<AppEdge[]>(initialEdges);
+  // State management
+  const [isOverlayOpen, setIsOverlayOpen] = useState(false);
+  const [tasks, setTasks] = useState<TaskNodeData[]>(initialTasks);
+  const [connections, setConnections] =
+    useState<TaskConnection[]>(initialConnections);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [connectionMode, setConnectionMode] = useState(false);
+  const [connectionSource, setConnectionSource] = useState<string | null>(null);
 
-  const reactFlowInstance = useReactFlow();
-
-  const [newTaskName, setNewTaskName] = useState<string>("");
-  const [newTaskDescription, setNewTaskDescription] = useState<string>("");
+  // New task form state
+  const [newTaskName, setNewTaskName] = useState("");
+  const [newTaskDescription, setNewTaskDescription] = useState("");
   const [newTaskPhoto, setNewTaskPhoto] = useState<File | null>(null);
 
-  const onNodesChange: OnNodesChange = useCallback(
-    (changes: NodeChange[]) =>
-      setNodes((nds) => applyNodeChanges(changes, nds)),
-    [setNodes],
-  );
-  const onEdgesChange: OnEdgesChange = useCallback(
-    (changes: EdgeChange[]) =>
-      setEdges((eds) => applyEdgeChanges(changes, eds)),
-    [setEdges],
-  );
-  const onConnect: OnConnect = useCallback(
-    (connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
-    [setEdges],
+  // Connection handling
+  const handleTaskSelect = useCallback(
+    (id: string) => {
+      if (connectionMode) {
+        if (!connectionSource) {
+          // First task selected for connection
+          setConnectionSource(id);
+        } else if (connectionSource !== id) {
+          // Second task selected, create connection
+          const newConnectionId = `connection_${Date.now()}`;
+          setConnections((prev) => [
+            ...prev,
+            {
+              id: newConnectionId,
+              source: connectionSource,
+              target: id,
+              animated: true,
+            },
+          ]);
+          // Reset connection mode
+          setConnectionMode(false);
+          setConnectionSource(null);
+        }
+      } else {
+        // Regular selection mode
+        setSelectedTaskId((prev) => (prev === id ? null : id));
+      }
+    },
+    [connectionMode, connectionSource],
   );
 
-  const handleOpenOverlay = () => {
-    setIsOverlayOpen(true);
-  };
-
+  // Overlay management
+  const handleOpenOverlay = () => setIsOverlayOpen(true);
   const handleCloseOverlay = () => {
     setIsOverlayOpen(false);
     setNewTaskName("");
@@ -98,96 +119,86 @@ const FlowEditor = () => {
     setNewTaskPhoto(null);
   };
 
+  // Add a new task from the overlay form
   const handleAddTaskFromOverlay = () => {
     if (!newTaskName.trim()) {
       alert("Task name is required.");
       return;
     }
-    const newNodeId = `node_${Date.now()}`;
-    const newNode: AppNode = {
-      id: newNodeId,
-      type: "default",
-      position: { x: Math.random() * 400, y: Math.random() * 400 },
-      data: {
-        label: newTaskName,
-        description: newTaskDescription,
-        image: newTaskPhoto ? URL.createObjectURL(newTaskPhoto) : null,
-      },
+
+    const newTaskId = `task_${Date.now()}`;
+    const newTask: TaskNodeData = {
+      id: newTaskId,
+      type: "customTask",
+      label: newTaskName,
+      description: newTaskDescription,
+      image: newTaskPhoto ? URL.createObjectURL(newTaskPhoto) : null,
+      // Random position near the center of the map
+      position: [51.505 + Math.random() * 0.01, -0.09 + Math.random() * 0.01],
     };
-    setNodes((nds) => nds.concat(newNode));
+
+    setTasks((prev) => [...prev, newTask]);
     handleCloseOverlay();
   };
 
-  const handleDragOver = useCallback((event: DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    event.dataTransfer.dropEffect = "move";
-  }, []);
-
-  const handleDrop = useCallback(
-    (event: DragEvent<HTMLDivElement>) => {
-      event.preventDefault();
-      const type = event.dataTransfer.getData("application/reactflow");
-
-      if (typeof type === "undefined" || !type) {
-        return;
-      }
-
-      const position = reactFlowInstance.screenToFlowPosition({
-        x: event.clientX,
-        y: event.clientY,
-      });
-
-      const newNodeId = `node_${Date.now()}_${type}`;
-      const newNode: AppNode = {
-        id: newNodeId,
-        type,
+  // Handle dropping a new task on the map
+  const handleTaskDrop = useCallback(
+    (nodeType: string, position: [number, number]) => {
+      const newTaskId = `${nodeType}_${Date.now()}`;
+      const newTask: TaskNodeData = {
+        id: newTaskId,
+        type: nodeType,
+        label:
+          nodeType === "defaultTask" ? "New Default Task" : "New Custom Task",
         position,
-        data: {
-          label: `${type === "defaultTask" ? "New Outlet" : "New Custom Item"}`,
-        },
       };
-      setNodes((nds) => nds.concat(newNode));
+
+      setTasks((prev) => [...prev, newTask]);
     },
-    [reactFlowInstance, setNodes],
-  ); // Added setNodes dependency
+    [],
+  );
 
-  const handleDragStart = (
-    event: DragEvent<HTMLDivElement>,
-    nodeType: string,
-  ) => {
-    event.dataTransfer.setData("application/reactflow", nodeType);
-    event.dataTransfer.effectAllowed = "move";
-  };
+  // Handle task drag end to update position
+  const handleTaskDragEnd = useCallback(
+    (id: string, position: [number, number]) => {
+      setTasks((prev) =>
+        prev.map((task) => (task.id === id ? { ...task, position } : task)),
+      );
+    },
+    [],
+  );
 
+  // Remove the selected task
   const handleRemoveSelected = () => {
-    const selectedNodes = nodes.filter((node) => node.selected);
-    if (selectedNodes.length > 0) {
-      const selectedNodeIds = selectedNodes.map((node) => node.id);
-      setNodes((nds) => nds.filter((node) => !node.selected));
-      setEdges((eds) =>
-        eds.filter(
-          (edge) =>
-            !selectedNodeIds.includes(edge.source) &&
-            !selectedNodeIds.includes(edge.target),
+    if (selectedTaskId) {
+      // Remove the task
+      setTasks((prev) => prev.filter((task) => task.id !== selectedTaskId));
+
+      // Remove any connections to/from this task
+      setConnections((prev) =>
+        prev.filter(
+          (conn) =>
+            conn.source !== selectedTaskId && conn.target !== selectedTaskId,
         ),
       );
+
+      // Clear selection
+      setSelectedTaskId(null);
     } else {
-      alert("No tasks selected to remove.");
+      alert("No task selected to remove.");
     }
   };
 
-  // --- Logic to handle SVG string or URL for background ---
-  const backgroundStyle: React.CSSProperties = {
-    backgroundSize: "contain",
-    backgroundPosition: "center",
-    minHeight: "500px",
-    backgroundImage: 'url("/problem.png")',
+  // Handle drag start for dragging from task types panel
+  const handleDragStart = (event: React.DragEvent, nodeType: string) => {
+    event.dataTransfer.setData("application/nodeType", nodeType);
+    event.dataTransfer.effectAllowed = "move";
   };
 
-  // background-size: cover;
-  // background-position: center center;
-  // min-height: 500px;
-  // background-image: url("/problem.png");
+  // Find the selected task for display in sidebar
+  const selectedTask = selectedTaskId
+    ? tasks.find((task) => task.id === selectedTaskId)
+    : null;
 
   return (
     <PageTemplate>
@@ -205,18 +216,14 @@ const FlowEditor = () => {
             type="text"
             name="name_text"
             value={newTaskName}
-            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-              setNewTaskName(e.target.value)
-            }
+            onChange={(e) => setNewTaskName(e.target.value)}
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
             placeholder="Task Name..."
           />
           <textarea
             name="textarea"
             value={newTaskDescription}
-            onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
-              setNewTaskDescription(e.target.value)
-            }
+            onChange={(e) => setNewTaskDescription(e.target.value)}
             className="w-full h-32 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
             placeholder="Task description (optional)..."
           />
@@ -226,7 +233,7 @@ const FlowEditor = () => {
               name="select_photo_task"
               type="file"
               className="text-ev-text"
-              onChange={(e: ChangeEvent<HTMLInputElement>) => {
+              onChange={(e) => {
                 if (e.target.files && e.target.files[0]) {
                   setNewTaskPhoto(e.target.files[0]);
                 }
@@ -245,15 +252,14 @@ const FlowEditor = () => {
       <section className="flex flex-row items-start h-[calc(100vh-var(--navbar-height,64px)-var(--footer-height,50px))] gap-8 w-[95vw] mx-auto pt-4">
         <SidebarTemplate activeIcon="map" />
         <section className="flex flex-row w-full justify-center h-full gap-4">
+          {/* Task Types Sidebar */}
           <aside className="flex flex-col gap-4 h-full bg-ev-primary p-4 rounded-xl shadow-lg max-h-[calc(100vh-var(--navbar-height,64px)-var(--footer-height,50px)-3rem)] overflow-y-auto w-60 sticky top-4">
             <h3 className="text-xl font-semibold mb-2 text-ev-text">
               Task Types
             </h3>
             <section
               draggable
-              onDragStart={(event: DragEvent<HTMLDivElement>) =>
-                handleDragStart(event, "defaultTask")
-              }
+              onDragStart={(e) => handleDragStart(e, "defaultTask")}
               className="p-3 border border-gray-200 rounded-lg cursor-grab hover:bg-gray-100 flex items-center gap-2 transition-colors duration-150"
             >
               <Image
@@ -266,9 +272,7 @@ const FlowEditor = () => {
             </section>
             <section
               draggable
-              onDragStart={(event: DragEvent<HTMLDivElement>) =>
-                handleDragStart(event, "customTask")
-              }
+              onDragStart={(e) => handleDragStart(e, "customTask")}
               className="p-3 border border-gray-200 rounded-lg cursor-grab hover:bg-gray-100 flex items-center gap-2 transition-colors duration-150"
             >
               <Image
@@ -280,6 +284,8 @@ const FlowEditor = () => {
               <span className="text-ev-text">Custom Task</span>
             </section>
           </aside>
+
+          {/* Main Content Area */}
           <main className="flex flex-col h-full flex-grow">
             <section className="flex flex-wrap items-center w-full bg-ev-primary p-3 rounded-xl gap-3 mb-4 shadow-md">
               <Input
@@ -297,6 +303,20 @@ const FlowEditor = () => {
                 onClick={handleRemoveSelected}
               />
               <Input
+                name="connect_tasks_button"
+                type="button"
+                className={`text-ev-white ${
+                  connectionMode
+                    ? "bg-ev-orange"
+                    : "bg-ev-blue hover:bg-ev-darkblue"
+                } font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none focus:ring-2 focus:ring-mc-blue-darker duration-300`}
+                value={connectionMode ? "Cancel Connection" : "Connect Tasks"}
+                onClick={() => {
+                  setConnectionMode(!connectionMode);
+                  setConnectionSource(null);
+                }}
+              />
+              <Input
                 name="change_plan_button"
                 type="button"
                 className="text-ev-white bg-ev-blue hover:bg-ev-darkblue font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none focus:ring-2 focus:ring-mc-blue-darker duration-300"
@@ -304,60 +324,65 @@ const FlowEditor = () => {
               />
               <SearchButton />
             </section>
-            <section
-              className="flex-grow h-full rounded-2xl overflow-hidden shadow-lg relative"
-              onDragOver={handleDragOver}
-              onDrop={handleDrop}
-            >
-              <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
-                onConnect={onConnect}
-                fitView
-                proOptions={{ hideAttribution: true }} // Hides the React Flow attribution for a cleaner look
-              >
-                <Controls className="!bottom-4 !left-4" />
-                <Background style={backgroundStyle} />
-              </ReactFlow>
+
+            {/* Map Area */}
+            <section className="flex-grow h-full rounded-2xl overflow-hidden shadow-lg relative">
+              {/* Leaflet Map */}
+              <LeafletMap
+                tasks={tasks}
+                connections={connections}
+                selectedTaskId={selectedTaskId}
+                onTaskSelect={handleTaskSelect}
+                onTaskDrop={handleTaskDrop}
+                onTaskDragEnd={handleTaskDragEnd}
+              />
+
+              {/* Connection in progress indicator */}
+              {connectionMode && connectionSource && (
+                <div className="absolute top-0 left-0 right-0 bg-ev-orange text-white p-2 text-center z-[1000]">
+                  Select a second task to complete the connection
+                </div>
+              )}
             </section>
           </main>
+
+          {/* Task Details Sidebar */}
           <aside className="flex flex-col gap-4 h-full bg-ev-primary p-4 rounded-xl shadow-lg max-h-[calc(100vh-var(--navbar-height,64px)-var(--footer-height,50px)-3rem)] overflow-y-auto w-72 sticky top-4">
             <h3 className="text-xl font-semibold mb-2 text-ev-text">
               Task Details
             </h3>
-            {nodes.find((node) => node.selected) ? (
+            {selectedTask ? (
               <section className="p-3 border border-gray-200 rounded-lg text-sm text-ev-text space-y-2">
                 <p>
-                  <strong>ID:</strong> {nodes.find((node) => node.selected)!.id}
+                  <strong>ID:</strong> {selectedTask.id}
                 </p>
                 <p>
-                  <strong>Label:</strong>{" "}
-                  {nodes.find((node) => node.selected)!.data.label}
+                  <strong>Label:</strong> {selectedTask.label}
                 </p>
-                {nodes.find((node) => node.selected)!.data.description && (
+                {selectedTask.description && (
                   <p>
-                    <strong>Description:</strong>{" "}
-                    {nodes.find((node) => node.selected)!.data.description}
+                    <strong>Description:</strong> {selectedTask.description}
                   </p>
                 )}
-                {nodes.find((node) => node.selected)!.data.image && (
+                {selectedTask.image && (
                   <Image
-                    src={nodes.find((node) => node.selected)!.data.image!}
+                    src={selectedTask.image}
                     alt="Task image"
                     width={64}
                     height={64}
                     className="rounded mt-2 object-cover"
                   />
                 )}
+                <p>
+                  <strong>Position:</strong> {selectedTask.position.join(", ")}
+                </p>
               </section>
             ) : (
               <section className="p-3 border border-gray-200 rounded-md text-sm text-ev-text">
                 Select a task on the map to see its details.
               </section>
             )}
-            {/* Note: This image here is likely decorative for the sidebar, not the background */}
+            {/* Decorative image */}
             <Image
               src="/outlet.png"
               alt="Task Detail Visual"
@@ -371,12 +396,8 @@ const FlowEditor = () => {
       <FooterSmall />
     </PageTemplate>
   );
-};
+}
 
 export default function EmployeesOverview() {
-  return (
-    <ReactFlowProvider>
-      <FlowEditor />
-    </ReactFlowProvider>
-  );
+  return <MapEditor />;
 }
