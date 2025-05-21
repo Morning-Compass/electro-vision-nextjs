@@ -461,7 +461,11 @@ export default function WorkspaceDetails() {
                   />
                 </div>
                 <div className="flex flex-col gap-4 mb-10 w-full">
-                  {tasks !== null ? (
+                  {tasks === null ||
+                  tasks === undefined ||
+                  tasks.length === 0 ? (
+                    <p>Workspace doesn't have any tasks</p>
+                  ) : (
                     <>
                       {tasks.map((task, i) => (
                         <TaskEntry
@@ -472,8 +476,6 @@ export default function WorkspaceDetails() {
                         />
                       ))}
                     </>
-                  ) : (
-                    <p>Workspace doesn't have any tasks</p>
                   )}
                 </div>
               </div>
