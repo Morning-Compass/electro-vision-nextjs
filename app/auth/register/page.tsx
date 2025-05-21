@@ -88,140 +88,144 @@ export default function Register() {
       <section className="flex flex-row justify-around text-ev-text bg-ev-primary-bg w-[58vw] min-w-72 opacity-95 rounded-[1.5rem] mt-auto mb-auto ev-blur transition-colors duration-500 p-6 max-h-[90vh]">
         <Image
           src="/login_register_image.svg"
-          className="flex2 w-[calc(50%-10em)] h-auto object-contain"
+          className="flex2 w-[calc(50%-10em)] h-auto object-contain max-xl:hidden"
           alt="Register"
           width={13}
           height={13}
         />
-        <article className="flex flex-col items-center justify-evenly h-auto w-[53%] mb-12">
-          <header className="text0xl font-bold mb-8 mt-8 mr-2 ml-2 text-center">
+        <article className="flex flex-col items-center justify-evenly h-auto w-[53%] mb-12 max-xl:w-full max-xl:mb-0">
+          <header className="text-3xl font-bold mb-8 mt-8 mr-2 ml-2 text-center">
             Welcome!
           </header>
           <form
-            className="flex flex-col items-stretch justify-between gap-1"
+            className="flex flex-col items-stretch justify-between gap-1 max-xl:w-full"
             onSubmit={handleSubmit(onSubmit)}
           >
-            <FormErrorWrap>
-              <h4 className="font-bold text-lg pl-4">Username</h4>
-              <Input
-                type="text"
-                name="username"
-                placeholder="Username"
-                className="border-4 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
-                error={errors.username?.message}
-                register={register("username", {
-                  validate: (username) => {
-                    const useranmeRegexResult = Regex.username.test(
-                      username ?? "",
-                    );
-                    if (!useranmeRegexResult) {
-                      return "Username must be correct";
-                    }
-                    return true;
-                  },
-                  required: {
-                    value: true,
-                    message: "Username is required",
-                  },
-                })}
-              />
-            </FormErrorWrap>
-            <FormErrorWrap>
-              <h4 className="font-bold text-lg pl-4">Email</h4>
-              <Input
-                type="text"
-                name="email"
-                placeholder="Email"
-                className="border-4 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
-                error={errors.email?.message}
-                register={register("email", {
-                  validate: (email) => {
-                    const emailRegexResult = Regex.emailRegistration.test(
-                      email ?? "",
-                    );
-                    if (!emailRegexResult) {
-                      return "Email must be correct";
-                    }
-                    return true;
-                  },
-                  required: {
-                    value: true,
-                    message: "Email is required",
-                  },
-                })}
-              />
-            </FormErrorWrap>
-            <FormErrorWrap>
-              <h4 className="font-bold text-lg pl-4">Password</h4>
-              <Input
-                type="password"
-                name="password"
-                placeholder="Password"
-                className="border-4 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
-                error={errors.password?.message}
-                register={register("password", {
-                  minLength: {
-                    value: AuthConst.minPasswordLength,
-                    message: `Password Must have at least ${AuthConst.minPasswordLength} characters`,
-                  },
-                  required: {
-                    value: true,
-                    message: "Password is required",
-                  },
-                  validate: (password) => {
-                    const passwordRegexResult = Regex.password.test(
-                      password ?? "",
-                    );
-                    if (!passwordRegexResult || !password) {
-                      return "Password must have letters numbers and special charachters";
-                    }
-                    if (password?.toLowerCase() === password) {
-                      return "Password must have at least one capital letter";
-                    }
-                    if (!/\d/.test(password)) {
-                      return "Password must have at least one number";
-                    }
-                    if (
-                      !/[!@#$%^&*(),.?":{}|<>[\]\\\/`~'=_+\-]/.test(password)
-                    ) {
-                      return "Password must contain at least one special character";
-                    }
-                    return true;
-                  },
-                })}
-              />
-            </FormErrorWrap>
-            <FormErrorWrap>
-              <h4 className="font-bold text-lg pl-4">Repeat Password</h4>
-              <Input
-                type="password"
-                name="repPassword"
-                placeholder="Repeat Password"
-                className="border-4 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
-                error={errors.repPassword?.message}
-                register={register("repPassword", {
-                  required: {
-                    value: true,
-                    message: "Password repeat is required",
-                  },
-                  minLength: {
-                    value: AuthConst.minPasswordLength,
-                    message: `Password Must have at least ${AuthConst.minPasswordLength} characters`,
-                  },
-                  validate: (rep) => {
-                    if (getValues().password !== rep) {
-                      return "Passwords Must Match";
-                    }
-                    return true;
-                  },
-                })}
-              />
-            </FormErrorWrap>
-            <Button
-              type="submit"
-              value="Register"
-              customWidth="max-w-[43rem] min-w-56 w-[25vw]"
-            />
+            <div className="max-xl:flex max-xl:flex-col max-xl:items-center max-xl:content-stretch">
+              <FormErrorWrap>
+                <h4 className="font-bold text-lg pl-4">Username</h4>
+                <Input
+                  type="text"
+                  name="username"
+                  placeholder="Username"
+                  className="border-4 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800 max-lg:w-full"
+                  error={errors.username?.message}
+                  register={register("username", {
+                    validate: (username) => {
+                      const useranmeRegexResult = Regex.username.test(
+                        username ?? "",
+                      );
+                      if (!useranmeRegexResult) {
+                        return "Username must be correct";
+                      }
+                      return true;
+                    },
+                    required: {
+                      value: true,
+                      message: "Username is required",
+                    },
+                  })}
+                />
+              </FormErrorWrap>
+              <FormErrorWrap>
+                <h4 className="font-bold text-lg pl-4">Email</h4>
+                <Input
+                  type="text"
+                  name="email"
+                  placeholder="Email"
+                  className="border-4 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800 max-lg:w-full"
+                  error={errors.email?.message}
+                  register={register("email", {
+                    validate: (email) => {
+                      const emailRegexResult = Regex.emailRegistration.test(
+                        email ?? "",
+                      );
+                      if (!emailRegexResult) {
+                        return "Email must be correct";
+                      }
+                      return true;
+                    },
+                    required: {
+                      value: true,
+                      message: "Email is required",
+                    },
+                  })}
+                />
+              </FormErrorWrap>
+              <FormErrorWrap>
+                <h4 className="font-bold text-lg pl-4">Password</h4>
+                <Input
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  className="border-4 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800 max-lg:w-full"
+                  error={errors.password?.message}
+                  register={register("password", {
+                    minLength: {
+                      value: AuthConst.minPasswordLength,
+                      message: `Password Must have at least ${AuthConst.minPasswordLength} characters`,
+                    },
+                    required: {
+                      value: true,
+                      message: "Password is required",
+                    },
+                    validate: (password) => {
+                      const passwordRegexResult = Regex.password.test(
+                        password ?? "",
+                      );
+                      if (!passwordRegexResult || !password) {
+                        return "Password must have letters numbers and special charachters";
+                      }
+                      if (password?.toLowerCase() === password) {
+                        return "Password must have at least one capital letter";
+                      }
+                      if (!/\d/.test(password)) {
+                        return "Password must have at least one number";
+                      }
+                      if (
+                        !/[!@#$%^&*(),.?":{}|<>[\]\\\/`~'=_+\-]/.test(password)
+                      ) {
+                        return "Password must contain at least one special character";
+                      }
+                      return true;
+                    },
+                  })}
+                />
+              </FormErrorWrap>
+              <FormErrorWrap>
+                <h4 className="font-bold text-lg pl-4">Repeat Password</h4>
+                <Input
+                  type="password"
+                  name="repPassword"
+                  placeholder="Repeat Password"
+                  className="border-4 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800 max-lg:w-full"
+                  error={errors.repPassword?.message}
+                  register={register("repPassword", {
+                    required: {
+                      value: true,
+                      message: "Password repeat is required",
+                    },
+                    minLength: {
+                      value: AuthConst.minPasswordLength,
+                      message: `Password Must have at least ${AuthConst.minPasswordLength} characters`,
+                    },
+                    validate: (rep) => {
+                      if (getValues().password !== rep) {
+                        return "Passwords Must Match";
+                      }
+                      return true;
+                    },
+                  })}
+                />
+              </FormErrorWrap>
+              <div className="flex flex-col gap-1 text-left">
+                <Button
+                  type="submit"
+                  value="Register"
+                  customWidth="max-w-[40rem] min-w-56 w-[25vw] mt-3 max-lg:w-full"
+                />
+              </div>
+            </div>
           </form>
           <figure className="flex flex-col items-center justify-center m-3">
             <p className="select-none ml-1 mr-4 text-center">

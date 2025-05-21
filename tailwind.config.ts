@@ -52,6 +52,7 @@ const config: Config = {
       },
       width: {
         "7/10": "70%",
+        "9,5/10": "95%",
       },
       maxWidth: {
         "200": "50rem",

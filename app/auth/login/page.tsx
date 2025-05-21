@@ -99,17 +99,17 @@ export default function Login() {
       <section className="flex flex-row justify-around text-ev-text bg-ev-primary-bg w-[55vw] min-w-72 opacity-95 rounded-[1.5rem] mt-auto mb-auto ev-blur transition-colors duration-500 p-6 max-h-[75vh]">
         <Image
           src={"/login_register_image.svg"}
-          className={"flex-1 w-[calc(50%-10em)] h-auto object-contain"}
+          className={"flex-1 w-[calc(50%-10em)] h-auto object-contain max-lg:hidden"}
           alt={"Login"}
           width={10}
           height={10}
         />
-        <article className="flex flex-col items-center justify-between h-auto w-[50%] mt-28 mb-12">
-          <header className="text-3xl font-bold mt-8 mb-8 mr-6 ml-6 text-center">
+        <article className="flex flex-col items-center justify-between h-auto w-[50%] mt-28 mb-12 max-lg:w-full">
+          <header className="text-3xl font-bold mt-8 mb-8 mr-6 ml-6 text-center max-sm:text-xl">
             Good to see you again!
           </header>
           <form
-            className="flex flex-col items-stretch justify-between gap-4 h-[45%]"
+            className="flex flex-col items-stretch justify-between gap-4"
             onSubmit={handleSubmit(onSubmit)}
           >
             <FormErrorWrap>
@@ -167,7 +167,7 @@ export default function Login() {
               customWidth="max-w-[40rem] min-w-56 w-[25vw]"
             />
           </form>
-          <figure className="flex items-center justify-evenly p-6">
+          <figure className="flex items-center justify-evenly p-6 max-sm:text-[0.8rem] max-sm:p-4">
             <p className="select-none mr-4 ml-4 text-center">
               Don't have account?
             </p>

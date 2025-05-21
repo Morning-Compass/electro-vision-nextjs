@@ -24,7 +24,7 @@ export default function EmployeesOverview() {
       <section className="flex flex-row items-center h-full gap-8 w-[90vw]">
         <SidebarTemplate activeIcon="people" />
         <section className="flex flex-auto flex-wrap justify-center">
-          <section className="h-auto flex flex-col items-center justify-center p-6 bg-mc-bg-primary rounded-3xl mr-10 mb-10">
+          <section className="h-auto flex flex-col items-center justify-center p-6 bg-ev-primary-bg rounded-3xl mr-10 mb-10">
             <p className="text-3xl font-semibold">{employee}</p>
             <Image
               src={profilePicture}
@@ -34,7 +34,7 @@ export default function EmployeesOverview() {
               className="rounded-3xl w-80 h-auto"
             />
           </section>
-          <section className="h-auto flex flex-col justify-evenly p-6 bg-mc-bg-primary rounded-3xl mr-10 mb-10">
+          <section className="h-auto flex flex-col justify-evenly p-6 bg-ev-primary-bg rounded-3xl mr-10 mb-10">
             <p className="text-2xl font-semibold">Personal Information</p>
             <p className="text-lg">Birth date: 15 Jan 1990</p>
             <p className="text-lg">Country: Saudi Arabia</p>
@@ -42,7 +42,7 @@ export default function EmployeesOverview() {
             <p className="text-lg">Phone number: +966 011 999 3343</p>
             <p className="text-lg">Email: ahmed.rashdan@mail.com</p>
           </section>
-          <section className="h-auto flex flex-col justify-evenly p-6 bg-mc-bg-primary rounded-3xl mr-10 mb-10">
+          <section className="h-auto flex flex-col justify-evenly p-6 bg-ev-primary-bg rounded-3xl mr-10 mb-10">
             <p className="text-2xl font-semibold">Company Information</p>
             <p className="text-lg">Working since: 1 Jan 2015</p>
             <p className="text-lg">Position: Electrician</p>
@@ -50,7 +50,7 @@ export default function EmployeesOverview() {
             <p className="text-lg">Hours per week: 40</p>
             <p className="text-lg">Sex: Male</p>
           </section>
-          <section className="h-auto flex flex-col justify-evenly p-6 bg-mc-bg-primary rounded-3xl mr-10 mb-10">
+          <section className="h-auto flex flex-col justify-evenly p-6 bg-ev-primary-bg rounded-3xl mr-10 mb-10">
             <p className="text-2xl font-semibold">Billing Information</p>
             <p className="text-lg">
               Account number: PL 17 2490 1233 5678 9091 2272 9396
@@ -64,7 +64,7 @@ export default function EmployeesOverview() {
       <Input
         name={"edit"}
         type="button"
-        className="text-white bg-mc-blue rounded-lg w-[75vw] h-14 pl-4 pr-4 hover:scale-110 duration-300"
+        className="text-white bg-ev-blue rounded-lg w-[75vw] h-14 pl-4 pr-4 hover:scale-110 duration-300"
         value="Edit"
       />
       <FooterSmall />

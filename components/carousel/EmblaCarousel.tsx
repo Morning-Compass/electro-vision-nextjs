@@ -1,3 +1,4 @@
+// EmblaCarousel.tsx
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -6,123 +7,140 @@ import { EmblaOptionsType, EmblaCarouselType } from 'embla-carousel';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import {
-    PrevButton,
-    NextButton,
-    usePrevNextButtons
+  PrevButton,
+  NextButton,
+  usePrevNextButtons
 } from '@/components/carousel/EmblaCarouselArrowButtons';
 
 type SlideData = {
-    id: string | number;
-    type: string;
-    title?: string;
-    imageUrl?: string;
-    altText?: string;
-    description?: string;
+  id: string | number;
+  type: string;
+  title?: string;
+  imageUrl?: string;
+  altText?: string;
+  description?: string;
 };
 
 type PropType = {
-    slides: SlideData[];
-    options?: EmblaOptionsType;
+  slides: SlideData[];
+  options?: EmblaOptionsType;
 };
 
-const EmblaCarousel: React.FC<PropType> = (props) => {
-    const { slides, options } = props;
-    const [emblaRef, emblaApi] = useEmblaCarousel(options,
-      [ // Array of plugins
-          Autoplay({
-              delay: 4000, // Delay between slides in milliseconds (4 seconds)
-              stopOnInteraction: true,
-              stopOnMouseEnter: true,
-              stopOnFocusIn: true,
-          })
-      ]
-    );
-    const [selectedIndex, setSelectedIndex] = useState(0);
+const EmblaCarousel: React.FC<PropType> = ({ slides, options }) => {
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    options,
+    [
+      Autoplay({
+        delay: 4000,
+        stopOnInteraction: true,
+        stopOnMouseEnter: true,
+        stopOnFocusIn: true,
+      }),
+    ]
+  );
 
-    const {
-        prevBtnDisabled,
-        nextBtnDisabled,
-        onPrevButtonClick,
-        onNextButtonClick
-    } = usePrevNextButtons(emblaApi);
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
-    const updateSelectedIndex = useCallback((api: EmblaCarouselType) => {
-        if (!api) return;
-        setSelectedIndex(api.selectedScrollSnap());
-    }, []);
+  const {
+    prevBtnDisabled,
+    nextBtnDisabled,
+    onPrevButtonClick,
+    onNextButtonClick,
+  } = usePrevNextButtons(emblaApi);
 
-    useEffect(() => {
-        if (!emblaApi) return;
-        updateSelectedIndex(emblaApi);
-        emblaApi.on('select', updateSelectedIndex);
-        emblaApi.on('reInit', updateSelectedIndex);
+  const updateSelectedIndex = useCallback((api: EmblaCarouselType) => {
+    if (!api) return;
+    setSelectedIndex(api.selectedScrollSnap());
+  }, []);
 
-        return () => {
-            emblaApi?.off('select', updateSelectedIndex);
-            emblaApi?.off('reInit', updateSelectedIndex);
-        };
-    }, [emblaApi, updateSelectedIndex]);
+  useEffect(() => {
+    if (!emblaApi) return;
+    updateSelectedIndex(emblaApi);
+    emblaApi.on('select', updateSelectedIndex);
+    emblaApi.on('reInit', updateSelectedIndex);
 
-    if (!slides || slides.length === 0) {
-        return <div>No slides to display.</div>;
-    }
+    return () => {
+      emblaApi?.off('select', updateSelectedIndex);
+      emblaApi?.off('reInit', updateSelectedIndex);
+    };
+  }, [emblaApi, updateSelectedIndex]);
 
-    return (
-      <section className="embla relative">
-          <div className="embla__viewport" ref={emblaRef}>
-              <div className="embla__container">
-                  {slides.map((slideData, index) => (
-                    <div
-                      className={`embla__slide ${
-                        index === selectedIndex ? 'is-selected' : ''
-                      }`}
-                      key={slideData.id}
-                    >
-                        <section className="flex flex-col items-center justify-center rounded-3xl bg-white w-full h-auto p-11">
-                            {/* Render slide content as before */}
-                            {slideData.type === 'image' && slideData.imageUrl && (
-                              <div className="relative w-full h-full">
-                                  <Image
-                                    src={slideData.imageUrl}
-                                    alt={slideData.altText || 'Carousel image'}
-                                    fill
-                                    style={{ objectFit: 'contain' }}
-                                    priority={index === 0}
-                                    sizes="(max-width: 768px) 90vw, 75vw"
-                                  />
-                              </div>
-                            )}
-                            {slideData.type === 'custom' && (
-                              <>
-                                  {slideData.title && <h3 className="text-black text-8xl text-center">{slideData.title}</h3>}
-                                  <div className="flex flex-row justify-end items-center mt-8">
-                                      {slideData.description && <p className="text-wrap size-1/3 mr-20 text-left">{slideData.description}</p>}
-                                      {slideData.imageUrl && <Image
-                                        src={slideData.imageUrl}
-                                        alt={slideData.altText || 'Carousel image'}
-                                        width={0}
-                                        height={0}
-                                        className="rounded-3xl w-auto max-w-200 h-auto"
-                                      />}
-                                  </div>
-                              </>
-                            )}
-                        </section>
+  if (!slides || slides.length === 0) {
+    return <div role="status">No slides to display.</div>;
+  }
+
+  return (
+    <section className="embla relative w-full" aria-label="Feature carousel">
+      <div className="embla__viewport overflow-hidden" ref={emblaRef}>
+        <div className="embla__container flex items-start">
+          {slides.map((slide, index) => (
+            <div
+              key={slide.id}
+              className={`embla__slide min-w-0 flex-[0_0_100%] transition-opacity duration-300 ${
+                index === selectedIndex ? 'opacity-100' : 'opacity-70'
+              }`}
+              aria-hidden={index !== selectedIndex}
+            >
+              <section className="flex flex-col items-center justify-center rounded-3xl bg-white w-full p-4 md:p-6 lg:p-8 text-center">
+                {slide.type === 'image' && slide.imageUrl && (
+                  // Original image type section remains similar but ensures min-height doesn't restrict large images
+                  <div className="relative w-full min-h-[300px] sm:min-h-[400px] md:min-h-[500px] flex items-center justify-center">
+                    <Image
+                      src={slide.imageUrl}
+                      alt={slide.altText || 'Carousel image'}
+                      fill
+                      priority={index === 0}
+                      style={{ objectFit: 'contain' }}
+                      sizes="(max-width: 768px) 90vw, (max-width: 1200px) 70vw, 50vw"
+                    />
+                  </div>
+                )}
+
+                {slide.type === 'custom' && (
+                  <div>
+                    {slide.title && (
+                      <h3 className="text-3xl sm:text-4xl lg:text-6xl font-bold mb-4 text-black">
+                        {slide.title}
+                      </h3>
+                    )}
+                    <div className="flex flex-col lg:flex-row justify-center lg:justify-around items-center w-full lg:h-[50vh] gap-4 lg:gap-6">
+                      {slide.description && (
+                        <p className="text-wrap w-full lg:w-2/5 xl:w-1/3 text-sm sm:text-base text-center lg:text-left order-2 lg:order-1">
+                          {slide.description}
+                        </p>
+                      )}
+                      {slide.imageUrl && (
+                        <div className="w-full max-w-lg sm:max-w-xl lg:w-4/5 xl:w-3/4 flex justify-center items-center order-1 lg:order-2 my-4 lg:my-0">
+                          <Image
+                            src={slide.imageUrl}
+                            alt={slide.altText || 'Carousel image'}
+                            width={0}
+                            height={0}
+                            className="rounded-3xl object-contain w-full h-auto"
+                          />
+                        </div>
+                      )}
                     </div>
-                  ))}
-              </div>
-          </div>
+                  </div>
+                )}
+              </section>
+            </div>
+          ))}
+        </div>
+      </div>
 
-          <PrevButton
-            onClick={onPrevButtonClick}
-            disabled={prevBtnDisabled}
-          />
-          <NextButton
-            onClick={onNextButtonClick}
-            disabled={nextBtnDisabled}
-          />
-      </section>
-    );
+      <PrevButton
+        onClick={onPrevButtonClick}
+        disabled={prevBtnDisabled}
+        aria-label="Previous slide"
+      />
+      <NextButton
+        onClick={onNextButtonClick}
+        disabled={nextBtnDisabled}
+        aria-label="Next slide"
+      />
+    </section>
+  );
 };
 
 export default EmblaCarousel;

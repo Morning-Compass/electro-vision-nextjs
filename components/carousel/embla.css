@@ -1,44 +1,52 @@
+/* embla.css */
 .embla {
     width: 100%;
-    height: auto;
+    /* Removed fixed height or aspect-ratio to allow vertical expansion */
+    min-height: 100px; /* Optional: A small min-height to ensure it's visible even with minimal content */
     --slide-size: 100%;
-    max-width: 80%;
     margin: auto;
     position: relative;
+    overflow: hidden;
+    border-radius: 0.5rem;
 }
 
 .embla__viewport {
     overflow: hidden;
     width: 100%;
-    aspect-ratio: 16 / 9;
+    /* REMOVED aspect-ratio to allow content to dictate height */
     border-radius: 0.5rem;
 }
+
+/* REMOVED the media query for aspect-ratio as it fixes height */
+/*
+@media (min-width: 768px) {
+    .embla__viewport {
+        aspect-ratio: 16 / 9;
+    }
+}
+*/
 
 .embla__container {
     display: flex;
     touch-action: pan-y pinch-zoom;
     margin-left: -0.25rem;
-    height: 100%;
+    /* REMOVED height: 100% to allow content to dictate height */
 }
+
 .embla__slide {
-    height: 100%;
     flex: 0 0 var(--slide-size);
     min-width: 0;
     position: relative;
-    overflow: hidden;
-    border-radius: 0.5rem;
     margin-left: 0.25rem;
     margin-right: 0.25rem;
     display: flex;
-    align-items: center;
-}
-
-.embla__slide img {
-    max-height: 27rem;
+    align-items: center; /* You might want to adjust this to 'flex-start' or 'stretch' depending on desired vertical alignment of content within slides */
+    justify-content: center;
+    /* REMOVED height: 100% to allow content to dictate height */
 }
 
 .embla__button {
-    -webkit-tap-highlight-color: rgba(var(230, 230, 230), 0.5);
+    -webkit-tap-highlight-color: rgba(230, 230, 230, 0.5);
     -webkit-appearance: none;
     appearance: none;
     background-color: rgba(var(--background-site-rgb-value, 249, 249, 249), 0.85);
@@ -48,25 +56,25 @@
     cursor: pointer;
     padding: 0;
     margin: 0;
-    z-index: 1;
+    z-index: 10; /* Ensure buttons are above slides */
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    width: 4rem;
-    height: 4rem;
+    width: 3rem; /* Slightly smaller for a sleeker look */
+    height: 3rem; /* Slightly smaller */
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(rgb(222, 222, 222), #333);
+    color: var(rgb(50, 50, 50), #333); /* Darker icon color for better visibility */
     box-shadow: 0 0.1rem 0.3rem rgba(0,0,0,0.1);
-    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
 }
 
 .embla__button:disabled {
     color: var(rgb(192, 192, 192), #9ca3af);
     cursor: default;
-    opacity: 0.5;
+    opacity: 0.3; /* Make it more visibly disabled */
 }
 
 .embla__button:not(:disabled):hover {
@@ -75,14 +83,14 @@
 }
 
 .embla__button__svg {
-    width: 40%;
-    height: 40%;
+    width: 35%; /* Adjusted for new button size */
+    height: 35%; /* Adjusted for new button size */
 }
 
 .embla__button--prev {
-    left: -3rem;
+    left: 1rem; /* Closer to the edge */
 }
 
 .embla__button--next {
-    right:-3rem;
+    right: 1rem; /* Closer to the edge */
 }
