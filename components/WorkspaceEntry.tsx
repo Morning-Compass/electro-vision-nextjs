@@ -13,17 +13,44 @@ const WorkspaceEntry = ({ workspace }: WorkspaceEntryProps) => {
   const { User, UserDispatch } = useUserContext();
 
   const getSvgDataUri = (rawSvg: string): string => {
-    const withoutProlog = rawSvg.replace(/<\?xml[\s\S]*?\?>/, "").trim();
-    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(withoutProlog)}`;
+    try {
+      // Remove XML prolog and trim whitespace
+      const cleanedSvg = rawSvg.replace(/<\?xml[\s\S]*?\?>/g, "").trim();
+
+      // Check if it's valid SVG
+      if (!cleanedSvg.startsWith("<svg")) {
+        throw new Error("Invalid SVG content");
+      }
+
+      // Encode and create data URI
+      return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(cleanedSvg)}`;
+    } catch (error) {
+      console.error("Error processing SVG:", error);
+      return "/problem.png";
+    }
   };
 
-  const isSvg =
-    typeof workspace.coverPhoto === "string" &&
-    workspace.coverPhoto.trim().startsWith("<");
+  const getImageSrc = () => {
+    if (!workspace.coverPhoto) return "/problem.png";
 
-  const imageSrc = isSvg ? getSvgDataUri(workspace.coverPhoto) : "/problem.png";
+    // If it's already a data URL or regular URL
+    if (typeof workspace.coverPhoto === "string") {
+      if (
+        workspace.coverPhoto.startsWith("data:") ||
+        workspace.coverPhoto.startsWith("http")
+      ) {
+        return workspace.coverPhoto;
+      }
 
-  workspace.coverPhoto = imageSrc;
+      if (workspace.coverPhoto.trim().startsWith("<")) {
+        return getSvgDataUri(workspace.coverPhoto);
+      }
+    }
+
+    return "/problem.png";
+  };
+
+  const imageSrc = getImageSrc();
 
   return (
     <section
@@ -47,12 +74,12 @@ const WorkspaceEntry = ({ workspace }: WorkspaceEntryProps) => {
             src={imageSrc}
             alt={workspace.name}
             fill
-            className="object-cover"
+            className="object-contain" // Changed from cover to contain for SVGs
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             onError={(e) => {
               (e.target as HTMLImageElement).src = "/problem.png";
             }}
-            unoptimized={isSvg}
+            unoptimized={imageSrc.startsWith("data:image/svg+xml")}
           />
         </div>
       </Link>

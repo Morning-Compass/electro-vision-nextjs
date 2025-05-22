@@ -86,7 +86,7 @@ export default function TaskEntry({ task }: TaskEntryProps) {
             alt="Task"
             width={56}
             height={56}
-            className="rounded-full m-2"
+            className="rounded-full m-2 aspect-square"
           />
           <p className="text-xl text-nowrap m-2">{title}</p>
           <p

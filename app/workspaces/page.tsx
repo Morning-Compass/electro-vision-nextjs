@@ -17,6 +17,7 @@ import { Workspace } from "@/ev-types/workspace-types";
 import { PythonReponse } from "@/ev-types/workspace-python-reponse-type";
 import WorkspaceEntry from "@/components/WorkspaceEntry";
 import toast from "react-hot-toast";
+import { getFilePreview, revokeObjectUrl } from "@/ev-lib/fileUtils";
 
 export default function Workspaces() {
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
@@ -88,38 +89,45 @@ export default function Workspaces() {
       );
 
       setCoverImagesData(imageMetadataResponse);
-      console.log("API Response for images:", imageMetadataResponse);
+      console.log(fetchedWorkspaces);
 
-      const mergedWorkspaces = fetchedWorkspaces.map((workspace) => {
-        // Check if the file is a PDF
-        const isPdf = workspace.plan_file_name?.toLowerCase().endsWith(".pdf");
+      const mergedWorkspaces = await Promise.all(
+        fetchedWorkspaces.map(async (workspace) => {
+          try {
+            if (!workspace.plan_file_name) return workspace;
 
-        let searchPath = "";
-        if (isPdf && workspace.plan_file_name) {
-          const filenameWithoutPdf = workspace.plan_file_name.replace(
-            /\.pdf$/i,
-            "",
-          );
-          searchPath = `${userId}/${filenameWithoutPdf}/page_1.svg`;
-        } else {
-          searchPath = `${userId}/${workspace.plan_file_name}`;
-        }
+            const baseFilename = workspace.plan_file_name.replace(
+              /\.pdf$/i,
+              "",
+            );
+            const match = imageMetadataResponse?.files?.find(
+              (file) =>
+                file.storage_path.includes(baseFilename) ||
+                file.file_name.includes(baseFilename),
+            );
 
-        const match = imageMetadataResponse?.files?.find(
-          (file) => file.storage_path === searchPath,
-        );
+            if (match && match.svg_content) {
+              try {
+                const coverPhoto = await getFilePreview(match.svg_content);
+                return { ...workspace, coverPhoto };
+              } catch (svgError) {
+                console.error("Error processing SVG content:", svgError);
+                return workspace;
+              }
+            }
 
-        if (match && match.svg_content) {
-          return { ...workspace, coverPhoto: match.svg_content };
-        } else {
-          if (match && !match.svg_content) {
-            console.warn(`Found match for ${searchPath} but no svg_content.`);
+            console.warn(
+              `No SVG match found for workspace file: ${workspace.plan_file_name}`,
+            );
+            return workspace;
+          } catch (error) {
+            console.error("Error processing workspace:", error);
+            return workspace;
           }
-          return workspace;
-        }
-      });
+        }),
+      );
 
-      console.log("Merged Workspaces:", mergedWorkspaces);
+      console.log(mergedWorkspaces);
       setWorkspaces(mergedWorkspaces);
     } catch (error) {
       console.error("Failed to fetch workspaces or cover images", error);
@@ -133,14 +141,23 @@ export default function Workspaces() {
   }, [User.authUser?.id, User.authUser?.email]);
 
   useEffect(() => {
-    if (!selectedFile) {
-      setPreviewUrl(null);
-      return;
-    }
-    const objectUrl = URL.createObjectURL(selectedFile);
-    setPreviewUrl(objectUrl);
+    const handlePreview = async () => {
+      if (!selectedFile) {
+        setPreviewUrl(null);
+        return;
+      }
 
-    return () => URL.revokeObjectURL(objectUrl);
+      const preview = await getFilePreview(selectedFile);
+      setPreviewUrl(preview);
+    };
+
+    handlePreview();
+
+    return () => {
+      if (previewUrl) {
+        revokeObjectUrl(previewUrl);
+      }
+    };
   }, [selectedFile]);
 
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
