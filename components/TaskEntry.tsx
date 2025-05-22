@@ -1,22 +1,19 @@
+import useUserContext from "@/ev-contexts/userContextProvider";
+import { WorkspaceData } from "@/ev-types/user-types";
+import { Task } from "@/ev-types/workspace-types";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
 type TaskEntryProps = {
-  title: string;
-  photo?: string | null;
-  status: string;
-  importance: string;
+  task: Task;
 };
 
-export default function TaskEntry({
-  title,
-  photo = undefined,
-  status,
-  importance,
-}: TaskEntryProps) {
+export default function TaskEntry({ task }: TaskEntryProps) {
+  const { id, title, status, importance, description_multimedia } = task;
   const [statusFile, setStatusFile] = useState<string>("todo.png");
   const [importanceFile, setImportanceFile] = useState<string>("low.png");
+  const { User, UserDispatch } = useUserContext();
 
   useEffect(() => {
     let statusFileName = "todo.png"; // Default value
@@ -59,16 +56,33 @@ export default function TaskEntry({
 
   return (
     <>
-      <Link href={"/workspace/task/details"}>
-        <div className="flex justify-start items-center gap-2 flex-row w-full hover:bg-ev-primary-bg hover:scale-110 duration-300  rounded-xl p-1">
-          <Image
-            src={photo ?? "/tasks/" + statusFile}
-            alt="Employee"
-            width={56}
-            height={56}
-            className="rounded-full m-2"
-          />
-          {/*
+      <div
+        onClick={() => {
+          const prevData = User.workspaceData ?? {
+            currentWorkspace: null,
+            currentTask: null,
+            currentUserOverviewData: null,
+          };
+
+          UserDispatch({
+            type: "setWorkspaceData",
+            value: {
+              ...prevData,
+              currentTask: task,
+            },
+          });
+        }}
+      >
+        <Link href={"/workspaces/task/details"}>
+          <div className="flex justify-start items-center gap-2 flex-row w-full hover:bg-ev-primary-bg hover:scale-110 duration-300  rounded-xl p-1">
+            <Image
+              src={description_multimedia ?? "/tasks/" + statusFile}
+              alt="Employee"
+              width={56}
+              height={56}
+              className="rounded-full m-2"
+            />
+            {/*
           <Image
             src={photo ?? "/employee.png"}
             alt="Employee"
@@ -77,14 +91,15 @@ export default function TaskEntry({
             className="rounded-full m-2"
           />
           */}
-          <p className="text-xl text-nowrap m-2">{title}</p>
-          <p
-            className={`text-xl text-nowrap m-2 ${importance === "LOW" ? "text-green-400" : importance === "MEDIUM" ? "text-yellow-500" : "text-red-600"}`}
-          >
-            {importance}
-          </p>
-        </div>
-      </Link>
+            <p className="text-xl text-nowrap m-2">{title}</p>
+            <p
+              className={`text-xl text-nowrap m-2 ${importance === "LOW" ? "text-green-400" : importance === "MEDIUM" ? "text-yellow-500" : "text-red-600"}`}
+            >
+              {importance}
+            </p>
+          </div>
+        </Link>
+      </div>
     </>
   );
 }

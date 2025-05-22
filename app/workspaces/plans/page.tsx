@@ -35,7 +35,8 @@ export default function WorkspaceDetails() {
   const [tasks, setTasks] = useState<Task[] | null>(null);
   // Changed from useRouter to useSearchParams
   const searchParams = useSearchParams();
-  const coverImage = User.currentWorkspace?.coverPhoto || "/problem.png";
+  const coverImage =
+    User.workspaceData?.currentWorkspace?.coverPhoto || "/problem.png";
   const [receivedCoverImage, setReceivedCoverImage] = useState<string | null>(
     null,
   );
@@ -84,7 +85,9 @@ export default function WorkspaceDetails() {
         };
 
         const res = await OLF.post(
-          ApiLinks.createTasks(User.currentWorkspace?.id.toString() ?? "-1"),
+          ApiLinks.createTasks(
+            User.workspaceData?.currentWorkspace?.id.toString() ?? "-1",
+          ),
           taskPayload,
         );
 
@@ -243,7 +246,7 @@ export default function WorkspaceDetails() {
     const onSubmit: SubmitHandler<addWorkerFormProps> = async (data) => {
       try {
         const res = await OLF.post(ApiLinks.inviteWorker, {
-          workspace_id: User.currentWorkspace?.id,
+          workspace_id: User.workspaceData?.currentWorkspace?.id,
           inviter_email: User.authUser?.email,
           invited_email: data.invited_email,
         });
@@ -309,7 +312,7 @@ export default function WorkspaceDetails() {
   const getWorkers = async () => {
     const res = await OLF.post(
       ApiLinks.listWorkspaceUsersByWorkspaceIdAndEmail(
-        User.currentWorkspace?.id.toString() ?? "-1",
+        User.workspaceData?.currentWorkspace?.id.toString() ?? "-1",
       ),
       {
         email: User.authUser?.email,
@@ -323,7 +326,9 @@ export default function WorkspaceDetails() {
   const getTasks = async () => {
     try {
       const res = await fetch(
-        ApiLinks.listTasks(User.currentWorkspace?.id.toString() ?? "-1"),
+        ApiLinks.listTasks(
+          User.workspaceData?.currentWorkspace?.id.toString() ?? "-1",
+        ),
         {
           method: "POST",
           headers: {
@@ -356,7 +361,13 @@ export default function WorkspaceDetails() {
     getTasks();
   }, [coverImage]);
 
-  setInterval(() => getWorkers(), 100000);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      getWorkers();
+    }, 100000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <PageTemplate>
@@ -381,21 +392,27 @@ export default function WorkspaceDetails() {
               <div className="flex flex-col gap-2 p-6 bg-ev-primary-bg rounded-xl">
                 <p className="text-3xl font-semibold mb-2">Workspace Details</p>
                 <p>
-                  Start Date: {User.currentWorkspace?.start_date?.toString()}
+                  Start Date:{" "}
+                  {User.workspaceData?.currentWorkspace?.start_date?.toString()}
                 </p>
                 <p>
                   Due Date:{" "}
-                  {User.currentWorkspace?.finish_date?.toString() ||
+                  {User.workspaceData?.currentWorkspace?.finish_date?.toString() ||
                     "Not yet established"}
                 </p>
                 <p>
-                  Subscription Tier: {User.currentWorkspace?.ev_subscription}
+                  Subscription Tier:{" "}
+                  {User.workspaceData?.currentWorkspace?.ev_subscription}
                 </p>
                 <p>
                   Geolocation:{" "}
-                  {User.currentWorkspace?.geolocation || "Not yet established"}
+                  {User.workspaceData?.currentWorkspace?.geolocation ||
+                    "Not yet established"}
                 </p>
-                <p>Filename: {User.currentWorkspace?.plan_file_name}</p>
+                <p>
+                  Filename:{" "}
+                  {User.workspaceData?.currentWorkspace?.plan_file_name}
+                </p>
                 <Input
                   name="settings"
                   type="button"
@@ -468,12 +485,7 @@ export default function WorkspaceDetails() {
                   ) : (
                     <>
                       {tasks.map((task, i) => (
-                        <TaskEntry
-                          title={task.title}
-                          status={task.status}
-                          importance={task.importance}
-                          key={i}
-                        />
+                        <TaskEntry task={task} />
                       ))}
                     </>
                   )}

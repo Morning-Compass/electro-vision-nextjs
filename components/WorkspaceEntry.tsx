@@ -10,7 +10,7 @@ type WorkspaceEntryProps = {
 };
 
 const WorkspaceEntry = ({ workspace }: WorkspaceEntryProps) => {
-  const { UserDispatch } = useUserContext();
+  const { User, UserDispatch } = useUserContext();
 
   const getSvgDataUri = (rawSvg: string): string => {
     const withoutProlog = rawSvg.replace(/<\?xml[\s\S]*?\?>/, "").trim();
@@ -23,15 +23,19 @@ const WorkspaceEntry = ({ workspace }: WorkspaceEntryProps) => {
 
   const imageSrc = isSvg ? getSvgDataUri(workspace.coverPhoto) : "/problem.png";
 
+  workspace.coverPhoto = imageSrc;
+
   return (
     <section
       key={workspace.id}
       onClick={() =>
         UserDispatch({
-          type: "setCurrentWorkspace",
+          type: "setWorkspaceData",
           value: {
-            ...workspace,
-            coverPhoto: imageSrc, // Store the processed image source in context
+            currentWorkspace: workspace,
+            currentTask: User.workspaceData?.currentTask ?? null,
+            currentUserOverviewData:
+              User.workspaceData?.currentUserOverviewData ?? null,
           },
         })
       }

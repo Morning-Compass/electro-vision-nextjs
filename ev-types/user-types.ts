@@ -1,10 +1,20 @@
-import { Workspace } from "./workspace-types";
+import { Task, Workspace } from "./workspace-types";
 
 export type User = {
   theme: string;
   authUser: AuthUser | null;
   fullUser: FullUser | null;
+  workspaceData: WorkspaceData | null;
+};
+
+export type WorkspaceData = {
   currentWorkspace: Workspace | null;
+  currentTask: Task | null;
+  // currentProblem: Problem | null;
+  currentUserOverviewData: {
+    id: string;
+    email: string;
+  } | null;
 };
 
 export type AuthUser = {
