@@ -18,7 +18,7 @@ interface TaskNodeData {
   id: string;
   label: string;
   description?: string;
-  image?: string | File | null;
+  image?: string | null;
   position: [number, number];
   type: string;
 }
@@ -39,6 +39,58 @@ const LeafletMap = dynamic(() => import("./LeafletMap"), {
     </div>
   ),
 });
+
+// Helper function to handle drop events directly
+function handleDirectDrop(
+  event: DragEvent,
+  onDrop: (
+    nodeType: string,
+    position: [number, number],
+    taskId?: string,
+  ) => void,
+  map: any,
+) {
+  event.preventDefault();
+  event.stopPropagation();
+
+  // Get mouse position on the map
+  const rect = (event.target as HTMLElement).getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+
+  // Approximate coordinates (will use center if map isn't available)
+  let position: [number, number] = [51.5, -0.1];
+
+  if (map && map.containerPointToLatLng) {
+    const point = map.containerPointToLatLng([x, y]);
+    position = [point.lat, point.lng];
+  }
+
+  // Get data from dataTransfer
+  const dataTransfer = event.dataTransfer;
+  if (!dataTransfer) return;
+
+  // Extract task ID or node type
+  const taskId = dataTransfer.getData("application/taskId");
+  const nodeType = !taskId && dataTransfer.getData("application/nodeType");
+
+  // Handle the drop based on data type
+  if (taskId) {
+    // Visual feedback
+    const feedback = document.createElement("div");
+    feedback.className =
+      "absolute z-[2000] bg-green-500 text-white px-2 py-1 rounded";
+    feedback.style.left = `${x}px`;
+    feedback.style.top = `${y}px`;
+    feedback.textContent = "Added!";
+    (event.target as HTMLElement).appendChild(feedback);
+    setTimeout(() => feedback.remove(), 800);
+
+    onDrop("customTask", position, taskId);
+  } else if (nodeType) {
+    onDrop(nodeType, position);
+  }
+}
 
 // Initial data
 const initialTasks: TaskNodeData[] = [
@@ -62,8 +114,11 @@ const initialConnections: TaskConnection[] = [
 
 // Main editor component
 function MapEditor() {
-  const { User } = useUserContext();
-  const coverPhotoValue = User.currentWorkspace?.coverPhoto;
+  // Removed User context reference as it's not needed for this component
+
+  // Refs for direct DOM access
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const leafletMapInstanceRef = useRef<any>(null);
 
   // State management
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
@@ -73,11 +128,25 @@ function MapEditor() {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [connectionMode, setConnectionMode] = useState(false);
   const [connectionSource, setConnectionSource] = useState<string | null>(null);
+  const [availableTasks, setAvailableTasks] = useState<TaskNodeData[]>([]);
 
   // New task form state
   const [newTaskName, setNewTaskName] = useState("");
   const [newTaskDescription, setNewTaskDescription] = useState("");
-  const [newTaskPhoto, setNewTaskPhoto] = useState<string | File | null>(null);
+  const [newTaskPhoto, setNewTaskPhoto] = useState<File | string | null>(null);
+
+  // Track state changes for debugging
+  useEffect(() => {
+    if (availableTasks.length) {
+      console.log(`Available tasks: ${availableTasks.length}`);
+    }
+  }, [availableTasks]);
+
+  useEffect(() => {
+    if (tasks.length) {
+      console.log(`Map tasks: ${tasks.length}`);
+    }
+  }, [tasks]);
 
   // Connection handling
   const handleTaskSelect = useCallback(
@@ -132,31 +201,83 @@ function MapEditor() {
       type: "customTask",
       label: newTaskName,
       description: newTaskDescription,
-      image: newTaskPhoto instanceof File ? URL.createObjectURL(newTaskPhoto) : newTaskPhoto,
-      // Random position within the custom background bounds
-      position: [51.4 + Math.random() * 0.2, -0.25 + Math.random() * 0.2],
+      image:
+        newTaskPhoto instanceof File
+          ? URL.createObjectURL(newTaskPhoto)
+          : typeof newTaskPhoto === "string"
+            ? newTaskPhoto
+            : null,
+      // Default position (will be updated when dropped on map)
+      position: [51.4, -0.25],
     };
 
-    setTasks((prev) => [...prev, newTask]);
+    setAvailableTasks((prev) => [...prev, newTask]);
     handleCloseOverlay();
   };
 
   // Handle dropping a new task on the map
   const handleTaskDrop = useCallback(
-    (nodeType: string, position: [number, number]) => {
-      const newTaskId = `${nodeType}_${Date.now()}`;
-      const newTask: TaskNodeData = {
-        id: newTaskId,
-        type: nodeType,
-        label:
-          nodeType === "defaultTask" ? "New Default Task" : "New Custom Task",
-        position,
-      };
+    (nodeType: string, position: [number, number], taskId?: string) => {
+      if (taskId) {
+        // A task was dragged from the available tasks section
+        const task = availableTasks.find((t) => t.id === taskId);
 
-      setTasks((prev) => [...prev, newTask]);
+        if (task) {
+          // Add the task to the map with the dropped position
+          const newTask: TaskNodeData = {
+            ...task,
+            position,
+          };
+
+          // First remove from available tasks, then add to map tasks
+          setAvailableTasks((prev) => prev.filter((t) => t.id !== taskId));
+          setTasks((prev) => [...prev, newTask]);
+        }
+      } else {
+        // A task type was dragged from the left sidebar
+        const newTaskId = `${nodeType}_${Date.now()}`;
+        const newTask: TaskNodeData = {
+          id: newTaskId,
+          type: nodeType,
+          label:
+            nodeType === "defaultTask" ? "New Default Task" : "New Custom Task",
+          position,
+        };
+
+        setTasks((prev) => [...prev, newTask]);
+      }
     },
-    [],
+    [availableTasks],
   );
+
+  useEffect(() => {
+    const mapContainer = mapContainerRef.current;
+    if (!mapContainer) return;
+
+    // Handle dragover to allow dropping
+    const handleDragOver = (e: DragEvent) => {
+      e.preventDefault();
+      if (e.dataTransfer) {
+        e.dataTransfer.dropEffect = "copy";
+      }
+    };
+
+    // Handle drop event directly
+    const handleDrop = (e: DragEvent) => {
+      console.log("Direct DOM drop event detected", e);
+      handleDirectDrop(e, handleTaskDrop, leafletMapInstanceRef.current);
+    };
+
+    // Add event listeners
+    mapContainer.addEventListener("dragover", handleDragOver);
+    mapContainer.addEventListener("drop", handleDrop);
+
+    // Clean up
+    return () => {
+      mapContainer.removeEventListener("dragover", handleDragOver);
+      mapContainer.removeEventListener("drop", handleDrop);
+    };
+  }, [handleTaskDrop]);
 
   // Handle task drag end to update position
   const handleTaskDragEnd = useCallback(
@@ -191,8 +312,9 @@ function MapEditor() {
 
   // Handle drag start for dragging from task types panel
   const handleDragStart = (event: React.DragEvent, nodeType: string) => {
+    // Set only one data format to avoid conflicts
     event.dataTransfer.setData("application/nodeType", nodeType);
-    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.effectAllowed = "copy";
   };
 
   // Find the selected task for display in sidebar
@@ -258,10 +380,14 @@ function MapEditor() {
             <h3 className="text-xl font-semibold mb-2 text-ev-text">
               Task Types
             </h3>
+            <p className="text-sm text-ev-text italic mb-2">
+              Drag task types to the map
+            </p>
             <section
-              draggable
+              draggable={true}
               onDragStart={(e) => handleDragStart(e, "defaultTask")}
-              className="p-3 border border-gray-200 rounded-lg cursor-grab hover:bg-gray-100 flex items-center gap-2 transition-colors duration-150"
+              className="p-3 border border-gray-200 rounded-lg cursor-grab hover:bg-gray-100 flex items-center gap-2 transition-colors duration-150 group"
+              title="Drag to place on map"
             >
               <Image
                 src="/outlet.png"
@@ -269,12 +395,24 @@ function MapEditor() {
                 width={24}
                 height={24}
               />
-              <span className="text-ev-text">Default Task</span>
+              <span className="text-ev-text flex-grow">Default Task</span>
+              <span className="text-gray-400 group-hover:text-gray-600 text-xs">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  fill="currentColor"
+                  viewBox="0 0 16 16"
+                >
+                  <path d="M7 2a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
+                </svg>
+              </span>
             </section>
             <section
-              draggable
+              draggable={true}
               onDragStart={(e) => handleDragStart(e, "customTask")}
-              className="p-3 border border-gray-200 rounded-lg cursor-grab hover:bg-gray-100 flex items-center gap-2 transition-colors duration-150"
+              className="p-3 border border-gray-200 rounded-lg cursor-grab hover:bg-gray-100 flex items-center gap-2 transition-colors duration-150 group"
+              title="Drag to place on map"
             >
               <Image
                 src="/problem.png"
@@ -282,7 +420,18 @@ function MapEditor() {
                 width={24}
                 height={24}
               />
-              <span className="text-ev-text">Custom Task</span>
+              <span className="text-ev-text flex-grow">Custom Task</span>
+              <span className="text-gray-400 group-hover:text-gray-600 text-xs">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  fill="currentColor"
+                  viewBox="0 0 16 16"
+                >
+                  <path d="M7 2a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
+                </svg>
+              </span>
             </section>
           </aside>
 
@@ -295,6 +444,7 @@ function MapEditor() {
                 className="text-ev-white bg-ev-green hover:bg-ev-darkgreen font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none focus:ring-2 focus:ring-ev-green-darker duration-300"
                 value="Add Custom Task"
                 onClick={handleOpenOverlay}
+                title="Create new task in sidebar"
               />
               <Input
                 name="remove_task_button"
@@ -302,6 +452,7 @@ function MapEditor() {
                 className="text-ev-white bg-ev-red hover:bg-ev-darkred font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none focus:ring-2 focus:ring-ev-red-darker duration-300"
                 value="Remove Selected"
                 onClick={handleRemoveSelected}
+                title="Remove selected task from map"
               />
               <Input
                 name="connect_tasks_button"
@@ -316,21 +467,31 @@ function MapEditor() {
                   setConnectionMode(!connectionMode);
                   setConnectionSource(null);
                 }}
-              />
-              <Input
-                name="change_plan_button"
-                type="button"
-                className="text-ev-white bg-ev-blue hover:bg-ev-darkblue font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none focus:ring-2 focus:ring-mc-blue-darker duration-300"
-                value="Change Plan"
+                title={
+                  connectionMode
+                    ? "Cancel creating connection"
+                    : "Create connection between two tasks"
+                }
               />
               <SearchButton />
             </section>
 
             {/* Map Area */}
-            <section className="flex-grow h-full rounded-2xl overflow-hidden shadow-lg relative">
-              <div className="absolute top-2 right-2 bg-black bg-opacity-50 text-white px-3 py-1 rounded-lg z-[999] text-sm">
-                Using custom background: problem.png
+            <section
+              className="flex-grow h-full rounded-2xl overflow-hidden shadow-lg relative"
+              ref={mapContainerRef}
+            >
+              {/* Drag instructions overlay */}
+              <div className="absolute top-2 left-0 right-0 flex justify-center z-[999] pointer-events-none">
+                <div className="bg-ev-primary bg-opacity-80 text-ev-text px-4 py-2 rounded-lg shadow-md text-sm">
+                  Drag tasks from sidebars and drop them on the map
+                </div>
               </div>
+              {/* Status info */}
+              <div className="absolute bottom-2 left-2 z-[999] bg-white bg-opacity-70 p-2 rounded text-xs">
+                Available: {availableTasks.length} | On Map: {tasks.length}
+              </div>
+
               {/* Leaflet Map */}
               <LeafletMap
                 tasks={tasks}
@@ -339,6 +500,9 @@ function MapEditor() {
                 onTaskSelect={handleTaskSelect}
                 onTaskDrop={handleTaskDrop}
                 onTaskDragEnd={handleTaskDragEnd}
+                setMapInstance={(map) => {
+                  leafletMapInstanceRef.current = map;
+                }}
               />
 
               {/* Connection in progress indicator */}
@@ -350,8 +514,81 @@ function MapEditor() {
             </section>
           </main>
 
-          {/* Task Details Sidebar */}
+          {/* Task Details and Available Tasks Sidebar */}
           <aside className="flex flex-col gap-4 h-full bg-ev-primary p-4 rounded-xl shadow-lg max-h-[calc(100vh-var(--navbar-height,64px)-var(--footer-height,50px)-3rem)] overflow-y-auto w-72 sticky top-4">
+            {/* Available Tasks Section */}
+            <section>
+              <h3 className="text-xl font-semibold mb-2 text-ev-text">
+                Available Tasks
+              </h3>
+              {availableTasks.length > 0 && (
+                <p className="text-sm text-ev-text italic mb-2">
+                  Drag tasks to the map to place them
+                </p>
+              )}
+              <div className="space-y-2 mb-4">
+                {availableTasks.map((task) => (
+                  <div
+                    key={task.id}
+                    draggable={true}
+                    onDragStart={(e) => {
+                      // Set only one data format to avoid conflicts
+                      e.dataTransfer.setData("application/taskId", task.id);
+
+                      // Highlight the task being dragged
+                      e.currentTarget.classList.add(
+                        "bg-blue-100",
+                        "border-blue-400",
+                      );
+
+                      e.dataTransfer.effectAllowed = "copy";
+                    }}
+                    onDragEnd={(e) => {
+                      // Remove highlight when drag ends
+                      e.currentTarget.classList.remove(
+                        "bg-blue-100",
+                        "border-blue-400",
+                      );
+                    }}
+                    className="p-3 border border-gray-200 rounded-lg cursor-grab hover:bg-gray-100 flex items-center gap-2 transition-colors duration-150 group"
+                  >
+                    <Image
+                      src={
+                        task.type === "defaultTask"
+                          ? "/outlet.png"
+                          : "/problem.png"
+                      }
+                      alt={task.label}
+                      width={24}
+                      height={24}
+                    />
+                    <span className="text-ev-text truncate flex-grow">
+                      {task.label}
+                    </span>
+                    <span className="text-gray-400 group-hover:text-gray-600 text-xs">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        viewBox="0 0 16 16"
+                      >
+                        <path d="M7 2a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
+                      </svg>
+                    </span>
+                  </div>
+                ))}
+                {availableTasks.length === 0 && (
+                  <p className="text-sm text-ev-text italic p-2">
+                    Add custom tasks to see them here
+                  </p>
+                )}
+              </div>
+            </section>
+
+            <hr className="border-gray-200 my-2" />
+
+            {/* Task Details Section */}
             <h3 className="text-xl font-semibold mb-2 text-ev-text">
               Task Details
             </h3>
@@ -368,15 +605,16 @@ function MapEditor() {
                     <strong>Description:</strong> {selectedTask.description}
                   </p>
                 )}
-                {selectedTask.image && typeof selectedTask.image === 'string' && (
-                <Image
-                  src={selectedTask.image}
-                  alt="Task image"
-                  width={64}
-                  height={64}
-                  className="rounded mt-2 object-cover"
-                />
-              )}
+                {selectedTask.image &&
+                  typeof selectedTask.image === "string" && (
+                    <Image
+                      src={selectedTask.image}
+                      alt="Task image"
+                      width={64}
+                      height={64}
+                      className="rounded mt-2 object-cover"
+                    />
+                  )}
                 <p>
                   <strong>Position:</strong> {selectedTask.position.join(", ")}
                 </p>

@@ -33,31 +33,60 @@ interface LeafletMapProps {
   connections: TaskConnection[];
   selectedTaskId: string | null;
   onTaskSelect: (id: string) => void;
-  onTaskDrop: (nodeType: string, position: [number, number]) => void;
+  onTaskDrop: (nodeType: string, position: [number, number], taskId?: string) => void;
   onTaskDragEnd: (id: string, position: [number, number]) => void;
+  setMapInstance?: (map: any) => void;
 }
 
 // Component to handle map events including drag and drop
 function MapEventHandler({
   onTaskDrop,
+  setMapInstance,
 }: {
   onTaskDrop: LeafletMapProps["onTaskDrop"];
+  setMapInstance?: (map: any) => void;
 }) {
   const map = useMapEvents({
     dragover: (e) => {
       e.originalEvent.preventDefault();
+      // Add a visual cue that this is a droppable area
+      if (e.originalEvent.dataTransfer) {
+        e.originalEvent.dataTransfer.dropEffect = "copy";
+      }
+    },
+    dragenter: (e) => {
+      e.originalEvent.preventDefault();
     },
     drop: (e) => {
-      const nodeType = e.originalEvent.dataTransfer?.getData(
-        "application/nodeType",
-      );
-      if (nodeType) {
-        const latlng = map.mouseEventToLatLng(e.originalEvent);
-        onTaskDrop(nodeType, [latlng.lat, latlng.lng]);
-        e.originalEvent.preventDefault();
+      e.originalEvent.preventDefault();
+      
+      // Get data from dataTransfer
+      const dataTransfer = e.originalEvent.dataTransfer;
+      if (!dataTransfer) return;
+      
+      // Get the mouse position on the map
+      const latlng = map.mouseEventToLatLng(e.originalEvent);
+      const position: [number, number] = [latlng.lat, latlng.lng];
+      
+      // Get taskId or nodeType directly using the specific data formats
+      const taskId = dataTransfer.getData("application/taskId");
+      const nodeType = !taskId && dataTransfer.getData("application/nodeType");
+      
+      // Execute the appropriate drop action
+      if (taskId) {
+        onTaskDrop("customTask", position, taskId);
+      } else if (nodeType) {
+        onTaskDrop(nodeType, position);
       }
     },
   });
+
+  // Make the map instance available to the parent component
+  useEffect(() => {
+    if (setMapInstance && map) {
+      setMapInstance(map);
+    }
+  }, [map, setMapInstance]);
 
   return null;
 }
@@ -70,6 +99,7 @@ export default function LeafletMap({
   onTaskSelect,
   onTaskDrop,
   onTaskDragEnd,
+  setMapInstance,
 }: LeafletMapProps) {
   // Fix default icons
   useEffect(() => {
@@ -135,7 +165,9 @@ export default function LeafletMap({
       <ZoomControl position="bottomleft" />
 
       {/* Map event handler for drag and drop */}
-      <MapEventHandler onTaskDrop={onTaskDrop} />
+      <MapEventHandler onTaskDrop={onTaskDrop} setMapInstance={setMapInstance} />
+      
+      {/* Map is a drop target */}
 
       {/* Task markers */}
       {tasks.map((task) => (
