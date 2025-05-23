@@ -157,7 +157,7 @@ export default function LeafletMap({
 
   return (
     <MapContainer
-      className="h-full w-full"
+      className="h-full w-full z-0"
       style={{ backgroundColor: `var(--color-main-bg)` }}
       center={[51.5, -0.1]}
       zoom={11}
