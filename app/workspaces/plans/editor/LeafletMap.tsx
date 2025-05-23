@@ -10,6 +10,7 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { root } from "postcss";
 
 // Define the types for our props
 interface TaskNodeData {
@@ -33,7 +34,11 @@ interface LeafletMapProps {
   connections: TaskConnection[];
   selectedTaskId: string | null;
   onTaskSelect: (id: string) => void;
-  onTaskDrop: (nodeType: string, position: [number, number], taskId?: string) => void;
+  onTaskDrop: (
+    nodeType: string,
+    position: [number, number],
+    taskId?: string,
+  ) => void;
   onTaskDragEnd: (id: string, position: [number, number]) => void;
   setMapInstance?: (map: any) => void;
 }
@@ -59,19 +64,19 @@ function MapEventHandler({
     },
     drop: (e) => {
       e.originalEvent.preventDefault();
-      
+
       // Get data from dataTransfer
       const dataTransfer = e.originalEvent.dataTransfer;
       if (!dataTransfer) return;
-      
+
       // Get the mouse position on the map
       const latlng = map.mouseEventToLatLng(e.originalEvent);
       const position: [number, number] = [latlng.lat, latlng.lng];
-      
+
       // Get taskId or nodeType directly using the specific data formats
       const taskId = dataTransfer.getData("application/taskId");
       const nodeType = !taskId && dataTransfer.getData("application/nodeType");
-      
+
       // Execute the appropriate drop action
       if (taskId) {
         onTaskDrop("customTask", position, taskId);
@@ -149,9 +154,10 @@ export default function LeafletMap({
 
   return (
     <MapContainer
+      className="h-full w-full"
+      style={{ backgroundColor: `var(--color-main-bg)` }}
       center={[51.5, -0.1]}
       zoom={13}
-      style={{ height: "100%", width: "100%" }}
       zoomControl={false}
       maxBounds={[
         [51.2, -0.4],
@@ -165,8 +171,11 @@ export default function LeafletMap({
       <ZoomControl position="bottomleft" />
 
       {/* Map event handler for drag and drop */}
-      <MapEventHandler onTaskDrop={onTaskDrop} setMapInstance={setMapInstance} />
-      
+      <MapEventHandler
+        onTaskDrop={onTaskDrop}
+        setMapInstance={setMapInstance}
+      />
+
       {/* Map is a drop target */}
 
       {/* Task markers */}
