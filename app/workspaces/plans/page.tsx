@@ -27,6 +27,7 @@ import TaskEntry from "@/components/TaskEntry";
 
 export default function WorkspaceDetails() {
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isTaskOpen, setIsTaskOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { User } = useUserContext();
   const [workspaceUsers, setWorkspaceUsers] = useState<WorkspaceUser[] | null>(
@@ -52,16 +53,17 @@ export default function WorkspaceDetails() {
     importance: "LOW" | "MEDIUM" | "HIGH";
     category: string;
     due_date?: string;
+    multimedia?: string;
   };
 
   const AddTaskLogic = () => {
-    const [isTaskOpen, setIsTaskOpen] = useState(false);
     const { User } = useUserContext();
     const {
       handleSubmit,
       formState: { errors, isSubmitting },
       register,
       reset,
+      setValue,
     } = useForm<TaskFormProps>({
       mode: "onTouched",
       reValidateMode: "onChange",
@@ -79,9 +81,9 @@ export default function WorkspaceDetails() {
           description: data.description,
           importance: data.importance,
           category: data.category,
-          status: "TODO", // Default status
+          status: "TODO",
           due_date: data.due_date || null,
-          description_multimedia: null,
+          description_multimedia: data.multimedia || null,
         };
 
         const res = await OLF.post(
@@ -106,15 +108,6 @@ export default function WorkspaceDetails() {
 
     return (
       <>
-        <Input
-          name="add_task"
-          type="button"
-          value="Add"
-          onClick={() => setIsTaskOpen(true)}
-          customWidth="w-3/4"
-          className="px-4 py-2 bg-ev-green text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-        />
-
         <Overlay isOpen={isTaskOpen} onClose={() => setIsTaskOpen(false)}>
           <form
             className="flex flex-col gap-6 w-full"
@@ -129,7 +122,7 @@ export default function WorkspaceDetails() {
                 <Input
                   type="text"
                   placeholder="Task title..."
-                  className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg w-full"
+                  className="px-3 py-2 bg-ev-primary-bg text-ev-dark-gray rounded-lg w-full"
                   error={errors.title?.message}
                   register={register("title", {
                     required: "Title is required",
@@ -148,7 +141,7 @@ export default function WorkspaceDetails() {
                 <Input
                   type="text"
                   placeholder="Task description..."
-                  className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg w-full"
+                  className="px-3 py-2 bg-ev-primary-bg text-ev-dark-gray rounded-lg w-full"
                   error={errors.description?.message}
                   register={register("description")}
                 />
@@ -157,20 +150,52 @@ export default function WorkspaceDetails() {
 
             <FormErrorWrap>
               <div className="flex flex-col gap-4">
-                <p className="text-xl">Assignee Email*</p>
-                <Input
-                  type="text"
-                  placeholder="assignee@example.com"
-                  className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg w-full"
-                  error={errors.assignee_email?.message}
-                  register={register("assignee_email", {
-                    required: "Assignee email is required",
-                    pattern: {
-                      value: Regex.emailRegistration,
-                      message: "Invalid email format",
-                    },
-                  })}
+                <p className="text-xl">Photo</p>
+
+                <label
+                  htmlFor="multimedia-file"
+                  className="px-3 py-2 bg-ev-primary-bg text-ev-dark-gray rounded-lg cursor-pointer w-full hover:scale-105 transition text-left"
+                >
+                  Upload Photo
+                </label>
+
+                <input
+                  id="multimedia-file"
+                  type="file"
+                  accept="image/png, image/jpeg"
+                  capture="environment"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                      const base64 = reader.result as string;
+                      setValue("multimedia", base64, { shouldValidate: true });
+                    };
+                    reader.readAsDataURL(file);
+                  }}
                 />
+
+                <input type="hidden" {...register("multimedia")} />
+              </div>
+            </FormErrorWrap>
+
+            <FormErrorWrap>
+              <div className="flex flex-col gap-4">
+                <p className="text-xl">Assignee Email*</p>
+                <select
+                  className="px-3 py-2 bg-ev-primary-bg text-ev-dark-gray rounded-lg w-full hover:scale-105 transition appearance-none"
+                  {...register("assignee_email", {
+                    required: "Assignee is required",
+                  })}
+                >
+                  {workspaceUsers &&
+                    workspaceUsers.map((u) => {
+                      return <option value={u.email}>{u.email}</option>;
+                    })}
+                </select>
               </div>
             </FormErrorWrap>
 
@@ -178,7 +203,7 @@ export default function WorkspaceDetails() {
               <div className="flex flex-col gap-4">
                 <p className="text-xl">Importance*</p>
                 <select
-                  className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg w-full"
+                  className="px-3 py-2 bg-ev-primary-bg text-ev-dark-gray rounded-lg w-full hover:scale-105 transition appearance-none"
                   {...register("importance", {
                     required: "Importance is required",
                   })}
@@ -201,7 +226,7 @@ export default function WorkspaceDetails() {
                 <Input
                   type="text"
                   placeholder="e.g., Lamps, Sockets"
-                  className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg w-full"
+                  className="px-3 py-2 bg-ev-primary-bg text-ev-dark-gray rounded-lg w-full"
                   error={errors.category?.message}
                   register={register("category")}
                 />
@@ -213,7 +238,7 @@ export default function WorkspaceDetails() {
                 <p className="text-xl">Due Date</p>
                 <Input
                   type="date"
-                  className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg w-full"
+                  className="px-3 py-2 bg-ev-primary-bg text-ev-dark-gray rounded-lg w-full"
                   register={register("due_date")}
                 />
               </div>
@@ -373,6 +398,7 @@ export default function WorkspaceDetails() {
     <PageTemplate>
       <NavbarTemplate />
       <AddWorkerLogic />
+      <AddTaskLogic />
 
       <section className="flex flex-row items-center justify-start h-full gap-8 w-[90vw]">
         <SidebarTemplate activeIcon="map" />
@@ -468,7 +494,14 @@ export default function WorkspaceDetails() {
                   <SearchButton customWidth="w-full" />
                 </div>
                 <div className="flex justify-around mb-10 items-center">
-                  <AddTaskLogic />
+                  <Input
+                    name="add_task"
+                    type="button"
+                    value="Add"
+                    onClick={() => setIsTaskOpen(true)}
+                    customWidth="w-3/4"
+                    className="px-4 py-2 bg-ev-green text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                  />
                   <Input
                     name="remove"
                     type="button"
@@ -485,7 +518,7 @@ export default function WorkspaceDetails() {
                   ) : (
                     <>
                       {tasks.map((task, i) => (
-                        <TaskEntry task={task} />
+                        <TaskEntry task={task} key={i} />
                       ))}
                     </>
                   )}

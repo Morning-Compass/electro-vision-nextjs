@@ -52,6 +52,7 @@ p {
         --color-secondary-text: #f9f9f9;
         --color-primary-bg: #282828;
         --color-main-bg: #d6dbdc;
+        --color-accent-text: #0c44ff; /* Original blue for light mode */
     }
 
     .mc-blur {
@@ -67,6 +68,7 @@ p {
     --color-secondary-text: #f9f9f9;
     --color-primary-bg: #282828;
     --color-main-bg: #292423;
+    --color-accent-text: #0c44ff; /* Original blue for light mode */
 }
 
 .theme-light {
@@ -76,6 +78,7 @@ p {
     --color-secondary-text: #272727;
     --color-primary-bg: #fefefe;
     --color-main-bg: #d6dbdc;
+    --color-accent-text: #0c44ff; /* Original blue for light mode */
 }
 
 .icon-blue {
