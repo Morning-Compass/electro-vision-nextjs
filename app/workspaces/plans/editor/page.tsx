@@ -172,7 +172,7 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
       importance: "LOW",
       title: "",
       description: "",
-      assignee_email: "", // Consider pre-filling if logical (e.g., currentUserEmail)
+      assignee_email: "",
       category: "",
       due_date: "",
     },
@@ -683,7 +683,7 @@ function MapEditor() {
         currentWorkspaceId={User.workspaceData?.currentWorkspace?.id?.toString()}
       />
 
-      <section className="flex flex-row items-start h-[calc(100vh-var(--navbar-height,64px)-var(--footer-height,50px))] gap-8 w-[95vw] mx-auto pt-4">
+      <section className="flex flex-row items-start h-[calc(100vh-var(--navbar-height,64px)-var(--footer-height,50px))] gap-8 w-[95vw] mx-auto pt-4 z-0">
         <SidebarTemplate activeIcon="map" />
         <section className="flex flex-row w-full justify-center h-full gap-4">
           {/* Task Types Sidebar */}
