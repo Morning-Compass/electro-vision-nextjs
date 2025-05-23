@@ -29,6 +29,7 @@ import { DateTimePicker } from "@/components/datepicker/Datepicker";
 export default function WorkspaceDetails() {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isTaskOpen, setIsTaskOpen] = useState(false);
+  const [removal, setRemoval] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { User } = useUserContext();
   const [workspaceUsers, setWorkspaceUsers] = useState<WorkspaceUser[] | null>(
@@ -42,6 +43,7 @@ export default function WorkspaceDetails() {
   const [receivedCoverImage, setReceivedCoverImage] = useState<string | null>(
     null,
   );
+  const [showMapView, setShowMapView] = useState(true);
 
   type addWorkerFormProps = {
     invited_email: string | null;
@@ -411,53 +413,155 @@ export default function WorkspaceDetails() {
       <section className="flex flex-row items-center justify-start h-full gap-8 w-[90vw]">
         <SidebarTemplate activeIcon="map" />
         <ContentBlock>
-          <div className="flex w-full">
-            <div className="flex flex-col w-3/4 mr-8 gap-8">
-              <Link href={"./plans/editor"}>
-                <Image
-                  src={receivedCoverImage || "/problem.png"}
-                  alt="problem"
-                  width={1200}
-                  height={600}
-                  className="rounded-3xl w-full h-auto object-cover shadow-lg p-6 bg-ev-white"
-                />
-              </Link>
+          <div className="flex flex-row items-center justify-between mb-8 ml-8 mr-8 ">
+            <Link
+              href="/workspaces/"
+              className="text-ev-accent-text hover:text-ev-accent-text/80 text-lg font-medium flex items-center transition-colors duration-200"
+            >
+              ← Back
+            </Link>
+            <Input
+              name="toggle_view"
+              type="button"
+              className="text-white bg-ev-blue rounded-lg px-4 py-2 hover:scale-105 active:scale-95 duration-200 whitespace-nowrap w-[6vw] min-w-12"
+              value="Toggle View"
+              onClick={() => setShowMapView((prev) => !prev)}
+            />
+          </div>
+          {showMapView ? (
+            <div className="flex w-full">
+              <div className="flex flex-col w-3/4 mr-8 gap-8">
+                <Link href={"./plans/editor"}>
+                  <Image
+                    src={receivedCoverImage || "/problem.png"}
+                    alt="problem"
+                    width={1200}
+                    height={600}
+                    className="rounded-3xl w-full h-auto object-cover shadow-lg p-6 bg-ev-white"
+                  />
+                </Link>
 
-              <div className="flex flex-col gap-2 p-6 bg-ev-primary-bg rounded-xl">
-                <p className="text-3xl font-semibold mb-2">Workspace Details</p>
-                <p>
-                  Start Date:{" "}
-                  {User.workspaceData?.currentWorkspace?.start_date?.toString()}
-                </p>
-                <p>
-                  Due Date:{" "}
-                  {User.workspaceData?.currentWorkspace?.finish_date?.toString() ||
-                    "Not yet established"}
-                </p>
-                <p>
-                  Subscription Tier:{" "}
-                  {User.workspaceData?.currentWorkspace?.ev_subscription}
-                </p>
-                <p>
-                  Geolocation:{" "}
-                  {User.workspaceData?.currentWorkspace?.geolocation ||
-                    "Not yet established"}
-                </p>
-                <p>
-                  Filename:{" "}
-                  {User.workspaceData?.currentWorkspace?.plan_file_name}
-                </p>
-                <Input
-                  name="settings"
-                  type="button"
-                  value="Settings"
-                  onClick={() => setIsSettingsOpen(true)}
-                  className="px-4 py-2 bg-ev-blue text-white rounded-lg hover:scale-105 duration-300 w-[80%] p-2 m-4"
-                />
+                <div className="flex flex-col gap-2 p-6 bg-ev-primary-bg rounded-xl">
+                  <p className="text-3xl font-semibold mb-2">
+                    Workspace Details
+                  </p>
+                  <p>
+                    Start Date:{" "}
+                    {User.workspaceData?.currentWorkspace?.start_date?.toString()}
+                  </p>
+                  <p>
+                    Due Date:{" "}
+                    {User.workspaceData?.currentWorkspace?.finish_date?.toString() ||
+                      "Not yet established"}
+                  </p>
+                  <p>
+                    Subscription Tier:{" "}
+                    {User.workspaceData?.currentWorkspace?.ev_subscription}
+                  </p>
+                  <p>
+                    Geolocation:{" "}
+                    {User.workspaceData?.currentWorkspace?.geolocation ||
+                      "Not yet established"}
+                  </p>
+                  <p>
+                    Filename:{" "}
+                    {User.workspaceData?.currentWorkspace?.plan_file_name}
+                  </p>
+                  <Input
+                    name="settings"
+                    type="button"
+                    value="Settings"
+                    onClick={() => setIsSettingsOpen(true)}
+                    className="px-4 py-2 bg-ev-blue text-white rounded-lg hover:scale-105 duration-300 w-[80%] p-2 m-4"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col gap-8 w-1/4">
+                <div className=" p-6 bg-ev-primary-bg overflow-y-scroll rounded-xl h-1/2">
+                  <div className="flex justify-between items-center mb-10 border-b-4 gap-4 pb-4">
+                    <p className="text-2xl">Workers</p>
+                    <SearchButton customWidth="w-full" />
+                  </div>
+                  <div className="flex justify-around mb-10 items-center">
+                    <Input
+                      name="add"
+                      type="button"
+                      value="Add"
+                      onClick={() => setIsAddOpen(true)}
+                      customWidth="w-3/4"
+                      className="px-4 py-2 bg-ev-green text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                    />
+                    <Input
+                      name="remove"
+                      type="button"
+                      value="Remove"
+                      customWidth="w-3/4"
+                      className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-4 mb-10 w-full">
+                    {workspaceUsers !== null ? (
+                      <>
+                        {workspaceUsers.map((workspaceUser, i) => (
+                          <WorkerEntry
+                            id={workspaceUser.id}
+                            username={workspaceUser.username}
+                            key={i}
+                          />
+                        ))}
+                      </>
+                    ) : (
+                      <p>Workspace doesn't have any users</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className=" p-6 bg-ev-primary-bg overflow-y-scroll rounded-xl h-1/2">
+                  <div className="flex justify-between items-center mb-10 border-b-4 gap-4 pb-4">
+                    <p className="text-2xl">Tasks</p>
+                    <SearchButton customWidth="w-full" />
+                  </div>
+                  <div className="flex justify-around mb-10 items-center">
+                    <Input
+                      name="add_task"
+                      type="button"
+                      value="Add"
+                      onClick={() => setIsTaskOpen(true)}
+                      customWidth="w-3/4"
+                      className="px-4 py-2 bg-ev-green text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                    />
+                    <Input
+                      name="remove"
+                      type="button"
+                      value="Remove"
+                      customWidth="w-3/4"
+                      className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-4 mb-10 w-full">
+                    {tasks === null ||
+                    tasks === undefined ||
+                    tasks.length === 0 ? (
+                      <p>Workspace doesn't have any tasks</p>
+                    ) : (
+                      <>
+                        {workspaceUsers &&
+                          tasks.map((task, i) => (
+                            <TaskEntry
+                              task={task}
+                              key={i}
+                              workspaceUsers={workspaceUsers}
+                            />
+                          ))}
+                      </>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="flex flex-col gap-8 w-1/4">
-              <div className=" p-6 bg-ev-primary-bg overflow-y-scroll rounded-xl h-1/2">
+          ) : (
+            <div className="flex flex-row gap-8 w-full overflow-y-hidden">
+              <div className=" p-6 bg-ev-primary-bg overflow-y-scroll rounded-xl h-full w-full">
                 <div className="flex justify-between items-center mb-10 border-b-4 gap-4 pb-4">
                   <p className="text-2xl">Workers</p>
                   <SearchButton customWidth="w-full" />
@@ -487,6 +591,7 @@ export default function WorkspaceDetails() {
                           id={workspaceUser.id}
                           username={workspaceUser.username}
                           key={i}
+                          selectable={!removal}
                         />
                       ))}
                     </>
@@ -496,7 +601,7 @@ export default function WorkspaceDetails() {
                 </div>
               </div>
 
-              <div className=" p-6 bg-ev-primary-bg overflow-y-scroll rounded-xl h-1/2">
+              <div className=" p-6 bg-ev-primary-bg overflow-y-scroll rounded-xl h-full w-full">
                 <div className="flex justify-between items-center mb-10 border-b-4 gap-4 pb-4">
                   <p className="text-2xl">Tasks</p>
                   <SearchButton customWidth="w-full" />
@@ -514,6 +619,7 @@ export default function WorkspaceDetails() {
                     name="remove"
                     type="button"
                     value="Remove"
+                    onClick={() => setRemoval(true)}
                     customWidth="w-3/4"
                     className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
                   />
@@ -538,7 +644,7 @@ export default function WorkspaceDetails() {
                 </div>
               </div>
             </div>
-          </div>
+          )}
         </ContentBlock>
       </section>
 
