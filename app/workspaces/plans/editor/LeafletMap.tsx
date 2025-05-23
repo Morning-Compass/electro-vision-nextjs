@@ -160,13 +160,14 @@ export default function LeafletMap({
       className="h-full w-full"
       style={{ backgroundColor: `var(--color-main-bg)` }}
       center={[51.5, -0.1]}
-      zoom={13}
+      zoom={11}
       zoomControl={false}
       maxBounds={[
         [51.2, -0.4],
         [51.8, 0.2],
       ]}
       minZoom={10}
+      maxZoom={18}
     >
       {/* Custom background image */}
       <ImageOverlay
