@@ -192,8 +192,12 @@ export default function WorkspaceDetails() {
                   })}
                 >
                   {workspaceUsers &&
-                    workspaceUsers.map((u) => {
-                      return <option value={u.email}>{u.email}</option>;
+                    workspaceUsers.map((u, i) => {
+                      return (
+                        <option key={i} value={u.email}>
+                          {u.email}
+                        </option>
+                      );
                     })}
                 </select>
               </div>
@@ -517,9 +521,14 @@ export default function WorkspaceDetails() {
                     <p>Workspace doesn't have any tasks</p>
                   ) : (
                     <>
-                      {tasks.map((task, i) => (
-                        <TaskEntry task={task} key={i} />
-                      ))}
+                      {workspaceUsers &&
+                        tasks.map((task, i) => (
+                          <TaskEntry
+                            task={task}
+                            key={i}
+                            workspaceUsers={workspaceUsers}
+                          />
+                        ))}
                     </>
                   )}
                 </div>
