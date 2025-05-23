@@ -18,6 +18,7 @@ import OLF from "@/ev-lib/ElectroVisionFetch";
 import ApiLinks from "@/ev-const/api-links";
 import { Task } from "@/ev-types/workspace-types";
 import toast from "react-hot-toast";
+import { DateTimePicker } from "@/components/datepicker/Datepicker";
 
 // Helper function to format dates
 const formatDate = (date: string | Date | null): string => {
@@ -83,17 +84,20 @@ export default function Page() {
       },
     });
 
-  const { register: registerDetails, handleSubmit: handleSubmitDetails } =
-    useForm<EditTaskDetailsForm>({
-      defaultValues: {
-        assignee_email: task?.assignee_email || "",
-        status: task?.status || "TODO",
-        importance: task?.importance || "MEDIUM",
-        due_date: task?.due_date
-          ? new Date(task.due_date).toISOString().split("T")[0]
-          : "",
-      },
-    });
+  const {
+    register: registerDetails,
+    handleSubmit: handleSubmitDetails,
+    control,
+  } = useForm<EditTaskDetailsForm>({
+    defaultValues: {
+      assignee_email: task?.assignee_email || "",
+      status: task?.status || "TODO",
+      importance: task?.importance || "MEDIUM",
+      due_date: task?.due_date
+        ? new Date(task.due_date).toISOString().split("T")[0]
+        : "",
+    },
+  });
 
   const {
     register: registerPhoto,
@@ -448,6 +452,7 @@ export default function Page() {
               <Input
                 placeholder="New title..."
                 type="text"
+                defaultValue={task?.title}
                 className="px-3 py-2 bg-ev-primary-bg text-ev-dark-gray rounded-lg w-full"
                 register={registerDetails("title")}
               />
@@ -518,10 +523,10 @@ export default function Page() {
           <FormErrorWrap>
             <div className="flex flex-col gap-4">
               <p className="text-xl">Due Date</p>
-              <Input
-                type="date"
+              <DateTimePicker
+                name="due_date"
+                control={control}
                 className="px-3 py-2 bg-ev-primary-bg text-ev-dark-gray rounded-lg w-full"
-                register={registerDetails("due_date")}
               />
             </div>
           </FormErrorWrap>

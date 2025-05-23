@@ -24,6 +24,7 @@ import toast from "react-hot-toast";
 import { error } from "console";
 import { Task } from "@/ev-types/workspace-types";
 import TaskEntry from "@/components/TaskEntry";
+import { DateTimePicker } from "@/components/datepicker/Datepicker";
 
 export default function WorkspaceDetails() {
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -64,6 +65,7 @@ export default function WorkspaceDetails() {
       register,
       reset,
       setValue,
+      control,
     } = useForm<TaskFormProps>({
       mode: "onTouched",
       reValidateMode: "onChange",
@@ -73,6 +75,8 @@ export default function WorkspaceDetails() {
     });
 
     const onSubmit: SubmitHandler<TaskFormProps> = async (data) => {
+      console.log(data);
+
       try {
         const taskPayload = {
           assigner_email: User.authUser?.email,
@@ -240,10 +244,10 @@ export default function WorkspaceDetails() {
             <FormErrorWrap>
               <div className="flex flex-col gap-4">
                 <p className="text-xl">Due Date</p>
-                <Input
-                  type="date"
+                <DateTimePicker
+                  name="due_date"
+                  control={control}
                   className="px-3 py-2 bg-ev-primary-bg text-ev-dark-gray rounded-lg w-full"
-                  register={register("due_date")}
                 />
               </div>
             </FormErrorWrap>
@@ -384,7 +388,7 @@ export default function WorkspaceDetails() {
 
   useEffect(() => {
     if (coverImage) {
-      setReceivedCoverImage(coverImage);
+      setReceivedCoverImage(typeof coverImage === "string" ? coverImage : null);
     }
     getWorkers();
     getTasks();
@@ -393,7 +397,7 @@ export default function WorkspaceDetails() {
   useEffect(() => {
     const interval = setInterval(() => {
       getWorkers();
-    }, 100000);
+    }, 10000);
 
     return () => clearInterval(interval);
   }, []);
