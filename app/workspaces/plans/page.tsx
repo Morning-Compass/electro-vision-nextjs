@@ -11,17 +11,16 @@ import SearchButton from "@/components/SearchButton";
 import Input from "@/components/Input";
 import Overlay from "@/components/Overlay";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation"; // Changed from useRouter
+import { useSearchParams } from "next/navigation";
 import useUserContext from "@/ev-contexts/userContextProvider";
 import WorkerEntry from "@/components/WorkerEntry";
 import OLF from "@/ev-lib/ElectroVisionFetch";
 import ApiLinks from "@/ev-const/api-links";
 import { WorkspaceUser } from "@/ev-types/user-types";
-import { FormProps, SubmitHandler, useForm } from "react-hook-form";
+import { SubmitHandler, useForm } from "react-hook-form";
 import FormErrorWrap from "@/components/templates/FormErrorWrap";
 import Regex from "@/ev-const/regex";
 import toast from "react-hot-toast";
-import { error } from "console";
 import { Task } from "@/ev-types/workspace-types";
 import TaskEntry from "@/components/TaskEntry";
 
@@ -33,7 +32,6 @@ export default function WorkspaceDetails() {
     null,
   );
   const [tasks, setTasks] = useState<Task[] | null>(null);
-  // Changed from useRouter to useSearchParams
   const searchParams = useSearchParams();
   const coverImage =
     User.workspaceData?.currentWorkspace?.coverPhoto || "/problem.png";
@@ -52,6 +50,7 @@ export default function WorkspaceDetails() {
     importance: "LOW" | "MEDIUM" | "HIGH";
     category: string;
     due_date?: string;
+    due_time?: string;
   };
 
   const AddTaskLogic = () => {
@@ -62,6 +61,7 @@ export default function WorkspaceDetails() {
       formState: { errors, isSubmitting },
       register,
       reset,
+      setError,
     } = useForm<TaskFormProps>({
       mode: "onTouched",
       reValidateMode: "onChange",
@@ -72,6 +72,21 @@ export default function WorkspaceDetails() {
 
     const onSubmit: SubmitHandler<TaskFormProps> = async (data) => {
       try {
+        if (
+          (data.due_date && !data.due_time) ||
+          (!data.due_date && data.due_time)
+        ) {
+          setError("due_date", { message: "Both fields required" });
+          setError("due_time", { message: "Both fields required" });
+          toast.error("Please provide both date and time or leave empty");
+          return;
+        }
+
+        const fullDueDate =
+          data.due_date && data.due_time
+            ? `${data.due_date}T${data.due_time}:00`
+            : null;
+
         const taskPayload = {
           assigner_email: User.authUser?.email,
           assignee_email: data.assignee_email,
@@ -79,8 +94,8 @@ export default function WorkspaceDetails() {
           description: data.description,
           importance: data.importance,
           category: data.category,
-          status: "TODO", // Default status
-          due_date: data.due_date ? `${data.due_date}:00` : null,
+          status: "TODO",
+          due_date: fullDueDate,
           description_multimedia: null,
         };
 
@@ -92,10 +107,9 @@ export default function WorkspaceDetails() {
         );
 
         toast.success("Task created successfully!");
-        console.log(res);
         setIsTaskOpen(false);
         reset();
-        getTasks(); // Refresh the tasks list
+        getTasks();
       } catch (error) {
         console.error("Error creating task:", error);
         toast.error(
@@ -211,11 +225,34 @@ export default function WorkspaceDetails() {
             <FormErrorWrap>
               <div className="flex flex-col gap-4">
                 <p className="text-xl">Due Date</p>
-                <Input
-                  type="datetime-local"
-                  className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg w-full"
-                  register={register("due_date")}
-                />
+                <div className="grid grid-cols-2 gap-4">
+                  <FormErrorWrap error={errors.due_date?.message}>
+                    <Input
+                      type="date"
+                      min={new Date().toISOString().split("T")[0]}
+                      className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg w-full"
+                      register={register("due_date", {
+                        validate: (value) =>
+                          !value ||
+                          (value &&
+                            !!document.getElementById("taskDueTime")?.value),
+                      })}
+                    />
+                  </FormErrorWrap>
+                  <FormErrorWrap error={errors.due_time?.message}>
+                    <Input
+                      id="taskDueTime"
+                      type="time"
+                      className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg w-full"
+                      register={register("due_time", {
+                        validate: (value) =>
+                          !value ||
+                          (value &&
+                            !!document.getElementById("taskDueDate")?.value),
+                      })}
+                    />
+                  </FormErrorWrap>
+                </div>
               </div>
             </FormErrorWrap>
 
@@ -232,6 +269,10 @@ export default function WorkspaceDetails() {
       </>
     );
   };
+
+  // Rest of the file remains unchanged below
+  // [Keep all other components and logic exactly as they were]
+  // ...
 
   const AddWorkerLogic = () => {
     const {

@@ -50,10 +50,9 @@ type TaskFormProps = {
   importance: "LOW" | "MEDIUM" | "HIGH";
   category: string;
   due_date?: string;
-  // image?: File | null; // For potential image upload through this form
+  due_time?: string;
 };
 
-// Dynamically import the Leaflet map to avoid SSR issues
 const LeafletMap = dynamic(() => import("./LeafletMap"), {
   ssr: false,
   loading: () => (
@@ -165,6 +164,7 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
     formState: { errors, isSubmitting },
     register,
     reset,
+    setError,
   } = useForm<TaskFormProps>({
     mode: "onTouched",
     reValidateMode: "onChange",
@@ -197,13 +197,23 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
     }
     if (!currentUserEmail || !currentWorkspaceId) {
       toast.error("Cannot add task: user or workspace context is missing.");
-      console.error(
-        "currentUserEmail or currentWorkspaceId is undefined in AddTaskFormForMap",
-      );
       return;
     }
 
     try {
+      const hasDate = !!data.due_date;
+      const hasTime = !!data.due_time;
+
+      if (hasDate !== hasTime) {
+        setError("due_date", { message: "Both fields required" });
+        setError("due_time", { message: "Both fields required" });
+        toast.error("Please provide both date and time or leave both empty");
+        return;
+      }
+
+      const fullDueDate =
+        hasDate && hasTime ? `${data.due_date}T${data.due_time}:00` : null;
+
       const taskPayload = {
         assigner_email: currentUserEmail,
         assignee_email: data.assignee_email,
@@ -211,12 +221,9 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
         description: data.description,
         importance: data.importance,
         category: data.category,
-        status: "TODO", // Default status for new tasks from map
-        due_date: data.due_date ? `${data.due_date}:00` : null,
-        description_multimedia: null, // Handle image upload separately if needed
-        // You could also send position data if your API needs it:
-        // x_coord: initialPosition[0],
-        // y_coord: initialPosition[1],
+        status: "TODO",
+        due_date: fullDueDate,
+        description_multimedia: null,
       };
 
       const res = await OLF.post(
@@ -224,32 +231,14 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
         taskPayload,
       );
 
-      // Assuming 'res' or 'res.data' contains the created task object from the API
-      const createdTaskData = res.data || res;
-
-      if (!createdTaskData || !createdTaskData.id) {
-        console.error(
-          "Task creation API call succeeded but returned no data or no ID.",
-          createdTaskData,
-        );
-        throw new Error(
-          "Task creation API returned invalid data. Task not added to map.",
-        );
-      }
-
-      // Call the success callback provided by MapEditor
-      onSubmitSuccess(createdTaskData, initialPosition, initialNodeType);
-      // No need to call onClose() or reset() here, onSubmitSuccess in MapEditor will handle closing,
-      // and useEffect will handle reset when isOpen becomes false.
-      // toast.success is handled by the parent after adding to map.
-    } catch (error: any) {
-      console.error("Error creating task via API:", error);
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "Failed to create task. Please check the details and try again.";
-      toast.error(errorMessage);
-      // Form remains open for correction
+      toast.success("Task created successfully!");
+      onSubmitSuccess(res.data, initialPosition, initialNodeType);
+      reset();
+    } catch (error) {
+      console.error("Error creating task:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to create task",
+      );
     }
   };
 
@@ -270,7 +259,7 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
           Define New Task ({initialNodeType})
         </h2>
 
-        <FormErrorWrap error={errors.title?.message}>
+        <FormErrorWrap>
           <label htmlFor="taskTitleMap" className="text-lg text-ev-text">
             Title*
           </label>
@@ -291,7 +280,7 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
           />
         </FormErrorWrap>
 
-        <FormErrorWrap error={errors.description?.message}>
+        <FormErrorWrap>
           <label htmlFor="taskDescriptionMap" className="text-lg text-ev-text">
             Description
           </label>
@@ -308,7 +297,7 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
           )}
         </FormErrorWrap>
 
-        <FormErrorWrap error={errors.assignee_email?.message}>
+        <FormErrorWrap>
           <label htmlFor="taskAssigneeMap" className="text-lg text-ev-text">
             Assignee Email*
           </label>
@@ -329,7 +318,7 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
           />
         </FormErrorWrap>
 
-        <FormErrorWrap error={errors.importance?.message}>
+        <FormErrorWrap>
           <label htmlFor="taskImportanceMap" className="text-lg text-ev-text">
             Importance*
           </label>
@@ -350,7 +339,7 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
           )}
         </FormErrorWrap>
 
-        <FormErrorWrap error={errors.category?.message}>
+        <FormErrorWrap>
           <label htmlFor="taskCategoryMap" className="text-lg text-ev-text">
             Category
           </label>
@@ -365,22 +354,22 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
           />
         </FormErrorWrap>
 
-        <FormErrorWrap error={errors.due_date?.message}>
-          <label htmlFor="taskDueDateMap" className="text-lg text-ev-text">
-            Due Date
-          </label>
+        <FormErrorWrap>
           <Input
-            id="taskDueDateMap"
-            name="due_date"
-            type="datetime-local"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none bg-ev-gray text-ev-dark-gray"
+            type="date"
+            min={new Date().toISOString().split("T")[0]}
+            className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg w-full"
             register={register("due_date")}
           />
-          {errors.due_date && (
-            <p className="text-ev-red text-sm mt-1">
-              {errors.due_date.message}
-            </p>
-          )}
+        </FormErrorWrap>
+
+        {/* Time Input */}
+        <FormErrorWrap>
+          <Input
+            type="time"
+            className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg w-full"
+            register={register("due_time")}
+          />
         </FormErrorWrap>
 
         <div className="flex items-center justify-end gap-4 mt-6">
