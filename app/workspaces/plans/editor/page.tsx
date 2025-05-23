@@ -53,6 +53,15 @@ type TaskFormProps = {
   due_time?: string;
 };
 
+interface TaskApiResponse {
+  id: number;
+  title: string;
+  description?: string;
+  importance: "LOW" | "MEDIUM" | "HIGH";
+  category?: string;
+  assignee_email: string;
+}
+
 const LeafletMap = dynamic(() => import("./LeafletMap"), {
   ssr: false,
   loading: () => (
@@ -140,7 +149,7 @@ interface AddTaskFormForMapProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmitSuccess: (
-    apiResponse: any,
+    apiResponse: TaskApiResponse,
     mapPosition: [number, number],
     nodeType: string,
   ) => void;
@@ -230,9 +239,9 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
         ApiLinks.createTasks(currentWorkspaceId),
         taskPayload,
       );
-
+      console.log(res);
       toast.success("Task created successfully!");
-      onSubmitSuccess(res.data, initialPosition, initialNodeType);
+      onSubmitSuccess(res, initialPosition, initialNodeType);
       reset();
     } catch (error) {
       console.error("Error creating task:", error);
@@ -491,10 +500,11 @@ function MapEditor() {
 
   // Callback for successful submission of the new drag-drop task form
   const handleNewTaskFormSubmitSuccess = (
-    apiResponse: any, // Define this based on your API's task structure
+    apiResponse: TaskApiResponse, // Define this based on your API's task structure
     mapPosition: [number, number],
     nodeType: string, // The original nodeType dropped, e.g., "defaultTask"
   ) => {
+    console.log(apiResponse);
     const newMapTask: TaskNodeData = {
       id: apiResponse.id?.toString() || `api_task_${Date.now()}`, // Prefer ID from API
       label: apiResponse.title,
