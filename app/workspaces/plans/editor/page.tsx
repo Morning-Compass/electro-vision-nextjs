@@ -212,7 +212,7 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
         importance: data.importance,
         category: data.category,
         status: "TODO", // Default status for new tasks from map
-        due_date: data.due_date || null,
+        due_date: data.due_date ? `${data.due_date}:00` : null,
         description_multimedia: null, // Handle image upload separately if needed
         // You could also send position data if your API needs it:
         // x_coord: initialPosition[0],
@@ -372,7 +372,7 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
           <Input
             id="taskDueDateMap"
             name="due_date"
-            type="date"
+            type="datetime-local"
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none bg-ev-gray text-ev-dark-gray"
             register={register("due_date")}
           />

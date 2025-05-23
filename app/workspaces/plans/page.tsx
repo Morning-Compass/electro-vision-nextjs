@@ -80,7 +80,7 @@ export default function WorkspaceDetails() {
           importance: data.importance,
           category: data.category,
           status: "TODO", // Default status
-          due_date: data.due_date || null,
+          due_date: data.due_date ? `${data.due_date}:00` : null,
           description_multimedia: null,
         };
 
@@ -212,7 +212,7 @@ export default function WorkspaceDetails() {
               <div className="flex flex-col gap-4">
                 <p className="text-xl">Due Date</p>
                 <Input
-                  type="date"
+                  type="datetime-local"
                   className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg w-full"
                   register={register("due_date")}
                 />
