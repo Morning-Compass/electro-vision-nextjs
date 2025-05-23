@@ -11,6 +11,7 @@ import {
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { root } from "postcss";
+import useUserContext from "@/ev-contexts/userContextProvider";
 
 // Define the types for our props
 interface TaskNodeData {
@@ -106,6 +107,8 @@ export default function LeafletMap({
   onTaskDragEnd,
   setMapInstance,
 }: LeafletMapProps) {
+  const { User } = useUserContext();
+
   // Fix default icons
   useEffect(() => {
     // Only run on client side
@@ -163,10 +166,14 @@ export default function LeafletMap({
         [51.2, -0.4],
         [51.8, 0.2],
       ]}
-      minZoom={11}
+      minZoom={10}
     >
       {/* Custom background image */}
-      <ImageOverlay url="/problem.png" bounds={bounds} opacity={0.8} />
+      <ImageOverlay
+        url={User.workspaceData?.currentWorkspace?.coverPhoto || "/problem.png"}
+        bounds={bounds}
+        opacity={0.8}
+      />
 
       <ZoomControl position="bottomleft" />
 

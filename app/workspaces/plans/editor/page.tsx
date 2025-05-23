@@ -328,7 +328,7 @@ function MapEditor() {
       <Overlay
         isOpen={isOverlayOpen}
         onClose={handleCloseOverlay}
-        blockClassName="max-w-lg bg-ev-primary rounded-xl shadow-2xl p-6"
+        blockClassName="max-w-lg bg-ev-primary rounded-xl shadow-2xl p-6 z-10"
       >
         <h2 className="text-3xl font-semibold mb-6 text-ev-text">
           Add Custom Task
