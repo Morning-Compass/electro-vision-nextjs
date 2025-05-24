@@ -77,7 +77,7 @@ export default function Login() {
         },
         fullUser: null,
         theme: Themes.light,
-        currentWorkspace: null,
+        workspaceData: null,
       };
 
       UserDispatch({ type: "setUser", value: user });
@@ -99,7 +99,9 @@ export default function Login() {
       <section className="flex flex-row justify-around text-ev-text bg-ev-primary-bg w-[55vw] min-w-72 opacity-95 rounded-[1.5rem] mt-auto mb-auto ev-blur transition-colors duration-500 p-6 max-h-[75vh]">
         <Image
           src={"/login_register_image.svg"}
-          className={"flex-1 w-[calc(50%-10em)] h-auto object-contain max-lg:hidden"}
+          className={
+            "flex-1 w-[calc(50%-10em)] h-auto object-contain max-lg:hidden"
+          }
           alt={"Login"}
           width={10}
           height={10}

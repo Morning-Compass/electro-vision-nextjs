@@ -66,7 +66,7 @@ export default function Register() {
         },
         fullUser: null,
         theme: Themes.light,
-        currentWorkspace: null,
+        workspaceData: null,
       };
 
       UserDispatch({ type: "setUser", value: user });
