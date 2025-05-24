@@ -46,10 +46,10 @@ function ContentBlockElement({
 }: ContentBlockElementProps) {
   return (
     <section
-      className={`w-full flex justify-between items-center align-middle pt-4 pb-4 border-b-2 ${containerClassName || ""}`}
+      className={`w-full flex justify-between items-center align-middle pt-4 pb-4 border-b-2 max-xl:text-sm ${containerClassName || ""}`}
     >
       <section
-        className={`grid grid-cols-7 gap-6 w-[75%] items-center ${boxClassName || ""}`}
+        className={`grid grid-cols-7 gap-6 w-[75%] items-center max-lg:grid-cols-6 max-[900px]:grid-cols-5 max-md:grid-cols-4 max-[550px]:grid-cols-3 max-[450px]:grid-cols-2 ${boxClassName || ""}`}
       >
         <p className="flex items-center">{id}</p>
         <p className="flex items-center">{employee}</p>
@@ -76,7 +76,7 @@ function ContentBlockElement({
         <Input
           name={link}
           type="button"
-          className="text-white bg-ev-blue rounded-lg max-w-52 min-w-24 w-[12vw] max-h-11 min-h-6 h-[6.5vh] pl-4 pr-4 hover:scale-110 duration-300"
+          className="text-white bg-ev-blue rounded-lg max-w-52 min-w-24 w-[12vw] max-h-11 min-h-6 h-[6.5vh] pl-4 pr-4 hover:scale-110 duration-300 max-[520px]:p-0 max-[500px]:ml-2"
           value={linkValue}
         />
       </Link>

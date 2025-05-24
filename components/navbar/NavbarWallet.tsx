@@ -39,7 +39,7 @@ const NavbarWallet = ({ children }: NavbarUserProps) => {
               </div>
             </div>
             <button
-              className="hidden max-sm:block flex flex-col items-center justify-center w-8 h-10 space-y-1.5 group"
+              className="hidden max-sm:block flex-col items-center justify-center w-8 h-10 space-y-1.5 group"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               <span className="block w-6 h-1 rounded-full bg-gray-600 group-focus:bg-[#0090cf]"></span>
