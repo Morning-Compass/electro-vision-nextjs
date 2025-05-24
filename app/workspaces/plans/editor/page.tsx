@@ -127,9 +127,7 @@ function handleDirectDrop(
 
 const initialTasks: TaskNodeData[] = [];
 
-const initialConnections: TaskConnection[] = [
-  { id: "e1-2", source: "1", target: "2", animated: true },
-];
+const initialConnections: TaskConnection[] = [];
 
 // New Component: AddTaskFormForMap (Adapted from your AddTaskLogic)
 interface AddTaskFormForMapProps {
@@ -596,7 +594,7 @@ function MapEditor() {
       }
 
       try {
-        await OLF.delete(
+        const task = await OLF.delete(
           ApiLinks.removeTasks(workspaceId.toString(), taskId.toString()),
           {},
         );
@@ -609,6 +607,19 @@ function MapEditor() {
             {},
           );
         } catch (error) {
+          console.log(task);
+          const taskPayload = {
+            assigner_email: User.authUser?.email,
+            assignee_email: task.assignee_email,
+            title: task.title,
+            description: task.description,
+            importance: task.importance,
+            category: task.category,
+            status: task.status,
+            due_date: task.due_date,
+            description_multimedia: task.description_multimedia,
+          };
+          await OLF.post(ApiLinks.createTasks(task.workspace_id), taskPayload);
           console.error("Error deleting Python task:", error);
           toast.error("Failed to delete Python task. Please try again.");
         }
