@@ -41,11 +41,6 @@ const ApiLinks = {
     return rustHost + "/workspace/" + workspaceId + "/tasks/delete/" + taskId;
   },
   // removeWorker: ()
-  // removeTasks: (workspaceId: string, taskId: string) => {
-  //   return (
-  //     rustHost + "/workspace/" + workspaceId + "/tasks/" + taskId + "/delete"
-  //   );
-  // },
 } as const;
 
 export default ApiLinks;

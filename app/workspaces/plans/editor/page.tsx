@@ -595,7 +595,7 @@ function MapEditor() {
 
       try {
         const task = await OLF.delete(
-          ApiLinks.removeTasks(workspaceId.toString(), taskId.toString()),
+          ApiLinks.removeTask(workspaceId.toString(), taskId.toString()),
           {},
         );
         try {
