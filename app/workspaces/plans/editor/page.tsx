@@ -8,28 +8,27 @@ import { FooterSmall } from "@/components/templates/FooterSmall";
 import SidebarTemplate from "@/components/templates/SidebarTemplate";
 import Image from "next/image";
 import SearchButton from "@/components/SearchButton";
-import Input from "@/components/Input"; // Make sure your Input component can handle react-hook-form's register
+import Input from "@/components/Input";
 import Overlay from "@/components/Overlay";
 import useUserContext from "@/ev-contexts/userContextProvider";
 import "leaflet/dist/leaflet.css";
+import { useForm, SubmitHandler, Control } from "react-hook-form";
+import FormErrorWrap from "@/components/templates/FormErrorWrap";
+import Regex from "@/ev-const/regex";
+import toast from "react-hot-toast";
+import OLF from "@/ev-lib/ElectroVisionFetch";
+import ApiLinks from "@/ev-const/api-links";
+import { DateTimePicker } from "@/components/datepicker/Datepicker"; // Import DateTimePicker
+import { WorkspaceUser } from "@/ev-types/user-types"; // Import WorkspaceUser type
 
-// Imports needed for the new AddTaskFormForMap
-import { useForm, SubmitHandler } from "react-hook-form";
-import FormErrorWrap from "@/components/templates/FormErrorWrap"; // Adjust path if necessary
-import Regex from "@/ev-const/regex"; // Adjust path if necessary
-import toast from "react-hot-toast"; // Ensure Toaster is set up in your app
-import OLF from "@/ev-lib/ElectroVisionFetch"; // Adjust path if necessary
-import ApiLinks from "@/ev-const/api-links"; // Adjust path if necessary
-
-// Define types for our data structures
+// Define types
 interface TaskNodeData {
   id: string;
   label: string;
   description?: string;
   image?: string | null;
   position: [number, number];
-  type: string; // e.g., "defaultTask", "customTask" or more specific from API if needed
-  // You might want to add other fields from TaskFormProps if they need to be displayed or used on the map
+  type: string;
   importance?: "LOW" | "MEDIUM" | "HIGH";
   category?: string;
   assignee_email?: string;
@@ -42,7 +41,6 @@ interface TaskConnection {
   animated?: boolean;
 }
 
-// Type for the form data when adding a task via drag-drop (based on AddTaskLogic)
 type TaskFormProps = {
   title: string;
   description: string;
@@ -50,7 +48,7 @@ type TaskFormProps = {
   importance: "LOW" | "MEDIUM" | "HIGH";
   category: string;
   due_date?: string;
-  due_time?: string;
+  multimedia?: string;
 };
 
 interface TaskApiResponse {
@@ -71,7 +69,6 @@ const LeafletMap = dynamic(() => import("./LeafletMap"), {
   ),
 });
 
-// Helper function to handle drop events directly (remains largely the same)
 function handleDirectDrop(
   event: DragEvent,
   onDrop: (
@@ -88,7 +85,7 @@ function handleDirectDrop(
   const x = event.clientX - rect.left;
   const y = event.clientY - rect.top;
 
-  let position: [number, number] = [51.5, -0.1]; // Default fallback
+  let position: [number, number] = [51.5, -0.1];
 
   if (map && map.containerPointToLatLng) {
     const point = map.containerPointToLatLng([x, y]);
@@ -110,9 +107,8 @@ function handleDirectDrop(
     feedback.textContent = "Moved!";
     (event.target as HTMLElement).appendChild(feedback);
     setTimeout(() => feedback.remove(), 800);
-    onDrop("customTask", position, taskId); // type here might be arbitrary if taskId is present
+    onDrop("customTask", position, taskId);
   } else if (nodeType) {
-    // Visual feedback for new task drop (before form opens)
     const feedback = document.createElement("div");
     feedback.className =
       "absolute z-[2000] bg-blue-500 text-white px-2 py-1 rounded";
@@ -126,10 +122,8 @@ function handleDirectDrop(
 }
 
 const initialTasks: TaskNodeData[] = [];
-
 const initialConnections: TaskConnection[] = [];
 
-// New Component: AddTaskFormForMap (Adapted from your AddTaskLogic)
 interface AddTaskFormForMapProps {
   isOpen: boolean;
   onClose: () => void;
@@ -142,6 +136,7 @@ interface AddTaskFormForMapProps {
   initialNodeType: string | null;
   currentUserEmail: string | undefined;
   currentWorkspaceId: string | undefined;
+  workspaceUsers: WorkspaceUser[] | null; // Add workspaceUsers prop
 }
 
 const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
@@ -152,13 +147,15 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
   initialNodeType,
   currentUserEmail,
   currentWorkspaceId,
+  workspaceUsers,
 }) => {
   const {
     handleSubmit,
     formState: { errors, isSubmitting },
     register,
     reset,
-    setError,
+    setValue,
+    control,
   } = useForm<TaskFormProps>({
     mode: "onTouched",
     reValidateMode: "onChange",
@@ -169,20 +166,15 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
       assignee_email: "",
       category: "",
       due_date: "",
+      multimedia: "",
     },
   });
 
   useEffect(() => {
-    if (isOpen) {
-      // Optionally pre-fill based on initialNodeType or other props
-      // For example:
-      // if (initialNodeType === 'defaultTask') {
-      //   setValue('category', 'Default Category');
-      // }
-    } else {
-      reset(); // Reset form when overlay is closed or not open
+    if (!isOpen) {
+      reset();
     }
-  }, [isOpen, reset, initialNodeType]);
+  }, [isOpen, reset]);
 
   const handleFormSubmit: SubmitHandler<TaskFormProps> = async (data) => {
     if (!initialPosition || !initialNodeType) {
@@ -195,19 +187,6 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
     }
 
     try {
-      const hasDate = !!data.due_date;
-      const hasTime = !!data.due_time;
-
-      if (hasDate !== hasTime) {
-        setError("due_date", { message: "Both fields required" });
-        setError("due_time", { message: "Both fields required" });
-        toast.error("Please provide both date and time or leave both empty");
-        return;
-      }
-
-      const fullDueDate =
-        hasDate && hasTime ? `${data.due_date}T${data.due_time}:00` : null;
-
       const taskPayload = {
         assigner_email: currentUserEmail,
         assignee_email: data.assignee_email,
@@ -216,16 +195,16 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
         importance: data.importance,
         category: data.category,
         status: "TODO",
-        due_date: fullDueDate,
-        description_multimedia: null,
+        due_date: data.due_date || null,
+        description_multimedia: data.multimedia || null,
       };
 
       const res = await OLF.post(
         ApiLinks.createTasks(currentWorkspaceId),
         taskPayload,
       );
+
       try {
-        console.log(res);
         await OLF.post(ApiLinks.addPythonTask, {
           task_id: res.id,
           workspace_id: Number.parseInt(currentWorkspaceId),
@@ -235,12 +214,10 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
         toast.success("Task created successfully!");
         onSubmitSuccess(res, initialPosition, initialNodeType);
         reset();
+        onClose();
       } catch (error) {
         await OLF.delete(
-          ApiLinks.removeTasks(
-            currentWorkspaceId.toString(),
-            res.id.toString(),
-          ),
+          ApiLinks.removeTask(currentWorkspaceId.toString(), res.id.toString()),
           {},
         );
         console.error("Error creating task:", error);
@@ -265,125 +242,173 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
       blockClassName="max-w-lg bg-ev-primary rounded-xl shadow-2xl p-6 z-[1001]"
     >
       <form
-        className="flex flex-col gap-5 w-full text-ev-text"
+        className="flex flex-col gap-6 w-full text-ev-text"
         onSubmit={handleSubmit(handleFormSubmit)}
         noValidate
       >
         <h2 className="text-3xl font-semibold mb-4">
-          Define New Task ({initialNodeType})
+          Create New Task ({initialNodeType})
         </h2>
 
         <FormErrorWrap>
-          <label htmlFor="taskTitleMap" className="text-lg text-ev-text">
-            Title*
-          </label>
-          <Input
-            id="taskTitleMap"
-            name="title" // react-hook-form uses 'name'
-            type="text"
-            placeholder="Task title..."
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none bg-ev-gray text-ev-dark-gray"
-            error={errors.title?.message} // For Input component to display error
-            register={register("title", {
-              required: "Title is required",
-              minLength: {
-                value: 3,
-                message: "Title must be at least 3 characters",
-              },
-            })}
-          />
+          <div className="flex flex-col gap-2">
+            <label htmlFor="taskTitleMap" className="text-lg">
+              Title*
+            </label>
+            <Input
+              id="taskTitleMap"
+              type="text"
+              placeholder="Task title..."
+              className="w-full p-3 bg-ev-gray text-ev-dark-gray rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
+              error={errors.title?.message}
+              register={register("title", {
+                required: "Title is required",
+                minLength: {
+                  value: 3,
+                  message: "Title must be at least 3 characters",
+                },
+              })}
+            />
+          </div>
         </FormErrorWrap>
 
         <FormErrorWrap>
-          <label htmlFor="taskDescriptionMap" className="text-lg text-ev-text">
-            Description
-          </label>
-          <textarea
-            id="taskDescriptionMap"
-            placeholder="Task description..."
-            className="w-full h-24 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none bg-ev-gray text-ev-dark-gray"
-            {...register("description")}
-          />
-          {errors.description && (
-            <p className="text-ev-red text-sm mt-1">
-              {errors.description.message}
-            </p>
-          )}
+          <div className="flex flex-col gap-2">
+            <label htmlFor="taskDescriptionMap" className="text-lg">
+              Description
+            </label>
+            <Input
+              id="taskDescriptionMap"
+              type="text"
+              placeholder="Task description..."
+              className="w-full p-3 bg-ev-gray text-ev-dark-gray rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
+              error={errors.description?.message}
+              register={register("description")}
+            />
+          </div>
         </FormErrorWrap>
 
         <FormErrorWrap>
-          <label htmlFor="taskAssigneeMap" className="text-lg text-ev-text">
-            Assignee Email*
-          </label>
-          <Input
-            id="taskAssigneeMap"
-            name="assignee_email"
-            type="email"
-            placeholder="assignee@example.com"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none bg-ev-gray text-ev-dark-gray"
-            error={errors.assignee_email?.message}
-            register={register("assignee_email", {
-              required: "Assignee email is required",
-              pattern: {
-                value: Regex.emailRegistration,
-                message: "Invalid email format",
-              }, // Use Regex.email or Regex.emailRegistration as defined
-            })}
-          />
+          <div className="flex flex-col gap-2">
+            <label htmlFor="multimedia-file" className="text-lg">
+              Photo
+            </label>
+            <label
+              htmlFor="multimedia-file"
+              className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg cursor-pointer w-full hover:scale-105 transition text-left"
+            >
+              Upload Photo
+            </label>
+            <input
+              id="multimedia-file"
+              type="file"
+              accept="image/png, image/jpeg"
+              capture="environment"
+              className="hidden"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                  const base64 = reader.result as string;
+                  setValue("multimedia", base64, { shouldValidate: true });
+                };
+                reader.readAsDataURL(file);
+              }}
+            />
+            <input type="hidden" {...register("multimedia")} />
+          </div>
         </FormErrorWrap>
 
         <FormErrorWrap>
-          <label htmlFor="taskImportanceMap" className="text-lg text-ev-text">
-            Importance*
-          </label>
-          <select
-            id="taskImportanceMap"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none bg-ev-gray text-ev-dark-gray"
-            {...register("importance", { required: "Importance is required" })}
-            defaultValue="LOW"
-          >
-            <option value="LOW">Low</option>
-            <option value="MEDIUM">Medium</option>
-            <option value="HIGH">High</option>
-          </select>
-          {errors.importance && (
-            <p className="text-ev-red text-sm mt-1">
-              {errors.importance.message}
-            </p>
-          )}
+          <div className="flex flex-col gap-2">
+            <label htmlFor="taskAssigneeMap" className="text-lg">
+              Assignee Email*
+            </label>
+            <select
+              id="taskAssigneeMap"
+              className="w-full p-3 bg-ev-gray text-ev-dark-gray rounded-lg hover:scale-105 transition appearance-none focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
+              {...register("assignee_email", {
+                required: "Assignee is required",
+              })}
+            >
+              {workspaceUsers && workspaceUsers.length > 0 ? (
+                workspaceUsers.map((u, i) => (
+                  <option key={i} value={u.email}>
+                    {u.email}
+                  </option>
+                ))
+              ) : (
+                <option value="" disabled>
+                  No users available
+                </option>
+              )}
+            </select>
+            {errors.assignee_email && (
+              <p className="text-ev-red text-sm mt-1">
+                {errors.assignee_email.message}
+              </p>
+            )}
+          </div>
         </FormErrorWrap>
 
         <FormErrorWrap>
-          <label htmlFor="taskCategoryMap" className="text-lg text-ev-text">
-            Category
-          </label>
-          <Input
-            id="taskCategoryMap"
-            name="category"
-            type="text"
-            placeholder="e.g., Installation, Repair"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none bg-ev-gray text-ev-dark-gray"
-            error={errors.category?.message}
-            register={register("category")}
-          />
+          <div className="flex flex-col gap-2">
+            <label htmlFor="taskImportanceMap" className="text-lg">
+              Importance*
+            </label>
+            <select
+              id="taskImportanceMap"
+              className="w-full p-3 bg-ev-gray text-ev-dark-gray rounded-lg hover:scale-105 transition appearance-none focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
+              {...register("importance", {
+                required: "Importance is required",
+              })}
+              defaultValue="LOW"
+            >
+              <option value="LOW">Low</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="HIGH">High</option>
+            </select>
+            {errors.importance && (
+              <p className="text-ev-red text-sm mt-1">
+                {errors.importance.message}
+              </p>
+            )}
+          </div>
         </FormErrorWrap>
 
         <FormErrorWrap>
-          <Input
-            type="date"
-            min={new Date().toISOString().split("T")[0]}
-            className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg w-full"
-            register={register("due_date")}
-          />
+          <div className="flex flex-col gap-2">
+            <label htmlFor="taskCategoryMap" className="text-lg">
+              Category
+            </label>
+            <Input
+              id="taskCategoryMap"
+              type="text"
+              placeholder="e.g., Lamps, Sockets"
+              className="w-full p-3 bg-ev-gray text-ev-dark-gray rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
+              error={errors.category?.message}
+              register={register("category")}
+            />
+          </div>
         </FormErrorWrap>
 
-        {/* Time Input */}
         <FormErrorWrap>
-          <Input
-            type="time"
-            className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg w-full"
-            register={register("due_time")}
-          />
+          <div className="flex flex-col gap-2">
+            <label htmlFor="due_date" className="text-lg">
+              Due Date
+            </label>
+            <DateTimePicker
+              name="due_date"
+              control={control as Control<TaskFormProps>}
+              className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg w-full"
+            />
+            {errors.due_date && (
+              <p className="text-ev-red text-sm mt-1">
+                {errors.due_date.message}
+              </p>
+            )}
+          </div>
         </FormErrorWrap>
 
         <div className="flex items-center justify-end gap-4 mt-6">
@@ -407,12 +432,11 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
 };
 
 function MapEditor() {
-  const { User } = useUserContext(); // Get User context
-
+  const { User } = useUserContext();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const leafletMapInstanceRef = useRef<any>(null);
 
-  const [isOverlayOpen, setIsOverlayOpen] = useState(false); // For the original "Add Custom Task" sidebar
+  const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [tasks, setTasks] = useState<TaskNodeData[]>(initialTasks);
   const [connections, setConnections] =
     useState<TaskConnection[]>(initialConnections);
@@ -420,30 +444,37 @@ function MapEditor() {
   const [connectionMode, setConnectionMode] = useState(false);
   const [connectionSource, setConnectionSource] = useState<string | null>(null);
   const [availableTasks, setAvailableTasks] = useState<TaskNodeData[]>([]);
-
-  // State for the original overlay form
-  const [newTaskName, setNewTaskName] = useState("");
-  const [newTaskDescription, setNewTaskDescription] = useState("");
-  const [newTaskPhoto, setNewTaskPhoto] = useState<File | string | null>(null);
-
-  // State for the new task form triggered by drag-drop
+  const [workspaceUsers, setWorkspaceUsers] = useState<WorkspaceUser[] | null>(
+    null,
+  );
   const [isNewTaskFormOpen, setIsNewTaskFormOpen] = useState(false);
   const [droppedTaskDetails, setDroppedTaskDetails] = useState<{
     position: [number, number];
     nodeType: string;
   } | null>(null);
 
-  useEffect(() => {
-    if (availableTasks.length) {
-      console.log(`Available tasks in sidebar: ${availableTasks.length}`);
+  // Fetch workspace users
+  const getWorkers = async () => {
+    try {
+      const res = await OLF.post(
+        ApiLinks.listWorkspaceUsersByWorkspaceIdAndEmail(
+          User.workspaceData?.currentWorkspace?.id.toString() ?? "-1",
+        ),
+        {
+          email: User.authUser?.email,
+        },
+      );
+      const workers: WorkspaceUser[] = res;
+      setWorkspaceUsers(workers);
+    } catch (error) {
+      console.error("Failed to fetch workspace users:", error);
+      toast.error("Failed to load workspace users.");
     }
-  }, [availableTasks]);
+  };
 
   useEffect(() => {
-    if (tasks.length) {
-      console.log(`Tasks on map: ${tasks.length}`);
-    }
-  }, [tasks]);
+    getWorkers();
+  }, []);
 
   const handleTaskSelect = useCallback(
     (id: string) => {
@@ -479,8 +510,11 @@ function MapEditor() {
     setNewTaskPhoto(null);
   };
 
+  const [newTaskName, setNewTaskName] = useState("");
+  const [newTaskDescription, setNewTaskDescription] = useState("");
+  const [newTaskPhoto, setNewTaskPhoto] = useState<File | string | null>(null);
+
   const handleAddTaskFromOverlay = () => {
-    // Adds to "Available Tasks" sidebar
     if (!newTaskName.trim()) {
       alert("Task name is required.");
       return;
@@ -488,7 +522,7 @@ function MapEditor() {
     const newTaskId = `task_${Date.now()}`;
     const newTask: TaskNodeData = {
       id: newTaskId,
-      type: "customTask", // default from this form
+      type: "customTask",
       label: newTaskName,
       description: newTaskDescription,
       image:
@@ -497,50 +531,44 @@ function MapEditor() {
           : typeof newTaskPhoto === "string"
             ? newTaskPhoto
             : null,
-      position: [51.4, -0.25], // This is a placeholder, task is not on map yet
+      position: [51.4, -0.25],
     };
     setAvailableTasks((prev) => [...prev, newTask]);
     handleCloseOverlay();
   };
 
-  // Callback for successful submission of the new drag-drop task form
   const handleNewTaskFormSubmitSuccess = (
-    apiResponse: TaskApiResponse, // Define this based on your API's task structure
+    apiResponse: TaskApiResponse,
     mapPosition: [number, number],
-    nodeType: string, // The original nodeType dropped, e.g., "defaultTask"
+    nodeType: string,
   ) => {
-    console.log(apiResponse);
     const newMapTask: TaskNodeData = {
-      id: apiResponse.id?.toString() || `api_task_${Date.now()}`, // Prefer ID from API
+      id: apiResponse.id?.toString() || `api_task_${Date.now()}`,
       label: apiResponse.title,
       description: apiResponse.description,
-
       position: mapPosition,
       type: nodeType,
       importance: apiResponse.importance,
       category: apiResponse.category,
       assignee_email: apiResponse.assignee_email,
     };
-
     setTasks((prevTasks) => [...prevTasks, newMapTask]);
     setIsNewTaskFormOpen(false);
-    setDroppedTaskDetails(null); // Clear the stored details
+    setDroppedTaskDetails(null);
     toast.success(`Task "${newMapTask.label}" created and added to map!`);
   };
 
   const handleTaskDrop = useCallback(
     (nodeType: string, position: [number, number], taskId?: string) => {
       if (taskId) {
-        // A task was dragged from the available tasks sidebar to the map
         const taskToMove = availableTasks.find((t) => t.id === taskId);
         if (taskToMove) {
           const newTaskOnMap: TaskNodeData = { ...taskToMove, position };
-          setAvailableTasks((prev) => prev.filter((t) => t.id !== taskId)); // Remove from available
-          setTasks((prevMapTasks) => [...prevMapTasks, newTaskOnMap]); // Add to map
+          setAvailableTasks((prev) => prev.filter((t) => t.id !== taskId));
+          setTasks((prevMapTasks) => [...prevMapTasks, newTaskOnMap]);
           toast.success(`Task "${newTaskOnMap.label}" added to map.`);
         }
       } else {
-        // A task TYPE was dragged from the "Task Types" sidebar to the map
         console.log(
           `Task type '${nodeType}' dropped at ${position}. Opening creation form.`,
         );
@@ -548,30 +576,8 @@ function MapEditor() {
         setIsNewTaskFormOpen(true);
       }
     },
-    [availableTasks], // User.workspaceData?.currentWorkspace?.id, User.authUser?.email can be removed if not directly used here
-    // but they are dependencies for the AddTaskFormForMap component passed later
+    [availableTasks],
   );
-
-  useEffect(() => {
-    const mapContainer = mapContainerRef.current;
-    if (!mapContainer) return;
-    const handleDragOver = (e: DragEvent) => {
-      e.preventDefault();
-      if (e.dataTransfer) {
-        e.dataTransfer.dropEffect = "copy";
-      }
-    };
-    const handleDrop = (e: DragEvent) => {
-      console.log("Direct DOM drop event detected", e);
-      handleDirectDrop(e, handleTaskDrop, leafletMapInstanceRef.current);
-    };
-    mapContainer.addEventListener("dragover", handleDragOver);
-    mapContainer.addEventListener("drop", handleDrop);
-    return () => {
-      mapContainer.removeEventListener("dragover", handleDragOver);
-      mapContainer.removeEventListener("drop", handleDrop);
-    };
-  }, [handleTaskDrop]); // handleTaskDrop is a dependency
 
   const handleTaskDragEnd = useCallback(
     (id: string, position: [number, number]) => {
@@ -607,7 +613,6 @@ function MapEditor() {
             {},
           );
         } catch (error) {
-          console.log(task);
           const taskPayload = {
             assigner_email: User.authUser?.email,
             assignee_email: task.assignee_email,
@@ -623,7 +628,6 @@ function MapEditor() {
           console.error("Error deleting Python task:", error);
           toast.error("Failed to delete Python task. Please try again.");
         }
-        // Update local state after successful API response
         setTasks((prev) => prev.filter((task) => task.id !== selectedTaskId));
         setConnections((prev) =>
           prev.filter(
@@ -632,7 +636,6 @@ function MapEditor() {
           ),
         );
         setSelectedTaskId(null);
-
         if (taskToRemove) {
           toast.success(`Task "${taskToRemove.label}" removed from map.`);
         }
@@ -658,6 +661,27 @@ function MapEditor() {
     event.dataTransfer.effectAllowed = "copy";
   };
 
+  useEffect(() => {
+    const mapContainer = mapContainerRef.current;
+    if (!mapContainer) return;
+    const handleDragOver = (e: DragEvent) => {
+      e.preventDefault();
+      if (e.dataTransfer) {
+        e.dataTransfer.dropEffect = "copy";
+      }
+    };
+    const handleDrop = (e: DragEvent) => {
+      console.log("Direct DOM drop event detected", e);
+      handleDirectDrop(e, handleTaskDrop, leafletMapInstanceRef.current);
+    };
+    mapContainer.addEventListener("dragover", handleDragOver);
+    mapContainer.addEventListener("drop", handleDrop);
+    return () => {
+      mapContainer.removeEventListener("dragover", handleDragOver);
+      mapContainer.removeEventListener("drop", handleDrop);
+    };
+  }, [handleTaskDrop]);
+
   const selectedTask = selectedTaskId
     ? tasks.find((task) => task.id === selectedTaskId)
     : null;
@@ -665,7 +689,6 @@ function MapEditor() {
   return (
     <PageTemplate>
       <NavbarTemplate />
-      {/* Overlay for adding tasks to "Available Tasks" sidebar */}
       <Overlay
         isOpen={isOverlayOpen}
         onClose={handleCloseOverlay}
@@ -695,9 +718,8 @@ function MapEditor() {
             <Input
               name="select_photo_task_sidebar"
               type="file"
-              className="text-ev-text" // Ensure Input component handles file types correctly
+              className="text-ev-text"
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                // Typed event
                 if (e.target.files && e.target.files[0]) {
                   const file = e.target.files[0];
                   setNewTaskPhoto(file);
@@ -714,24 +736,23 @@ function MapEditor() {
         </section>
       </Overlay>
 
-      {/* Overlay for adding NEW task directly to MAP after drag-drop type */}
       <AddTaskFormForMap
         isOpen={isNewTaskFormOpen}
         onClose={() => {
           setIsNewTaskFormOpen(false);
-          setDroppedTaskDetails(null); // Clear details when closing form
+          setDroppedTaskDetails(null);
         }}
         onSubmitSuccess={handleNewTaskFormSubmitSuccess}
         initialPosition={droppedTaskDetails?.position || null}
         initialNodeType={droppedTaskDetails?.nodeType || null}
         currentUserEmail={User.authUser?.email}
         currentWorkspaceId={User.workspaceData?.currentWorkspace?.id?.toString()}
+        workspaceUsers={workspaceUsers} // Pass workspaceUsers
       />
 
       <section className="flex flex-row items-start h-[calc(100vh-var(--navbar-height,64px)-var(--footer-height,50px))] gap-8 w-[95vw] mx-auto pt-4 z-0">
         <SidebarTemplate activeIcon="map" />
         <section className="flex flex-row w-full justify-center h-full gap-4">
-          {/* Task Types Sidebar */}
           <aside className="flex flex-col gap-4 h-full bg-ev-primary p-4 rounded-xl shadow-lg max-h-[calc(100vh-var(--navbar-height,64px)-var(--footer-height,50px)-3rem)] overflow-y-auto w-60 sticky top-4">
             <h3 className="text-xl font-semibold mb-2 text-ev-text">
               Task Types
@@ -746,13 +767,12 @@ function MapEditor() {
               title="Drag to place a new 'Default Task' on map"
             >
               <Image
-                src="/outlet.png" // Replace with actual icon for default task
+                src="/outlet.png"
                 alt="Default Task Type"
                 width={24}
                 height={24}
               />
               <span className="text-ev-text flex-grow">Default Task</span>
-              {/* Drag handle icon */}
             </section>
             <section
               draggable={true}
@@ -761,17 +781,15 @@ function MapEditor() {
               title="Drag to place a new 'Custom Task' on map"
             >
               <Image
-                src="/problem.png" // Replace with actual icon for custom task
+                src="/problem.png"
                 alt="Custom Task Type"
                 width={24}
                 height={24}
               />
               <span className="text-ev-text flex-grow">Custom Task</span>
-              {/* Drag handle icon */}
             </section>
           </aside>
 
-          {/* Main Content Area */}
           <main className="flex flex-col h-full flex-grow">
             <section className="flex flex-wrap items-center w-full bg-ev-primary p-3 rounded-xl gap-3 mb-4 shadow-md">
               <Input
@@ -779,7 +797,7 @@ function MapEditor() {
                 type="button"
                 className="text-ev-white bg-ev-green hover:bg-ev-darkgreen font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none focus:ring-2 focus:ring-ev-green-darker duration-300"
                 value="Add Task to Workspace List"
-                onClick={handleOpenOverlay} // This opens the sidebar task adder
+                onClick={handleOpenOverlay}
                 title="Create new task and add to 'Available Tasks' sidebar"
               />
               <Input
@@ -830,7 +848,7 @@ function MapEditor() {
                 connections={connections}
                 selectedTaskId={selectedTaskId}
                 onTaskSelect={handleTaskSelect}
-                onTaskDrop={handleTaskDrop} // Still used by LeafletMap for internal drops if any, but direct DOM drop is primary
+                onTaskDrop={handleTaskDrop}
                 onTaskDragEnd={handleTaskDragEnd}
                 setMapInstance={(map) => {
                   leafletMapInstanceRef.current = map;
@@ -844,7 +862,6 @@ function MapEditor() {
             </section>
           </main>
 
-          {/* Task Details and Available Tasks Sidebar */}
           <aside className="flex flex-col gap-4 h-full bg-ev-primary p-4 rounded-xl shadow-lg max-h-[calc(100vh-var(--navbar-height,64px)-var(--footer-height,50px)-3rem)] overflow-y-auto w-72 sticky top-4">
             <section>
               <h3 className="text-xl font-semibold mb-2 text-ev-text">
@@ -860,7 +877,7 @@ function MapEditor() {
                   <div
                     key={task.id}
                     draggable={true}
-                    onDragStart={(e) => handleDragStart(e, task.id, true)} // Pass true for isExistingTask
+                    onDragStart={(e) => handleDragStart(e, task.id, true)}
                     onDragEnd={(e) => {
                       e.currentTarget.classList.remove(
                         "bg-blue-100",
@@ -884,7 +901,6 @@ function MapEditor() {
                     <span className="text-ev-text truncate flex-grow">
                       {task.label}
                     </span>
-                    {/* Drag handle icon */}
                   </div>
                 ))}
                 {availableTasks.length === 0 && (
