@@ -32,6 +32,8 @@ export default function WorkspaceDetails() {
   const [taskRemoval, setTaskRemoval] = useState(false);
   const [workerRemoval, setWorkerRemoval] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [selectedTasksIds, setSelectedTasksIds] = useState<number[]>([]);
+  const [selectedWorkersIds, setSelectedWokrersIds] = useState<number[]>([]);
   const { User } = useUserContext();
   const [workspaceUsers, setWorkspaceUsers] = useState<WorkspaceUser[] | null>(
     null,
@@ -49,6 +51,12 @@ export default function WorkspaceDetails() {
   type addWorkerFormProps = {
     invited_email: string | null;
   };
+
+  console.log("Selected tasks ids:");
+  console.log(selectedTasksIds);
+
+  console.log("Selected workers ids:");
+  console.log(selectedWorkersIds);
 
   type TaskFormProps = {
     title: string;
@@ -345,6 +353,43 @@ export default function WorkspaceDetails() {
     );
   };
 
+  const removeTasks = async () => {
+    if (selectedTasksIds.length <= 0) return;
+    try {
+      selectedTasksIds.forEach(async (id) => {
+        const res = await OLF.delete(
+          ApiLinks.removeTask(
+            User.workspaceData?.currentWorkspace?.id.toString() ?? "-1",
+            id.toString(),
+          ),
+        );
+        console.log(res);
+      });
+      toast.success("All Tasks removed successfully");
+    } catch (e) {
+      console.error(e);
+      toast.error(e instanceof Error ? e.message : "Adding worker failed", {
+        duration: 5000,
+      });
+    }
+
+    setTaskRemoval(false);
+    setSelectedTasksIds([]);
+  };
+
+  const removeWorkers = async () => {
+    try {
+    } catch (e) {
+      console.error(e);
+      toast.error(e instanceof Error ? e.message : "Adding worker failed", {
+        duration: 5000,
+      });
+    }
+
+    setWorkerRemoval(false);
+    setSelectedWokrersIds([]);
+  };
+
   const getWorkers = async () => {
     const res = await OLF.post(
       ApiLinks.listWorkspaceUsersByWorkspaceIdAndEmail(
@@ -393,16 +438,23 @@ export default function WorkspaceDetails() {
     if (coverImage) {
       setReceivedCoverImage(typeof coverImage === "string" ? coverImage : null);
     }
-    getWorkers();
-    getTasks();
   }, [coverImage]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      getWorkers();
-    }, 10000);
+    getTasks();
+  }, [selectedTasksIds]);
 
-    return () => clearInterval(interval);
+  useEffect(() => {
+    getWorkers();
+  }, [selectedWorkersIds]);
+
+  useEffect(() => {
+    // const interval = setInterval(() => {
+    //   getWorkers();
+    // }, 10000);
+    // return () => clearInterval(interval);
+    getWorkers();
+    getTasks();
   }, []);
 
   return (
@@ -426,7 +478,13 @@ export default function WorkspaceDetails() {
               type="button"
               className="text-white bg-ev-blue rounded-lg px-4 py-2 hover:scale-105 active:scale-95 duration-200 whitespace-nowrap w-[6vw] min-w-12"
               value="Toggle View"
-              onClick={() => setShowMapView((prev) => !prev)}
+              onClick={() => {
+                setShowMapView((prev) => !prev);
+                setTaskRemoval(false);
+                setWorkerRemoval(false);
+                setSelectedTasksIds([]);
+                setSelectedWokrersIds([]);
+              }}
             />
           </div>
           {showMapView ? (
@@ -492,14 +550,35 @@ export default function WorkspaceDetails() {
                       customWidth="w-3/4"
                       className="px-4 py-2 bg-ev-green text-white rounded-lg hover:scale-110 duration-300 w-3/4"
                     />
-                    <Input
-                      name="remove"
-                      type="button"
-                      value="Remove"
-                      onClick={() => setWorkerRemoval((p) => !p)}
-                      customWidth="w-3/4"
-                      className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                    />
+                    {!workerRemoval ? (
+                      <Input
+                        name="remove"
+                        type="button"
+                        value="Remove"
+                        onClick={() => setWorkerRemoval((p) => !p)}
+                        customWidth="w-3/4"
+                        className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                      />
+                    ) : (
+                      <>
+                        <Input
+                          name="cancel"
+                          type="button"
+                          value="Cancel"
+                          onClick={() => setWorkerRemoval(false)}
+                          customWidth="w-3/4"
+                          className="px-4 py-2 bg-ev-blue text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                        />
+                        <Input
+                          name="delete"
+                          type="button"
+                          value="Delete"
+                          onClick={() => removeWorkers()}
+                          customWidth="w-3/4"
+                          className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                        />
+                      </>
+                    )}
                   </div>
                   <div className="flex flex-col gap-4 mb-10 w-full">
                     {workspaceUsers !== null ? (
@@ -509,8 +588,10 @@ export default function WorkspaceDetails() {
                             id={workspaceUser.id}
                             username={workspaceUser.username}
                             key={i}
-                            selectable={!workerRemoval}
-                            selected={false}
+                            selectable={workerRemoval}
+                            setSelectedWorkersIds={setSelectedWokrersIds}
+                            selectedWorkersIds={selectedWorkersIds}
+                            workspaceUsers={workspaceUsers}
                           />
                         ))}
                       </>
@@ -534,14 +615,35 @@ export default function WorkspaceDetails() {
                       customWidth="w-3/4"
                       className="px-4 py-2 bg-ev-green text-white rounded-lg hover:scale-110 duration-300 w-3/4"
                     />
-                    <Input
-                      name="remove"
-                      type="button"
-                      value="Remove"
-                      customWidth="w-3/4"
-                      onClick={() => setTaskRemoval((p) => !p)}
-                      className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                    />
+                    {!taskRemoval ? (
+                      <Input
+                        name="remove"
+                        type="button"
+                        value="Remove"
+                        onClick={() => setTaskRemoval((p) => !p)}
+                        customWidth="w-3/4"
+                        className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                      />
+                    ) : (
+                      <>
+                        <Input
+                          name="cancel"
+                          type="button"
+                          value="Cancel"
+                          onClick={() => setTaskRemoval(false)}
+                          customWidth="w-3/4"
+                          className="px-4 py-2 bg-ev-blue text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                        />
+                        <Input
+                          name="delete"
+                          type="button"
+                          value="Delete"
+                          onClick={() => removeTasks()}
+                          customWidth="w-3/4"
+                          className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                        />
+                      </>
+                    )}
                   </div>
                   <div className="flex flex-col gap-4 mb-10 w-full">
                     {tasks === null ||
@@ -556,8 +658,9 @@ export default function WorkspaceDetails() {
                               task={task}
                               key={i}
                               workspaceUsers={workspaceUsers}
-                              selected={false}
-                              selectable={!taskRemoval}
+                              selectable={taskRemoval}
+                              setSelectedTasksIds={setSelectedTasksIds}
+                              selectedTasksIds={selectedTasksIds}
                             />
                           ))}
                       </>
@@ -568,7 +671,7 @@ export default function WorkspaceDetails() {
             </div>
           ) : (
             // seond case
-            <div className="flex flex-row gap-8 w-full overflow-y-hidden">
+            <div className="flex flex-row gap-8 w-full overflow-y-hidden h-full">
               <div className=" p-6 bg-ev-primary-bg overflow-y-scroll rounded-xl h-full w-full">
                 <div className="flex justify-between items-center mb-10 border-b-4 gap-4 pb-4">
                   <p className="text-2xl">Workers</p>
@@ -583,14 +686,35 @@ export default function WorkspaceDetails() {
                     customWidth="w-3/4"
                     className="px-4 py-2 bg-ev-green text-white rounded-lg hover:scale-110 duration-300 w-3/4"
                   />
-                  <Input
-                    name="remove"
-                    type="button"
-                    value="Remove"
-                    onClick={() => setWorkerRemoval((p) => !p)}
-                    customWidth="w-3/4"
-                    className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                  />
+                  {!workerRemoval ? (
+                    <Input
+                      name="remove"
+                      type="button"
+                      value="Remove"
+                      onClick={() => setWorkerRemoval((p) => !p)}
+                      customWidth="w-3/4"
+                      className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                    />
+                  ) : (
+                    <>
+                      <Input
+                        name="cancel"
+                        type="button"
+                        value="Cancel"
+                        onClick={() => setWorkerRemoval(false)}
+                        customWidth="w-3/4"
+                        className="px-4 py-2 bg-ev-blue text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                      />
+                      <Input
+                        name="delete"
+                        type="button"
+                        value="Delete"
+                        onClick={() => removeWorkers()}
+                        customWidth="w-3/4"
+                        className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                      />
+                    </>
+                  )}
                 </div>
                 <div className="flex flex-col gap-4 mb-10 w-full">
                   {workspaceUsers !== null ? (
@@ -600,8 +724,10 @@ export default function WorkspaceDetails() {
                           id={workspaceUser.id}
                           username={workspaceUser.username}
                           key={i}
-                          selectable={!workerRemoval}
-                          selected={false}
+                          selectable={workerRemoval}
+                          setSelectedWorkersIds={setSelectedWokrersIds}
+                          selectedWorkersIds={selectedWorkersIds}
+                          workspaceUsers={workspaceUsers}
                         />
                       ))}
                     </>
@@ -625,14 +751,35 @@ export default function WorkspaceDetails() {
                     customWidth="w-3/4"
                     className="px-4 py-2 bg-ev-green text-white rounded-lg hover:scale-110 duration-300 w-3/4"
                   />
-                  <Input
-                    name="remove"
-                    type="button"
-                    value="Remove"
-                    onClick={() => setTaskRemoval((p) => !p)}
-                    customWidth="w-3/4"
-                    className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                  />
+                  {!taskRemoval ? (
+                    <Input
+                      name="remove"
+                      type="button"
+                      value="Remove"
+                      onClick={() => setTaskRemoval((p) => !p)}
+                      customWidth="w-3/4"
+                      className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                    />
+                  ) : (
+                    <>
+                      <Input
+                        name="cancel"
+                        type="button"
+                        value="Cancel"
+                        onClick={() => setTaskRemoval(false)}
+                        customWidth="w-3/4"
+                        className="px-4 py-2 bg-ev-blue text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                      />
+                      <Input
+                        name="delete"
+                        type="button"
+                        value="Delete"
+                        onClick={() => removeTasks()}
+                        customWidth="w-3/4"
+                        className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                      />
+                    </>
+                  )}
                 </div>
                 <div className="flex flex-col gap-4 mb-10 w-full">
                   {tasks === null ||
@@ -647,8 +794,9 @@ export default function WorkspaceDetails() {
                             task={task}
                             key={i}
                             workspaceUsers={workspaceUsers}
-                            selectable={!taskRemoval}
-                            selected={false}
+                            selectable={taskRemoval}
+                            setSelectedTasksIds={setSelectedTasksIds}
+                            selectedTasksIds={selectedTasksIds}
                           />
                         ))}
                     </>
