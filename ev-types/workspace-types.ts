@@ -1,3 +1,5 @@
+import { WorkspaceUser } from "@/ev-types/user-types";
+
 export type Workspace = {
   id: number;
   plan_file_name: string;
@@ -13,8 +15,8 @@ export type Task = {
   id: number;
   title: string;
   description: string | null;
-  assigner_username: string;
-  assignee_username: string;
+  assigner_email: string;
+  assignee_email: string;
   description_multimedia: string | null;
   description_multimedia_filename: string | null;
   category: string;

@@ -33,3 +33,6 @@ export const revokeObjectUrl = (url: string | null) => {
     URL.revokeObjectURL(url);
   }
 };
+export function isBase64Image(data: string | null | undefined): boolean {
+  return !!data && /^data:image\/(png|jpeg|jpg|gif|webp);base64,/.test(data);
+}

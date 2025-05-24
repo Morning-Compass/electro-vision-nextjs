@@ -71,7 +71,7 @@ export class ElectroVisionFetch {
 
   async delete(
     endpointUrl: string,
-    data: TData,
+    data?: TData,
     headers?: THeaders,
   ): Promise<any> {
     return this.makeRequest("DELETE", endpointUrl, data, headers);

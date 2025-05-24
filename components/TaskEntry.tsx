@@ -1,23 +1,31 @@
 import useUserContext from "@/ev-contexts/userContextProvider";
-import { WorkspaceData } from "@/ev-types/user-types";
+import { isBase64Image } from "@/ev-lib/fileUtils";
+import { WorkspaceData, WorkspaceUser } from "@/ev-types/user-types";
 import { Task } from "@/ev-types/workspace-types";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 type TaskEntryProps = {
   task: Task;
+  workspaceUsers: WorkspaceUser[];
+  selectable: boolean;
+  setSelectedTasksIds: Dispatch<SetStateAction<number[]>>;
+  selectedTasksIds: number[];
 };
 
-function isBase64Image(data: string | null | undefined): boolean {
-  return !!data && /^data:image\/(png|jpeg|jpg|gif|webp);base64,/.test(data);
-}
-
-export default function TaskEntry({ task }: TaskEntryProps) {
+export default function TaskEntry({
+  task,
+  workspaceUsers,
+  selectable = false,
+  setSelectedTasksIds,
+  selectedTasksIds,
+}: TaskEntryProps) {
   const { id, title, status, importance, description_multimedia } = task;
   const [statusFile, setStatusFile] = useState<string>("todo.png");
   const [importanceFile, setImportanceFile] = useState<string>("low.png");
   const { User, UserDispatch } = useUserContext();
+  const [selected, setSelected] = useState(false);
 
   useEffect(() => {
     let statusFileName = "todo.png"; // Default value
@@ -38,7 +46,7 @@ export default function TaskEntry({ task }: TaskEntryProps) {
         statusFileName = "cancel-color.png";
         break;
       default:
-        statusFileName = "todo-color.png";
+        statusFileName = "todo-color2.png";
     }
 
     // Set importance file based on importance
@@ -57,40 +65,35 @@ export default function TaskEntry({ task }: TaskEntryProps) {
     setImportanceFile(importanceFileName);
   }, [status, importance]);
 
-  const imageSrc = isBase64Image(description_multimedia)
-    ? description_multimedia!
-    : "/tasks/" + statusFile;
+  const isbase64 = isBase64Image(description_multimedia);
 
-  return (
-    <div
-      onClick={() => {
-        const prevData = User.workspaceData ?? {
-          currentWorkspace: null,
-          currentTask: null,
-          currentUserOverviewData: null,
-        };
+  const imageSrc = isbase64 ? description_multimedia! : "/tasks/" + statusFile;
 
-        UserDispatch({
-          type: "setWorkspaceData",
-          value: {
-            ...prevData,
-            currentTask: task,
-          },
-        });
-      }}
-    >
-      <Link href={"/workspaces/tasks/details"}>
-        <div className="flex justify-start items-center gap-2 flex-row w-full hover:bg-ev-primary-bg hover:scale-110 duration-300 rounded-xl p-1">
-          <Image
-            src={imageSrc}
-            alt="Task"
-            width={56}
-            height={56}
-            className="rounded-full m-2 aspect-square"
-          />
-          <p className="text-xl text-nowrap m-2">{title}</p>
+  return selectable ? (
+    <div>
+      <div
+        className={`flex justify-start items-center gap-2 flex-row w-full bg-ev-primary ${selected ? "border-ev-red border-2 " : "border-ev-green border-2 "} shadow-md hover:scale-105 duration-300 rounded-xl p-1 `}
+        onClick={() => {
+          setSelectedTasksIds((prev) =>
+            prev.includes(task.id)
+              ? prev.filter((id) => id !== task.id)
+              : [...prev, task.id],
+          );
+          setSelected((p) => !p);
+        }}
+      >
+        <Image
+          src={imageSrc}
+          alt="Task"
+          width={56}
+          height={56}
+          unoptimized={isBase64Image(imageSrc)}
+          className={` ${isbase64 ? "rounded-full" : ""} m-2 aspect-square bg-ev-primary`}
+        />
+        <p className="text-xl text-nowrap m-2">{title}</p>
+        <div className="w-1/4 flex items-center ml-auto">
           <p
-            className={`text-xl text-nowrap m-2 ${
+            className={`text-xl text-nowrap ${
               importance === "LOW"
                 ? "text-green-400"
                 : importance === "MEDIUM"
@@ -100,6 +103,56 @@ export default function TaskEntry({ task }: TaskEntryProps) {
           >
             {importance}
           </p>
+        </div>
+      </div>
+    </div>
+  ) : (
+    <div>
+      <Link
+        onClick={() => {
+          const prevData = User.workspaceData ?? {
+            currentWorkspace: null,
+            currentTask: null,
+            currentUserOverviewData: null,
+            users: null,
+            currentUserId: null,
+          };
+
+          UserDispatch({
+            type: "setWorkspaceData",
+            value: {
+              ...prevData,
+              currentTask: task,
+              users: workspaceUsers,
+            },
+          });
+        }}
+        prefetch={false}
+        href={"/workspaces/plans/tasks/details"}
+      >
+        <div className="flex justify-start items-center gap-2 flex-row w-full bg-ev-primary shadow-md hover:scale-105 duration-300 rounded-xl p-1">
+          <Image
+            src={imageSrc}
+            alt="Task"
+            width={56}
+            height={56}
+            unoptimized={isBase64Image(imageSrc)}
+            className={` ${isbase64 ? "rounded-full" : ""} m-2 aspect-square bg-ev-primary`}
+          />
+          <p className="text-xl text-nowrap m-2">{title}</p>
+          <div className="w-1/4 flex items-center ml-auto">
+            <p
+              className={`text-xl text-nowrap ${
+                importance === "LOW"
+                  ? "text-green-400"
+                  : importance === "MEDIUM"
+                    ? "text-yellow-500"
+                    : "text-red-600"
+              }`}
+            >
+              {importance}
+            </p>
+          </div>
         </div>
       </Link>
     </div>

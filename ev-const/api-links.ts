@@ -34,11 +34,18 @@ const ApiLinks = {
   createTasks: (id: string) => {
     return rustHost + "/workspace/" + id + "/tasks/create";
   },
-  removeTasks: (workspaceId: string, taskId: string) => {
-    return (
-      rustHost + "/workspace/" + workspaceId + "/tasks/" + taskId + "/delete"
-    );
+  updateTask: (workspaceId: string, taskId: string) => {
+    return rustHost + "/workspace/" + workspaceId + "/tasks/update/" + taskId;
   },
+  removeTask: (workspaceId: string, taskId: string) => {
+    return rustHost + "/workspace/" + workspaceId + "/tasks/delete/" + taskId;
+  },
+  // removeWorker: ()
+  // removeTasks: (workspaceId: string, taskId: string) => {
+  //   return (
+  //     rustHost + "/workspace/" + workspaceId + "/tasks/" + taskId + "/delete"
+  //   );
+  // },
 } as const;
 
 export default ApiLinks;

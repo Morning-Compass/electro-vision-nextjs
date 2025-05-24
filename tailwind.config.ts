@@ -36,6 +36,7 @@ const config: Config = {
         "ev-gray": "#F1F2F6",
         "ev-gray-button": "#D7D7D7",
         "ev-dark-gray": "#717171",
+        "ev-accent-text": "var(--color-accent-text)",
         "ev-green": "#54C854",
         "ev-ice": "#E6EFFC",
         "ev-pink": "#FFC3D8",

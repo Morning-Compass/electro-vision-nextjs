@@ -46,8 +46,8 @@ const Button = ({
       type={type}
       value={value}
       onClick={onClick}
-      src={type === "image" ? src : ""}
       disabled={disabled}
+      {...(type === "image" && src ? { src } : {})}
       className={
         className ??
         ` ${bgColor ?? "bg-ev-blue"} ${textColor ?? "text-white"} ${rounded === true ? "rounded-[0.9rem]" : ""} max-w-64 min-w-30 ${customWidth ?? "w-[30vw]"} max-h-12 min-h-8 ${customHeight ?? "h-[10vh]"} font-bold  ${hoverEffect === true ? "hover:scale-110" : ""} duration-300 cursor-pointer ${additionalClassName ?? ""}`

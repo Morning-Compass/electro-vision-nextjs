@@ -10,6 +10,8 @@ export type User = {
 export type WorkspaceData = {
   currentWorkspace: Workspace | null;
   currentTask: Task | null;
+  users: WorkspaceUser[] | null;
+  currentUserId: number | null;
   // currentProblem: Problem | null;
   currentUserOverviewData: {
     id: string;

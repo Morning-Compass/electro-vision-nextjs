@@ -63,6 +63,8 @@ const WorkspaceEntry = ({ workspace }: WorkspaceEntryProps) => {
             currentTask: User.workspaceData?.currentTask ?? null,
             currentUserOverviewData:
               User.workspaceData?.currentUserOverviewData ?? null,
+            currentUserId: null,
+            users: null,
           },
         })
       }
@@ -74,7 +76,7 @@ const WorkspaceEntry = ({ workspace }: WorkspaceEntryProps) => {
             src={imageSrc}
             alt={workspace.name}
             fill
-            className="object-contain" // Changed from cover to contain for SVGs
+            className="object-cover"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             onError={(e) => {
               (e.target as HTMLImageElement).src = "/problem.png";
