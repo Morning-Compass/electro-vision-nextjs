@@ -646,12 +646,42 @@ function MapEditor() {
   );
 
   const handleTaskDragEnd = useCallback(
-    (id: string, position: [number, number]) => {
+    async (id: string, position: [number, number]) => {
+      // Update the local state with the new position
       setTasks((prev) =>
         prev.map((task) => (task.id === id ? { ...task, position } : task)),
       );
+
+      // Get workspace ID from user context
+      const workspaceId = User.workspaceData?.currentWorkspace?.id;
+      if (!workspaceId) {
+        toast.error("Workspace ID not found.");
+        return;
+      }
+
+      // Convert task ID from string to integer
+      const taskId = parseInt(id, 10);
+      if (isNaN(taskId)) {
+        toast.error("Invalid task ID.");
+        return;
+      }
+
+      const payload = {
+        task_id: taskId,
+        workspace_id: workspaceId,
+        offset_x: position[0],
+        offset_y: position[1],
+      };
+
+      try {
+        await OLF.put(ApiLinks.updatePythonTask(), payload);
+        console.log("Task position updated successfully.");
+      } catch (error) {
+        console.error("Error updating task position:", error);
+        toast.error("Failed to update task position.");
+      }
     },
-    [],
+    [User],
   );
 
   const handleRemoveSelected = async () => {

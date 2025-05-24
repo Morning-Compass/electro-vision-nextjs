@@ -23,6 +23,9 @@ const ApiLinks = {
   listPythonTasks: (workspaceId: string) => {
     return pythonHost + "/tasks/list-tasks-by-workspace/" + workspaceId;
   },
+  updatePythonTask: () => {
+    return pythonHost + "/tasks/update-task/";
+  },
   removePythonTask: (workspaceId: string, taskId: string) => {
     return (
       pythonHost + "/tasks/delete-task-by-task-id/" + workspaceId + "/" + taskId
