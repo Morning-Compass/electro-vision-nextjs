@@ -22,15 +22,17 @@ export default function ChatEmployee() {
       <section className="flex flex-row items-center h-full gap-8 w-[90vw]">
         <SidebarTemplate activeIcon="chat" />
         <ContentBlock>
-          <section className="bg-gray-200 w-full p-1 h-[5%] rounded-[0.9em] flex items-center justify-center ">
+          <section className="bg-gray-200 w-full p-1 h-auto rounded-[0.9em] flex items-center justify-center ">
             <section
-              className={`flex justify-around text-[1.2em] text-[#3354F4] font-semibold w-full`}
+              className={`flex justify-around text-[1.2em] text-[#3354F4] font-semibold w-full max-lg:text-sm`}
             >
               <Link href={"/chat"}>Back</Link>
-              <p>{id}</p>
-              <p>{employee}</p>
-              <p>{role}</p>
-              <p>{department}</p>
+              <section className="grid gap-8 ml-4 grid-cols-4 max-md:grid-cols-3 max-md:gap-4">
+                <p>{id}</p>
+                <p>{employee}</p>
+                <p>{role}</p>
+                <p>{department}</p>
+              </section>
             </section>
           </section>
         </ContentBlock>

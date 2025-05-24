@@ -27,7 +27,7 @@ export default function EmployeesOverview() {
         <SidebarTemplate activeIcon="people" />
         <ContentBlock>
           <section className="w-full flex flex-row items-center justify-between align-middle gap-4 mt-2 max-xl:justify-start max-xl:gap-0 max-md:justify-between">
-            <h2 className="text-[1.75rem] font-semibold p-0 m-0 leading-none w-auto max-xl:w-auto max-[1650px]:w-[200px] max-[800px]:text-xl max-md:text-xl max-[550px]:w-[120px] max-[400px]:text-base max-[400px]:w-[90px]">
+            <h2 className="text-[1.75rem] font-semibold p-0 m-0 leading-none w-auto max-[1650px]:w-[200px] max-lg:text-xl max-[950px]:w-[120px] max-[400px]:text-base max-[400px]:w-[90px]">
               Employees Overview
             </h2>
             <section className="flex flex-row justify-end items-center gap-8 w-[90%] max-[1350px]:gap-4 max-xl:justify-start max-md:text-sm max-md:justify-end max-md:w-1/3">
@@ -90,7 +90,7 @@ export default function EmployeesOverview() {
             </section>
           </section>
           <section className="mt-8 w-full border-b-4 border-t-3 pt-4 pb-4">
-            <section className="grid grid-cols-7 gap-6 w-[75%] max-xl:text-sm max-lg:grid-cols-6 max-[900px]:grid-cols-5 max-md:grid-cols-4 max-[550px]:grid-cols-3 max-[450px]:grid-cols-2 ">
+            <section className="grid grid-cols-7 gap-6 w-[75%] max-xl:text-sm max-lg:grid-cols-6 max-[900px]:grid-cols-5 max-md:grid-cols-4 max-[550px]:grid-cols-3 max-[450px]:grid-cols-2">
               <section className="font-semibold">ID</section>
               <section className="font-semibold">Employee</section>
               <section className="font-semibold">Role</section>

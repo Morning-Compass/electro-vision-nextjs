@@ -19,7 +19,7 @@ export function CustomMenu({
 
   return (
     <section className={`fixed mt-52 mr-0 ml-4 z-10 bg-ev-primary pl-8 pr-8 pt-4 pb-4 w-60 rounded-3xl text-ev-text border-solid border-4 ${sectionClassName}`}>
-      <ul className="flex flex-col items-start">
+      <ul className="flex flex-col items-center">
         {children}
       </ul>
     </section>

@@ -17,15 +17,15 @@ export default function EmployeesOverview() {
         <SidebarTemplate activeIcon="alert" />
         <ContentBlock>
           <section className="w-full flex flex-row items-center justify-between align-middle gap-4 mt-2">
-            <h2 className="text-3xl font-semibold p-0 m-0 leading-none w-1/2 ml-6">
+            <h2 className="text-3xl font-semibold p-0 m-0 leading-none w-1/2 ml-6 max-lg:text-2xl max-sm:text-xl max-[400px]:text-base">
               Employees problems by workspace
             </h2>
             <section className="flex flex-row justify-around w-[90%]">
               <SearchButton />
             </section>
           </section>
-          <section className="flex flex-auto flex-wrap justify-between">
-            <section className="h-auto flex flex-col items-center justify-center p-6  gap-5">
+          <section className="flex flex-auto flex-wrap justify-between max-[1400px]:justify-center">
+            <section className="h-auto flex flex-col items-center justify-center p-6 gap-5">
               <Link
                 href={{
                   pathname: "../employees-problems/problems",
