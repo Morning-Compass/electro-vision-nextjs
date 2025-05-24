@@ -31,7 +31,7 @@ export default function WorkerEntry({
   return selectable ? (
     <div>
       <div
-        className={`flex justify-start items-center gap-2 flex-row w-full bg-ev-primary ${!you ? (selected ? "border-2 border-ev-red" : "border-2 border-ev-green") : ""} shadow-md  hover:scale-110 duration-300  rounded-xl p-1 `}
+        className={`flex justify-start items-center gap-2 flex-row w-full bg-ev-primary${!you ? (selected ? "border-2 border-ev-red" : "border-2 border-ev-green") : ""} shadow-md  hover:scale-110 duration-300  rounded-xl p-1 `}
         onClick={() => {
           if (you) {
             return;
@@ -49,7 +49,7 @@ export default function WorkerEntry({
           height={56}
           className="rounded-full m-2"
         />
-        <p className="text-xl text-nowrap m-2">
+        <p className="text-xl text-nowrap m-2 max-sm:text-base">
           {id === (User.authUser?.id ?? -1) ? "(You) " + username : username}
         </p>
       </div>
@@ -85,7 +85,7 @@ export default function WorkerEntry({
           height={56}
           className="rounded-full m-2"
         />
-        <p className="text-xl text-nowrap m-2">
+        <p className="text-xl text-nowrap m-2 max-sm:text-base">
           {id === (User.authUser?.id ?? -1) ? "(You) " + username : username}
         </p>
       </div>

@@ -30,9 +30,9 @@ export default function EmployeesOverview() {
             <h2 className="text-[1.75rem] font-semibold p-0 m-0 leading-none w-auto max-[1650px]:w-[200px] max-lg:text-xl max-[950px]:w-[120px] max-[400px]:text-base max-[400px]:w-[90px]">
               Employees Overview
             </h2>
-            <section className="flex flex-row justify-end items-center gap-8 w-[90%] max-[1350px]:gap-4 max-xl:justify-start max-md:text-sm max-md:justify-end max-md:w-1/3">
+            <section className="flex flex-row justify-end items-center gap-8 w-[90%] max-[1350px]:gap-4 max-md:text-sm max-md:w-1/3">
               <SearchButton />
-              <div className="flex flex-row justify-end gap-8 w-1/2 max-[1650px]:w-[60%] max-[1350px]:gap-2 max-[1350px]:w-[55%] max-xl:justify-start max-md:hidden">
+              <div className="flex flex-row justify-end gap-8 w-1/2 max-[1650px]:w-[60%] max-[1350px]:gap-2 max-[1350px]:w-[55%] max-md:hidden">
                 <CalendarButton />
                 <Input
                   name="filter_button"

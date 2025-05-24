@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, ChangeEvent } from "react";
+import React, { useState, useEffect, ChangeEvent } from "react";
 import PageTemplate from "@/components/templates/PageTemplate";
 import NavbarTemplate from "@/components/templates/NavbarTemplate";
 import { FooterSmall } from "@/components/templates/FooterSmall";
@@ -18,6 +18,7 @@ import { PythonReponse } from "@/ev-types/workspace-python-reponse-type";
 import WorkspaceEntry from "@/components/WorkspaceEntry";
 import toast from "react-hot-toast";
 import { getFilePreview, revokeObjectUrl } from "@/ev-lib/fileUtils";
+import CustomMenu from "@/components/CustomMenu";
 
 export default function Workspaces() {
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
@@ -30,6 +31,7 @@ export default function Workspaces() {
   );
   const [workspaces, setWorkspaces] = useState<Workspace[] | null>(null);
   const [isCreatingWorkspace, setIsCreatingWorkspace] = useState(false);
+  const [isCustomMenuOpen, setIsCustomMenuOpen] = useState(false);
 
   const loadingMessages = [
     "Preparing your space...",
@@ -333,26 +335,60 @@ export default function Workspaces() {
       <section className="flex flex-row items-center h-full gap-8 w-[90vw]">
         <SidebarTemplate activeIcon="map" />
         <ContentBlock>
-          <section className="flex flex-col sm:flex-row items-center justify-between mt-4 mb-6 ml-6 mr-6 gap-4">
-            <h2 className="text-3xl font-semibold">Workspaces</h2>
+          <section className="flex flex-row items-center justify-between gap-4 max-sm:gap-1">
+            <h2 className="text-3xl font-semibold max-lg:text-2xl max-md:text-3xl max-sm:text-base w-auto">Workspaces</h2>
             <section className="flex items-center gap-2 sm:gap-4">
               <SearchButton />
-              <Input
-                name="add"
-                type="button"
-                className="text-white bg-ev-green rounded-lg px-4 py-2 hover:scale-105 active:scale-95 duration-200 whitespace-nowrap w-[6vw] min-w-12"
-                value="Add"
-                onClick={() => setIsOverlayOpen(true)}
-              />
-              <Input
-                name="remove"
-                type="button"
-                className="text-white bg-ev-red rounded-lg px-4 py-2 hover:scale-105 active:scale-95 duration-200 whitespace-nowrap w-[6vw] min-w-12 "
-                value="Remove"
-                onClick={() =>
-                  toast.error("Delete functionality not implemented.")
-                }
-              />
+              <div className="flex flex-row justify-end gap-8 w-1/2 max-[1650px]:w-[60%] max-[1350px]:gap-2 max-[1350px]:w-[55%] max-xl:justify-start max-md:hidden">
+                <Input
+                  name="add"
+                  type="button"
+                  className="text-white bg-ev-green rounded-lg px-4 py-2 hover:scale-105 active:scale-95 duration-200 whitespace-nowrap w-[6vw] min-w-[3.75rem]"
+                  value="Add"
+                  onClick={() => setIsOverlayOpen(true)}
+                />
+                <Input
+                  name="remove"
+                  type="button"
+                  className="text-white bg-ev-red rounded-lg px-4 py-2 hover:scale-105 active:scale-95 duration-200 whitespace-nowrap w-[6vw] min-w-[5.5rem]"
+                  value="Remove"
+                  onClick={() =>
+                    toast.error("Delete functionality not implemented.")
+                  }
+                />
+              </div>
+              <button
+                className="hidden max-md:block flex-col items-center justify-center w-8 h-10 space-y-1.5 group"
+                onClick={() => setIsCustomMenuOpen(!isCustomMenuOpen)}
+              >
+                <span className="block w-6 h-1 rounded-full bg-gray-600 group-focus:bg-[#0090cf]"></span>
+                <span className="block w-6 h-1 rounded-full bg-gray-600 group-focus:bg-[#0090cf]"></span>
+                <span className="block w-6 h-1 rounded-full bg-gray-600 group-focus:bg-[#0090cf]"></span>
+              </button>
+              <CustomMenu
+                isOpen={isCustomMenuOpen}
+                onClose={() => setIsCustomMenuOpen(false)}
+                sectionClassName="mt-[9rem] right-12"
+              >
+                <div className="flex flex-row w-full justify-between">
+                  <Input
+                    name="add"
+                    type="button"
+                    className="text-white bg-ev-green rounded-lg px-4 py-2 hover:scale-105 active:scale-95 duration-200 whitespace-nowrap w-[6vw] min-w-[3.75rem]"
+                    value="Add"
+                    onClick={() => setIsOverlayOpen(true)}
+                  />
+                  <Input
+                    name="remove"
+                    type="button"
+                    className="text-white bg-ev-red rounded-lg px-4 py-2 hover:scale-105 active:scale-95 duration-200 whitespace-nowrap w-[6vw] min-w-[5.5rem]"
+                    value="Remove"
+                    onClick={() =>
+                      toast.error("Delete functionality not implemented.")
+                    }
+                  />
+                </div>
+              </CustomMenu>
             </section>
           </section>
 

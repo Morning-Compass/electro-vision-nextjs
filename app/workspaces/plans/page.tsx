@@ -466,7 +466,7 @@ export default function WorkspaceDetails() {
       <section className="flex flex-row items-center justify-start h-full gap-8 w-[90vw]">
         <SidebarTemplate activeIcon="map" />
         <ContentBlock>
-          <div className="flex flex-row items-center justify-between mb-8 ml-8 mr-8 ">
+          <div className="flex flex-row items-center justify-between mb-8 ml-8 mr-8 max-[1700px]:ml-0 max-[1700px]:mr-0">
             <Link
               href="/workspaces/"
               className="text-ev-accent-text hover:text-ev-accent-text/80 text-lg font-medium flex items-center transition-colors duration-200"
@@ -476,7 +476,7 @@ export default function WorkspaceDetails() {
             <Input
               name="toggle_view"
               type="button"
-              className="text-white bg-ev-blue rounded-lg px-4 py-2 hover:scale-105 active:scale-95 duration-200 whitespace-nowrap w-[6vw] min-w-12"
+              className="text-white bg-ev-blue rounded-lg px-4 py-2 hover:scale-105 active:scale-95 duration-200 whitespace-nowrap w-[6vw] min-w-36"
               value="Toggle View"
               onClick={() => {
                 setShowMapView((prev) => !prev);
@@ -488,8 +488,8 @@ export default function WorkspaceDetails() {
             />
           </div>
           {showMapView ? (
-            <div className="flex w-full">
-              <div className="flex flex-col w-3/4 mr-8 gap-8">
+            <div className="flex w-full max-[1700px]:flex-col max-[1700px]:items-center">
+              <div className="flex flex-col w-3/4 mr-8 gap-8 mb-8 max-[1700px]:w-full max-[1700px]:mr-0">
                 <Link href={"./plans/editor"}>
                   <Image
                     src={receivedCoverImage || "/problem.png"}
@@ -535,7 +535,7 @@ export default function WorkspaceDetails() {
                   />
                 </div>
               </div>
-              <div className="flex flex-col gap-8 w-1/4">
+              <div className="flex flex-col gap-8 w-1/4 max-[1700px]:w-full">
                 <div className=" p-6 bg-ev-primary-bg overflow-y-scroll rounded-xl h-1/2">
                   <div className="flex justify-between items-center mb-10 border-b-4 gap-4 pb-4">
                     <p className="text-2xl">Workers</p>
@@ -671,7 +671,7 @@ export default function WorkspaceDetails() {
             </div>
           ) : (
             // seond case
-            <div className="flex flex-row gap-8 w-full overflow-y-hidden h-full">
+            <div className="flex flex-row gap-8 w-full overflow-y-hidden h-full max-[950px]:flex-col">
               <div className=" p-6 bg-ev-primary-bg overflow-y-scroll rounded-xl h-full w-full">
                 <div className="flex justify-between items-center mb-10 border-b-4 gap-4 pb-4">
                   <p className="text-2xl">Workers</p>

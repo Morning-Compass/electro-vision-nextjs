@@ -40,15 +40,15 @@ export default function WorkerDetailsPage() {
                 >
                   ← Back
                 </Link>
-                <h1 className="text-4xl font-bold text-ev-text dark:text-ev-text uppercase tracking-wide text-center flex-grow">
+                <h1 className="text-4xl font-bold text-ev-text dark:text-ev-text uppercase tracking-wide text-center flex-grow max-md:text-2xl">
                   User In Workspace
                 </h1>
                 <div className="w-16"></div>
               </div>
 
-              <div className="flex flex-row gap-8 w-full h-[70%]">
+              <div className="flex flex-row gap-8 w-full h-[70%] max-md:flex-col max-md:items-center">
                 {/* Worker Photo and Basic Info */}
-                <div className="flex flex-col gap-4 w-1/2 p-6 bg-ev-primary-bg dark:bg-ev-secondary rounded-xl shadow-md items-center justify-center">
+                <div className="flex flex-col gap-4 w-1/2 p-6 bg-ev-primary-bg dark:bg-ev-secondary rounded-xl shadow-md items-center justify-center max-md:w-auto">
                   <div className="relative w-48 h-48 rounded-full overflow-hidden">
                     <Image
                       src={"/default-user.png"} // Assuming profile_picture exists on WorkspaceUser
@@ -62,7 +62,7 @@ export default function WorkerDetailsPage() {
                   </h2>
                 </div>
 
-                <div className="flex flex-col gap-4 w-1/2 p-6 bg-ev-primary-bg dark:bg-ev-secondary rounded-xl shadow-md overflow-y-scroll">
+                <div className="flex flex-col gap-4 w-1/2 p-6 bg-ev-primary-bg dark:bg-ev-secondary rounded-xl shadow-md max-md:h-auto md:overflow-y-scroll max-md:w-auto max-md:mb-8">
                   <h2 className="text-2xl font-semibold text-ev-text dark:text-ev-text border-b-2 border-ev-gray pb-2">
                     Additional Details
                   </h2>
