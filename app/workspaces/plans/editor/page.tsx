@@ -226,7 +226,20 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
         ApiLinks.createTasks(currentWorkspaceId),
         taskPayload,
       );
-      console.log(res);
+      try {
+        console.log(res);
+        await OLF.post(ApiLinks.addPythonTask, {
+          task_id: res.id,
+          workspace_id: Number.parseInt(currentWorkspaceId),
+          offset_x: initialPosition[0],
+          offset_y: initialPosition[1],
+        });
+      } catch (error) {
+        console.error("Error creating task:", error);
+        toast.error(
+          error instanceof Error ? error.message : "Failed to create task",
+        );
+      }
       toast.success("Task created successfully!");
       onSubmitSuccess(res, initialPosition, initialNodeType);
       reset();
@@ -496,13 +509,12 @@ function MapEditor() {
       id: apiResponse.id?.toString() || `api_task_${Date.now()}`, // Prefer ID from API
       label: apiResponse.title,
       description: apiResponse.description,
-      // image: apiResponse.image_url || null, // If your API returns an image URL for the task
+
       position: mapPosition,
-      type: nodeType, // Use the originally dropped nodeType or one from API if it's more specific
+      type: nodeType,
       importance: apiResponse.importance,
       category: apiResponse.category,
       assignee_email: apiResponse.assignee_email,
-      // Add any other relevant fields from apiResponse to TaskNodeData
     };
 
     setTasks((prevTasks) => [...prevTasks, newMapTask]);
@@ -529,8 +541,6 @@ function MapEditor() {
         );
         setDroppedTaskDetails({ position, nodeType });
         setIsNewTaskFormOpen(true);
-        // The actual addition to map tasks will happen after successful form submission
-        // via handleNewTaskFormSubmitSuccess
       }
     },
     [availableTasks], // User.workspaceData?.currentWorkspace?.id, User.authUser?.email can be removed if not directly used here

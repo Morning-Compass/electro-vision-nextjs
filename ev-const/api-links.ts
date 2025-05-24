@@ -19,6 +19,7 @@ const ApiLinks = {
   retrieveFiles: pythonHost + "/images/all-files",
   removeFile: pythonHost + "/images/remove-file",
   inviteWorker: rustHost + "/workspace/invitation/create",
+  addPythonTask: pythonHost + "/tasks/add-task",
   invitationWorkerAccept: (token: string) => {
     return rustHost + "/workspace/invitation/accept/" + token;
   },
