@@ -18,8 +18,8 @@ import Regex from "@/ev-const/regex";
 import toast from "react-hot-toast";
 import OLF from "@/ev-lib/ElectroVisionFetch";
 import ApiLinks from "@/ev-const/api-links";
-import { DateTimePicker } from "@/components/datepicker/Datepicker"; // Import DateTimePicker
-import { WorkspaceUser } from "@/ev-types/user-types"; // Import WorkspaceUser type
+import { DateTimePicker } from "@/components/datepicker/Datepicker";
+import { WorkspaceUser } from "@/ev-types/user-types";
 
 // Define types
 interface TaskNodeData {
@@ -136,7 +136,7 @@ interface AddTaskFormForMapProps {
   initialNodeType: string | null;
   currentUserEmail: string | undefined;
   currentWorkspaceId: string | undefined;
-  workspaceUsers: WorkspaceUser[] | null; // Add workspaceUsers prop
+  workspaceUsers: WorkspaceUser[] | null;
 }
 
 const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
@@ -472,6 +472,72 @@ function MapEditor() {
     }
   };
 
+  // Fetch and match tasks from both backends
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const workspaceId =
+          User.workspaceData?.currentWorkspace?.id?.toString();
+        if (!workspaceId) {
+          toast.error("Workspace ID not found.");
+          return;
+        }
+        const ownerEmail = User.authUser?.email;
+        if (!ownerEmail) {
+          toast.error("User email not found.");
+          return;
+        }
+
+        // Fetch tasks from Python backend
+        const pythonResponse = await OLF.get(
+          ApiLinks.listPythonTasks(workspaceId.toString()),
+        );
+        const pythonTasks = pythonResponse.data; // Tasks with positions
+
+        // Fetch tasks from Rust backend
+        const rustResponse = await OLF.post(ApiLinks.listTasks(workspaceId), {
+          owner_email: ownerEmail,
+        });
+        const rustTasks = rustResponse; // Detailed task info
+
+        // Match all Python tasks with Rust data
+        const matchedTasks = pythonTasks
+          .map((pyTask: any) => {
+            const rustTask = rustTasks.find(
+              (rTask: any) => rTask.id === pyTask.task_id,
+            );
+            if (rustTask) {
+              return {
+                id: rustTask.id.toString(),
+                label: rustTask.title,
+                description: rustTask.description,
+                image: rustTask.description_multimedia
+                  ? `data:image/jpeg;base64,${rustTask.description_multimedia}`
+                  : null,
+                position: [pyTask.offset_x, pyTask.offset_y],
+                type: "customTask", // Adjust as needed
+                importance: rustTask.importance,
+                category: rustTask.category,
+                assignee_email: rustTask.assignee_email,
+              };
+            }
+            // If no matching Rust task, return null (filter out later)
+            return null;
+          })
+          .filter((task: TaskNodeData | null) => task !== null);
+
+        setTasks(matchedTasks);
+      } catch (error) {
+        console.error("Error fetching tasks:", error);
+        toast.error("Failed to load tasks.");
+      }
+    };
+
+    if (User.workspaceData?.currentWorkspace?.id && User.authUser?.email) {
+      fetchTasks();
+    }
+  }, [User]);
+
   useEffect(() => {
     getWorkers();
   }, []);
@@ -747,7 +813,7 @@ function MapEditor() {
         initialNodeType={droppedTaskDetails?.nodeType || null}
         currentUserEmail={User.authUser?.email}
         currentWorkspaceId={User.workspaceData?.currentWorkspace?.id?.toString()}
-        workspaceUsers={workspaceUsers} // Pass workspaceUsers
+        workspaceUsers={workspaceUsers}
       />
 
       <section className="flex flex-row items-start h-[calc(100vh-var(--navbar-height,64px)-var(--footer-height,50px))] gap-8 w-[95vw] mx-auto pt-4 z-0">
