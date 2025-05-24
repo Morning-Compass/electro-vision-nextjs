@@ -29,7 +29,8 @@ import { DateTimePicker } from "@/components/datepicker/Datepicker";
 export default function WorkspaceDetails() {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isTaskOpen, setIsTaskOpen] = useState(false);
-  const [removal, setRemoval] = useState(false);
+  const [taskRemoval, setTaskRemoval] = useState(false);
+  const [workerRemoval, setWorkerRemoval] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { User } = useUserContext();
   const [workspaceUsers, setWorkspaceUsers] = useState<WorkspaceUser[] | null>(
@@ -495,6 +496,7 @@ export default function WorkspaceDetails() {
                       name="remove"
                       type="button"
                       value="Remove"
+                      onClick={() => setWorkerRemoval((p) => !p)}
                       customWidth="w-3/4"
                       className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
                     />
@@ -507,6 +509,8 @@ export default function WorkspaceDetails() {
                             id={workspaceUser.id}
                             username={workspaceUser.username}
                             key={i}
+                            selectable={!workerRemoval}
+                            selected={false}
                           />
                         ))}
                       </>
@@ -535,6 +539,7 @@ export default function WorkspaceDetails() {
                       type="button"
                       value="Remove"
                       customWidth="w-3/4"
+                      onClick={() => setTaskRemoval((p) => !p)}
                       className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
                     />
                   </div>
@@ -551,6 +556,8 @@ export default function WorkspaceDetails() {
                               task={task}
                               key={i}
                               workspaceUsers={workspaceUsers}
+                              selected={false}
+                              selectable={!taskRemoval}
                             />
                           ))}
                       </>
@@ -560,6 +567,7 @@ export default function WorkspaceDetails() {
               </div>
             </div>
           ) : (
+            // seond case
             <div className="flex flex-row gap-8 w-full overflow-y-hidden">
               <div className=" p-6 bg-ev-primary-bg overflow-y-scroll rounded-xl h-full w-full">
                 <div className="flex justify-between items-center mb-10 border-b-4 gap-4 pb-4">
@@ -579,6 +587,7 @@ export default function WorkspaceDetails() {
                     name="remove"
                     type="button"
                     value="Remove"
+                    onClick={() => setWorkerRemoval((p) => !p)}
                     customWidth="w-3/4"
                     className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
                   />
@@ -591,7 +600,8 @@ export default function WorkspaceDetails() {
                           id={workspaceUser.id}
                           username={workspaceUser.username}
                           key={i}
-                          selectable={!removal}
+                          selectable={!workerRemoval}
+                          selected={false}
                         />
                       ))}
                     </>
@@ -619,7 +629,7 @@ export default function WorkspaceDetails() {
                     name="remove"
                     type="button"
                     value="Remove"
-                    onClick={() => setRemoval(true)}
+                    onClick={() => setTaskRemoval((p) => !p)}
                     customWidth="w-3/4"
                     className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
                   />
@@ -637,6 +647,8 @@ export default function WorkspaceDetails() {
                             task={task}
                             key={i}
                             workspaceUsers={workspaceUsers}
+                            selectable={!taskRemoval}
+                            selected={false}
                           />
                         ))}
                     </>
