@@ -40,7 +40,7 @@ export default function WorkerDetailsPage() {
                 >
                   ← Back
                 </Link>
-                <h1 className="text-4xl font-bold text-ev-darkblue dark:text-ev-text uppercase tracking-wide text-center flex-grow">
+                <h1 className="text-4xl font-bold text-ev-text dark:text-ev-text uppercase tracking-wide text-center flex-grow">
                   User In Workspace
                 </h1>
                 <div className="w-16"></div>
@@ -57,13 +57,13 @@ export default function WorkerDetailsPage() {
                       className="object-cover"
                     />
                   </div>
-                  <h2 className="text-3xl font-semibold text-ev-darkblue dark:text-ev-text mt-4">
+                  <h2 className="text-3xl font-semibold text-ev-text dark:text-ev-text mt-4">
                     {worker.username}
                   </h2>
                 </div>
 
                 <div className="flex flex-col gap-4 w-1/2 p-6 bg-ev-primary-bg dark:bg-ev-secondary rounded-xl shadow-md overflow-y-scroll">
-                  <h2 className="text-2xl font-semibold text-ev-darkblue dark:text-ev-text border-b-2 border-ev-gray pb-2">
+                  <h2 className="text-2xl font-semibold text-ev-text dark:text-ev-text border-b-2 border-ev-gray pb-2">
                     Additional Details
                   </h2>
                   <p className="text-ev-darkgray dark:text-ev-secondary-text text-lg">

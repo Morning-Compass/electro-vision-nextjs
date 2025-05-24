@@ -275,7 +275,7 @@ export default function Page() {
               >
                 ← Back
               </Link>
-              <h1 className="text-4xl font-bold text-ev-darkblue dark:text-ev-text uppercase tracking-wide text-center flex-grow">
+              <h1 className="text-4xl font-bold text-ev-text uppercase tracking-wide text-center flex-grow">
                 {task?.title ?? "Untitled Task"}
               </h1>
               <div className="w-16"></div> {/* Spacer for balance */}
@@ -286,7 +286,7 @@ export default function Page() {
               {/* Description */}
               <div className="flex flex-col gap-4 w-1/2 p-6 bg-ev-primary-bg dark:bg-ev-secondary rounded-xl overflow-y-scroll shadow-md">
                 <div className="flex justify-between items-center border-b-2 border-ev-gray pb-2">
-                  <h2 className="text-2xl font-semibold text-ev-darkblue dark:text-ev-text">
+                  <h2 className="text-2xl font-semibold  text-ev-text dark:text-ev-text">
                     Description
                   </h2>
                   <button
@@ -296,7 +296,7 @@ export default function Page() {
                     Edit
                   </button>
                 </div>
-                <p className="text-ev-darkgray dark:text-ev-secondary-text text-lg overflow-y-auto max-h-full">
+                <p className="text-ev-text dark:text-ev-secondary-text text-lg overflow-y-auto max-h-full">
                   {task?.description || "Description has not been set."}
                 </p>
               </div>
@@ -305,7 +305,7 @@ export default function Page() {
               {isBase64Image(imageSrc) && (
                 <div className="flex flex-col gap-4 w-1/2 p-6 bg-ev-primary-bg dark:bg-ev-secondary rounded-xl shadow-md">
                   <div className="flex justify-between items-center border-b-2 border-ev-gray pb-2">
-                    <h2 className="text-2xl font-semibold text-ev-darkblue dark:text-ev-text">
+                    <h2 className="text-2xl font-semibold text-ev-text dark:text-ev-text">
                       Photo
                     </h2>
                     <button
@@ -330,7 +330,10 @@ export default function Page() {
               {/* Details */}
               <div className="flex flex-col gap-4 w-1/2 p-6 bg-ev-primary-bg dark:bg-ev-secondary rounded-xl overflow-y-scroll shadow-md">
                 <div className="flex justify-between items-center border-b-2 border-ev-gray pb-2">
-                  <h2 className="text-2xl font-semibold text-ev-darkblue dark:text-ev-text">
+                  <h2
+                    className="text-2xl font-semibold text-ev-text text-
+                    dark:text-ev-text"
+                  >
                     Details
                   </h2>
                   <div className=" flex flex-row items-center justify-center gap-8">
@@ -351,28 +354,28 @@ export default function Page() {
                     </button>
                   </div>
                 </div>
-                <p className="text-ev-darkgray dark:text-ev-secondary-text text-lg overflow-y-auto max-h-full">
+                <p className="text-ev-text dark:text-ev-secondary-text text-lg overflow-y-auto max-h-full">
                   Assigner: {task?.assignee_email}
                 </p>
-                <p className="text-ev-darkgray dark:text-ev-secondary-text text-lg overflow-y-auto max-h-full">
+                <p className="text-ev-text dark:text-ev-secondary-text text-lg overflow-y-auto max-h-full">
                   Assignee: {task?.assignee_email}
                 </p>
-                <p className="text-ev-darkgray dark:text-ev-secondary-text text-lg overflow-y-auto max-h-full">
-                  Status: {task?.status}
+                <p className="text-ev-text dark:text-ev-secondary-text text-lg overflow-y-auto max-h-full">
+                  Status: {task?.status.replaceAll("_", " ")}
                 </p>
-                <p className="text-ev-darkgray dark:text-ev-secondary-text text-lg overflow-y-auto max-h-full">
+                <p className="text-ev-dark dark:text-ev-secondary-text text-lg overflow-y-auto max-h-full">
                   Created at:{" "}
                   {task?.created_at ? formatDate(task.created_at) : "Unknown"}
                 </p>
-                <p className="text-ev-darkgray dark:text-ev-secondary-text text-lg overflow-y-auto max-h-full">
+                <p className="text-ev-text dark:text-ev-secondary-text text-lg overflow-y-auto max-h-full">
                   Due:{" "}
                   {task?.due_date ? formatDate(task.due_date) : "Not Defined"}
                 </p>
-                <p className="text-ev-darkgray dark:text-ev-secondary-text text-lg overflow-y-auto max-h-full">
+                <p className="text-ev-text dark:text-ev-secondary-text text-lg overflow-y-auto max-h-full">
                   Category: {isMultimedia ? task.category : "Not Defined"}
                 </p>
                 <p
-                  className={`text-ev-darkgray dark:text-ev-secondary-text text-lg overflow-y-auto max-h-full ${
+                  className={`text-ev-text dark:text-ev-secondary-text text-lg overflow-y-auto max-h-full ${
                     task?.importance === "LOW"
                       ? "text-green-400"
                       : task?.importance === "MEDIUM"
@@ -390,11 +393,11 @@ export default function Page() {
               {/* Map Section */}
               <div className="flex flex-col gap-4 w-full p-6 bg-ev-primary-bg dark:bg-ev-secondary rounded-xl shadow-md">
                 <div className="flex justify-between items-center border-b-2 border-ev-gray pb-2">
-                  <h2 className="text-2xl font-semibold text-ev-darkblue dark:text-ev-text">
+                  <h2 className="text-2xl font-semibold text-ev-text dark:text-ev-text">
                     Map
                   </h2>
                 </div>
-                <div className="flex items-center justify-center bg-ev-gray dark:bg-ev-dark-gray w-full h-full rounded-lg text-ev-darkgray dark:text-ev-secondary-text text-lg">
+                <div className="flex items-center justify-center bg-ev-gray dark:bg-ev-dark-gray w-full h-full rounded-lg text-ev-text dark:text-ev-secondary-text text-lg">
                   Content
                   {/* FUTURE MAP LINK AND PREVIEW */}
                 </div>
