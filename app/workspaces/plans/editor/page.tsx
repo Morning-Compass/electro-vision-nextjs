@@ -234,15 +234,22 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
           offset_x: initialPosition[0],
           offset_y: initialPosition[1],
         });
+        toast.success("Task created successfully!");
+        onSubmitSuccess(res, initialPosition, initialNodeType);
+        reset();
       } catch (error) {
+        await OLF.delete(
+          ApiLinks.removeTasks(
+            currentWorkspaceId.toString(),
+            res.id.toString(),
+          ),
+          {},
+        );
         console.error("Error creating task:", error);
         toast.error(
           error instanceof Error ? error.message : "Failed to create task",
         );
       }
-      toast.success("Task created successfully!");
-      onSubmitSuccess(res, initialPosition, initialNodeType);
-      reset();
     } catch (error) {
       console.error("Error creating task:", error);
       toast.error(
@@ -593,7 +600,18 @@ function MapEditor() {
           ApiLinks.removeTasks(workspaceId.toString(), taskId.toString()),
           {},
         );
-
+        try {
+          await OLF.delete(
+            ApiLinks.removePythonTask(
+              workspaceId.toString(),
+              selectedTaskId.toString(),
+            ),
+            {},
+          );
+        } catch (error) {
+          console.error("Error deleting Python task:", error);
+          toast.error("Failed to delete Python task. Please try again.");
+        }
         // Update local state after successful API response
         setTasks((prev) => prev.filter((task) => task.id !== selectedTaskId));
         setConnections((prev) =>
