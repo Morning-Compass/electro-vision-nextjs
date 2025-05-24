@@ -49,6 +49,7 @@ const config: Config = {
         overlay: "rgba(0,0,0,0.5)",
       },
       margin: {
+        "120": "40rem",
         "128": "64rem",
       },
       width: {

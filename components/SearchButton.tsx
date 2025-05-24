@@ -19,7 +19,7 @@ function SearchButton({
         alt={"search icon"}
         width={28}
         height={28}
-        className={`object-contain mr-4`}
+        className={`object-contain mr-4 max-[1152px]:hidden`}
       />
       <Input
         type="text"

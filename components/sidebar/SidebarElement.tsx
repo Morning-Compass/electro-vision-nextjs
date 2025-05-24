@@ -12,6 +12,7 @@ export type SidebarElementprops = {
   containerClassName?: string; // for li element
   linkClassName?: string; // for Link element
   imageClassName?: string;
+  pageName?: string; // for Menu
 } & React.HTMLAttributes<HTMLLIElement>;
 
 export default function SidebarElement({
@@ -21,6 +22,7 @@ export default function SidebarElement({
   containerClassName = "",
   linkClassName = "",
   imageClassName = "",
+  pageName = "",
   ...props
 }: SidebarElementprops) {
   return (
@@ -29,7 +31,7 @@ export default function SidebarElement({
       {...props}
     >
       <Link
-        className={`hover:scale-125 duration-200 pt-4 pb-4 ${linkClassName}`}
+        className={`hover:scale-125 duration-200 pt-4 pb-4 flex flex-row items-center text-ev-text ${linkClassName}`}
         href={link ?? ""}
       >
         <Image
@@ -39,6 +41,9 @@ export default function SidebarElement({
           height={32}
           className={`object-contain ${imageClassName} `}
         />
+        {pageName && (
+          <span className="ml-4">{pageName}</span>
+        )}
       </Link>
     </li>
   );

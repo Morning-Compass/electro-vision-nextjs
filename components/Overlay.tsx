@@ -24,7 +24,7 @@ function Overlay({
   if (!isOpen) return null;
 
   return (
-    <section className="fixed inset-0 bg-overlay z-10 flex justify-center items-center overflow-y-scroll">
+    <section className="fixed inset-0 bg-overlay z-20 flex justify-center items-center overflow-y-scroll">
       <section
         className={`relative w-auto h-auto p-10 flex flex-col items-center bg-ev-primary rounded-3xl ${blockClassName || ""}`}
       >
