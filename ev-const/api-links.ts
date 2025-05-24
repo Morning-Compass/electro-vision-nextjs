@@ -28,6 +28,11 @@ const ApiLinks = {
   createTasks: (id: string) => {
     return rustHost + "/workspace/" + id + "/tasks/create";
   },
+  removeTasks: (workspaceId: string, taskId: string) => {
+    return (
+      rustHost + "/workspace/" + workspaceId + "/tasks/" + taskId + "/delete"
+    );
+  },
 } as const;
 
 export default ApiLinks;

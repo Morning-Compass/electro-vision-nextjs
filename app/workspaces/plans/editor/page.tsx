@@ -125,20 +125,7 @@ function handleDirectDrop(
   }
 }
 
-const initialTasks: TaskNodeData[] = [
-  {
-    id: "1",
-    type: "defaultTask",
-    label: "Task 1 - Drag Me!",
-    position: [51.45, -0.15],
-  },
-  {
-    id: "2",
-    type: "customTask",
-    label: "Task 2",
-    position: [51.55, -0.05],
-  },
-];
+const initialTasks: TaskNodeData[] = [];
 
 const initialConnections: TaskConnection[] = [
   { id: "e1-2", source: "1", target: "2", animated: true },
@@ -580,19 +567,39 @@ function MapEditor() {
     [],
   );
 
-  const handleRemoveSelected = () => {
+  const handleRemoveSelected = async () => {
     if (selectedTaskId) {
       const taskToRemove = tasks.find((task) => task.id === selectedTaskId);
-      setTasks((prev) => prev.filter((task) => task.id !== selectedTaskId));
-      setConnections((prev) =>
-        prev.filter(
-          (conn) =>
-            conn.source !== selectedTaskId && conn.target !== selectedTaskId,
-        ),
-      );
-      setSelectedTaskId(null);
-      if (taskToRemove) {
-        toast.success(`Task "${taskToRemove.label}" removed from map.`);
+      const workspaceId = User.workspaceData?.currentWorkspace?.id;
+      const taskId = parseInt(selectedTaskId, 10);
+
+      if (!workspaceId || isNaN(taskId)) {
+        toast.error("Invalid workspace or task ID.");
+        return;
+      }
+
+      try {
+        await OLF.delete(
+          ApiLinks.removeTasks(workspaceId.toString(), taskId.toString()),
+          {},
+        );
+
+        // Update local state after successful API response
+        setTasks((prev) => prev.filter((task) => task.id !== selectedTaskId));
+        setConnections((prev) =>
+          prev.filter(
+            (conn) =>
+              conn.source !== selectedTaskId && conn.target !== selectedTaskId,
+          ),
+        );
+        setSelectedTaskId(null);
+
+        if (taskToRemove) {
+          toast.success(`Task "${taskToRemove.label}" removed from map.`);
+        }
+      } catch (error) {
+        console.error("Error deleting task:", error);
+        toast.error("Failed to delete task. Please try again.");
       }
     } else {
       alert("No task selected to remove.");
