@@ -124,7 +124,7 @@ export default function Dashboard() {
             </div>
 
             {/* Worker Stats */}
-            <div className="grid grid-cols-2 gap-6 lg:flex lg:flex-col lg:gap-6 ">
+            <div className="sm:grid sm:grid-cols-2  flex flex-col gap-6 ">
               <div className="bg-ev-primary-bg p-6 rounded-3xl shadow-sm">
                 <h2 className="text-xl font-semibold mb-4">
                   Workers by Position
