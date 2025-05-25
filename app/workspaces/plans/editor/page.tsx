@@ -14,7 +14,6 @@ import useUserContext from "@/ev-contexts/userContextProvider";
 import "leaflet/dist/leaflet.css";
 import { useForm, SubmitHandler, Control } from "react-hook-form";
 import FormErrorWrap from "@/components/templates/FormErrorWrap";
-import Regex from "@/ev-const/regex";
 import toast from "react-hot-toast";
 import OLF from "@/ev-lib/ElectroVisionFetch";
 import ApiLinks from "@/ev-const/api-links";
@@ -431,6 +430,294 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
   );
 };
 
+interface AddTaskOverlayProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmitSuccess: (task: TaskNodeData) => void;
+  currentUserEmail: string | undefined;
+  currentWorkspaceId: string | undefined;
+  workspaceUsers: WorkspaceUser[] | null;
+}
+
+const AddTaskOverlay: React.FC<AddTaskOverlayProps> = ({
+  isOpen,
+  onClose,
+  onSubmitSuccess,
+  currentUserEmail,
+  currentWorkspaceId,
+  workspaceUsers,
+}) => {
+  const {
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    register,
+    reset,
+    setValue,
+    control,
+  } = useForm<TaskFormProps>({
+    mode: "onTouched",
+    reValidateMode: "onChange",
+    defaultValues: {
+      importance: "LOW",
+      title: "",
+      description: "",
+      assignee_email: "",
+      category: "",
+      due_date: "",
+      multimedia: "",
+    },
+  });
+
+  useEffect(() => {
+    if (!isOpen) reset();
+  }, [isOpen, reset]);
+
+  const handleFormSubmit: SubmitHandler<TaskFormProps> = async (data) => {
+    if (!currentUserEmail || !currentWorkspaceId) {
+      toast.error("Cannot add task: user or workspace context is missing.");
+      return;
+    }
+
+    try {
+      const taskPayload = {
+        assigner_email: currentUserEmail,
+        assignee_email: data.assignee_email,
+        title: data.title,
+        description: data.description,
+        importance: data.importance,
+        category: data.category,
+        status: "TODO",
+        due_date: data.due_date || null,
+        description_multimedia: data.multimedia || null,
+      };
+
+      const res = await OLF.post(
+        ApiLinks.createTasks(currentWorkspaceId),
+        taskPayload,
+      );
+
+      const newTask: TaskNodeData = {
+        id: res.id.toString(),
+        label: res.title,
+        description: res.description,
+        image: res.description_multimedia
+          ? `data:image/jpeg;base64,${res.description_multimedia}`
+          : null,
+        position: [0, 0],
+        type: "customTask",
+        importance: res.importance,
+        category: res.category,
+        assignee_email: res.assignee_email,
+      };
+
+      onSubmitSuccess(newTask);
+      reset();
+      onClose();
+      toast.success("Task created successfully!");
+    } catch (error) {
+      console.error("Error creating task:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to create task",
+      );
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <Overlay
+      isOpen={isOpen}
+      onClose={onClose}
+      blockClassName="max-w-lg bg-ev-primary rounded-xl shadow-2xl p-6 z-[1001]"
+    >
+      <form
+        className="flex flex-col gap-6 w-full text-ev-text"
+        onSubmit={handleSubmit(handleFormSubmit)}
+        noValidate
+      >
+        <h2 className="text-3xl font-semibold mb-4">Create New Task</h2>
+
+        <FormErrorWrap>
+          <div className="flex flex-col gap-2">
+            <label htmlFor="taskTitle" className="text-lg">
+              Title*
+            </label>
+            <Input
+              id="taskTitle"
+              type="text"
+              placeholder="Task title..."
+              className="w-full p-3 bg-ev-gray text-ev-dark-gray rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
+              error={errors.title?.message}
+              register={register("title", {
+                required: "Title is required",
+                minLength: {
+                  value: 3,
+                  message: "Title must be at least 3 characters",
+                },
+              })}
+            />
+          </div>
+        </FormErrorWrap>
+
+        <FormErrorWrap>
+          <div className="flex flex-col gap-2">
+            <label htmlFor="taskDescription" className="text-lg">
+              Description
+            </label>
+            <Input
+              id="taskDescription"
+              type="text"
+              placeholder="Task description..."
+              className="w-full p-3 bg-ev-gray text-ev-dark-gray rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
+              error={errors.description?.message}
+              register={register("description")}
+            />
+          </div>
+        </FormErrorWrap>
+
+        <FormErrorWrap>
+          <div className="flex flex-col gap-2">
+            <label htmlFor="multimedia-file-overlay" className="text-lg">
+              Photo
+            </label>
+            <label
+              htmlFor="multimedia-file-overlay"
+              className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg cursor-pointer w-full hover:scale-105 transition text-left"
+            >
+              Upload Photo
+            </label>
+            <input
+              id="multimedia-file-overlay"
+              type="file"
+              accept="image/png, image/jpeg"
+              capture="environment"
+              className="hidden"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                  const base64 = reader.result as string;
+                  setValue("multimedia", base64, { shouldValidate: true });
+                };
+                reader.readAsDataURL(file);
+              }}
+            />
+            <input type="hidden" {...register("multimedia")} />
+          </div>
+        </FormErrorWrap>
+
+        <FormErrorWrap>
+          <div className="flex flex-col gap-2">
+            <label htmlFor="taskAssignee" className="text-lg">
+              Assignee Email*
+            </label>
+            <select
+              id="taskAssignee"
+              className="w-full p-3 bg-ev-gray text-ev-dark-gray rounded-lg hover:scale-105 transition appearance-none focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
+              {...register("assignee_email", {
+                required: "Assignee is required",
+              })}
+            >
+              {workspaceUsers && workspaceUsers.length > 0 ? (
+                workspaceUsers.map((u, i) => (
+                  <option key={i} value={u.email}>
+                    {u.email}
+                  </option>
+                ))
+              ) : (
+                <option value="" disabled>
+                  No users available
+                </option>
+              )}
+            </select>
+            {errors.assignee_email && (
+              <p className="text-ev-red text-sm mt-1">
+                {errors.assignee_email.message}
+              </p>
+            )}
+          </div>
+        </FormErrorWrap>
+
+        <FormErrorWrap>
+          <div className="flex flex-col gap-2">
+            <label htmlFor="taskImportance" className="text-lg">
+              Importance*
+            </label>
+            <select
+              id="taskImportance"
+              className="w-full p-3 bg-ev-gray text-ev-dark-gray rounded-lg hover:scale-105 transition appearance-none focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
+              {...register("importance", {
+                required: "Importance is required",
+              })}
+              defaultValue="LOW"
+            >
+              <option value="LOW">Low</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="HIGH">High</option>
+            </select>
+            {errors.importance && (
+              <p className="text-ev-red text-sm mt-1">
+                {errors.importance.message}
+              </p>
+            )}
+          </div>
+        </FormErrorWrap>
+
+        <FormErrorWrap>
+          <div className="flex flex-col gap-2">
+            <label htmlFor="taskCategory" className="text-lg">
+              Category
+            </label>
+            <Input
+              id="taskCategory"
+              type="text"
+              placeholder="e.g., Lamps, Sockets"
+              className="w-full p-3 bg-ev-gray text-ev-dark-gray rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
+              error={errors.category?.message}
+              register={register("category")}
+            />
+          </div>
+        </FormErrorWrap>
+
+        <FormErrorWrap>
+          <div className="flex flex-col gap-2">
+            <label htmlFor="due_date_overlay" className="text-lg">
+              Due Date
+            </label>
+            <DateTimePicker
+              name="due_date"
+              control={control as Control<TaskFormProps>}
+              className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg w-full"
+            />
+            {errors.due_date && (
+              <p className="text-ev-red text-sm mt-1">
+                {errors.due_date.message}
+              </p>
+            )}
+          </div>
+        </FormErrorWrap>
+
+        <div className="flex items-center justify-end gap-4 mt-6">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white hover:bg-gray-100 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-200"
+          >
+            Cancel
+          </button>
+          <Input
+            type="submit"
+            value={isSubmitting ? "Creating..." : "Create Task"}
+            disabled={isSubmitting}
+            className="text-ev-white bg-ev-blue hover:bg-ev-darkblue font-semibold rounded-lg px-6 py-3 hover:scale-105 duration-300 transition-all focus:outline-none focus:ring-2 focus:ring-mc-blue focus:ring-opacity-50"
+          />
+        </div>
+      </form>
+    </Overlay>
+  );
+};
+
 function MapEditor() {
   const { User } = useUserContext();
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -492,13 +779,13 @@ function MapEditor() {
         const pythonResponse = await OLF.get(
           ApiLinks.listPythonTasks(workspaceId.toString()),
         );
-        const pythonTasks = pythonResponse.data; // Tasks with positions
+        const pythonTasks = pythonResponse.data;
 
         // Fetch tasks from Rust backend
         const rustResponse = await OLF.post(ApiLinks.listTasks(workspaceId), {
           owner_email: ownerEmail,
         });
-        const rustTasks = rustResponse; // Detailed task info
+        const rustTasks = rustResponse;
 
         // Match all Python tasks with Rust data
         const matchedTasks = pythonTasks
@@ -515,13 +802,12 @@ function MapEditor() {
                   ? `data:image/jpeg;base64,${rustTask.description_multimedia}`
                   : null,
                 position: [pyTask.offset_x, pyTask.offset_y],
-                type: "customTask", // Adjust as needed
+                type: "customTask",
                 importance: rustTask.importance,
                 category: rustTask.category,
                 assignee_email: rustTask.assignee_email,
               };
             }
-            // If no matching Rust task, return null (filter out later)
             return null;
           })
           .filter((task: TaskNodeData | null) => task !== null);
@@ -569,39 +855,11 @@ function MapEditor() {
   );
 
   const handleOpenOverlay = () => setIsOverlayOpen(true);
-  const handleCloseOverlay = () => {
-    setIsOverlayOpen(false);
-    setNewTaskName("");
-    setNewTaskDescription("");
-    setNewTaskPhoto(null);
-  };
+  const handleCloseOverlay = () => setIsOverlayOpen(false);
 
-  const [newTaskName, setNewTaskName] = useState("");
-  const [newTaskDescription, setNewTaskDescription] = useState("");
-  const [newTaskPhoto, setNewTaskPhoto] = useState<File | string | null>(null);
-
-  const handleAddTaskFromOverlay = () => {
-    if (!newTaskName.trim()) {
-      alert("Task name is required.");
-      return;
-    }
-    const newTaskId = `task_${Date.now()}`;
-    const newTask: TaskNodeData = {
-      id: newTaskId,
-      type: "customTask",
-      label: newTaskName,
-      description: newTaskDescription,
-      image:
-        newTaskPhoto instanceof File
-          ? URL.createObjectURL(newTaskPhoto)
-          : typeof newTaskPhoto === "string"
-            ? newTaskPhoto
-            : null,
-      position: [51.4, -0.25],
-    };
+  const handleAddTaskSuccess = useCallback((newTask: TaskNodeData) => {
     setAvailableTasks((prev) => [...prev, newTask]);
-    handleCloseOverlay();
-  };
+  }, []);
 
   const handleNewTaskFormSubmitSuccess = (
     apiResponse: TaskApiResponse,
@@ -635,9 +893,6 @@ function MapEditor() {
           toast.success(`Task "${newTaskOnMap.label}" added to map.`);
         }
       } else {
-        console.log(
-          `Task type '${nodeType}' dropped at ${position}. Opening creation form.`,
-        );
         setDroppedTaskDetails({ position, nodeType });
         setIsNewTaskFormOpen(true);
       }
@@ -647,24 +902,15 @@ function MapEditor() {
 
   const handleTaskDragEnd = useCallback(
     async (id: string, position: [number, number]) => {
-      // Update the local state with the new position
       setTasks((prev) =>
         prev.map((task) => (task.id === id ? { ...task, position } : task)),
       );
 
-      // Get workspace ID from user context
       const workspaceId = User.workspaceData?.currentWorkspace?.id;
-      if (!workspaceId) {
-        toast.error("Workspace ID not found.");
-        return;
-      }
+      if (!workspaceId) return;
 
-      // Convert task ID from string to integer
       const taskId = parseInt(id, 10);
-      if (isNaN(taskId)) {
-        toast.error("Invalid task ID.");
-        return;
-      }
+      if (isNaN(taskId)) return;
 
       const payload = {
         task_id: taskId,
@@ -675,7 +921,6 @@ function MapEditor() {
 
       try {
         await OLF.put(ApiLinks.updatePythonTask(), payload);
-        console.log("Task position updated successfully.");
       } catch (error) {
         console.error("Error updating task position:", error);
         toast.error("Failed to update task position.");
@@ -685,62 +930,51 @@ function MapEditor() {
   );
 
   const handleRemoveSelected = async () => {
-    if (selectedTaskId) {
-      const taskToRemove = tasks.find((task) => task.id === selectedTaskId);
-      const workspaceId = User.workspaceData?.currentWorkspace?.id;
-      const taskId = parseInt(selectedTaskId, 10);
+    if (!selectedTaskId) return;
 
-      if (!workspaceId || isNaN(taskId)) {
-        toast.error("Invalid workspace or task ID.");
-        return;
-      }
+    const workspaceId = User.workspaceData?.currentWorkspace?.id;
+    const taskId = parseInt(selectedTaskId, 10);
+    if (!workspaceId || isNaN(taskId)) return;
 
+    try {
+      const task = await OLF.delete(
+        ApiLinks.removeTask(workspaceId.toString(), taskId.toString()),
+        {},
+      );
       try {
-        const task = await OLF.delete(
-          ApiLinks.removeTask(workspaceId.toString(), taskId.toString()),
+        await OLF.delete(
+          ApiLinks.removePythonTask(
+            workspaceId.toString(),
+            selectedTaskId.toString(),
+          ),
           {},
         );
-        try {
-          await OLF.delete(
-            ApiLinks.removePythonTask(
-              workspaceId.toString(),
-              selectedTaskId.toString(),
-            ),
-            {},
-          );
-        } catch (error) {
-          const taskPayload = {
-            assigner_email: User.authUser?.email,
-            assignee_email: task.assignee_email,
-            title: task.title,
-            description: task.description,
-            importance: task.importance,
-            category: task.category,
-            status: task.status,
-            due_date: task.due_date,
-            description_multimedia: task.description_multimedia,
-          };
-          await OLF.post(ApiLinks.createTasks(task.workspace_id), taskPayload);
-          console.error("Error deleting Python task:", error);
-          toast.error("Failed to delete Python task. Please try again.");
-        }
-        setTasks((prev) => prev.filter((task) => task.id !== selectedTaskId));
-        setConnections((prev) =>
-          prev.filter(
-            (conn) =>
-              conn.source !== selectedTaskId && conn.target !== selectedTaskId,
-          ),
-        );
-        setSelectedTaskId(null);
-        if (taskToRemove) {
-          toast.success(`Task "${taskToRemove.label}" removed from map.`);
-        }
       } catch (error) {
-        console.error("Error deleting task:", error);
-        toast.error("Failed to delete task. Please try again.");
+        const taskPayload = {
+          assigner_email: User.authUser?.email,
+          assignee_email: task.assignee_email,
+          title: task.title,
+          description: task.description,
+          importance: task.importance,
+          category: task.category,
+          status: task.status,
+          due_date: task.due_date,
+          description_multimedia: task.description_multimedia,
+        };
+        await OLF.post(ApiLinks.createTasks(task.workspace_id), taskPayload);
       }
-    } else {
-      alert("No task selected to remove.");
+      setTasks((prev) => prev.filter((task) => task.id !== selectedTaskId));
+      setConnections((prev) =>
+        prev.filter(
+          (conn) =>
+            conn.source !== selectedTaskId && conn.target !== selectedTaskId,
+        ),
+      );
+      setSelectedTaskId(null);
+      toast.success(`Task removed from map.`);
+    } catch (error) {
+      console.error("Error deleting task:", error);
+      toast.error("Failed to delete task. Please try again.");
     }
   };
 
@@ -760,18 +994,21 @@ function MapEditor() {
   useEffect(() => {
     const mapContainer = mapContainerRef.current;
     if (!mapContainer) return;
+
     const handleDragOver = (e: DragEvent) => {
       e.preventDefault();
       if (e.dataTransfer) {
         e.dataTransfer.dropEffect = "copy";
       }
     };
+
     const handleDrop = (e: DragEvent) => {
-      console.log("Direct DOM drop event detected", e);
       handleDirectDrop(e, handleTaskDrop, leafletMapInstanceRef.current);
     };
+
     mapContainer.addEventListener("dragover", handleDragOver);
     mapContainer.addEventListener("drop", handleDrop);
+
     return () => {
       mapContainer.removeEventListener("dragover", handleDragOver);
       mapContainer.removeEventListener("drop", handleDrop);
@@ -785,52 +1022,14 @@ function MapEditor() {
   return (
     <PageTemplate>
       <NavbarTemplate />
-      <Overlay
+      <AddTaskOverlay
         isOpen={isOverlayOpen}
         onClose={handleCloseOverlay}
-        blockClassName="max-w-lg bg-ev-primary rounded-xl shadow-2xl p-6 z-[1001]"
-      >
-        <h2 className="text-3xl font-semibold mb-6 text-ev-text">
-          Add Custom Task to Workspace
-        </h2>
-        <section className="flex flex-col justify-center items-center gap-5 w-full">
-          <input
-            type="text"
-            name="name_text_sidebar"
-            value={newTaskName}
-            onChange={(e) => setNewTaskName(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
-            placeholder="Task Name..."
-          />
-          <textarea
-            name="textarea_sidebar"
-            value={newTaskDescription}
-            onChange={(e) => setNewTaskDescription(e.target.value)}
-            className="w-full h-32 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
-            placeholder="Task description (optional)..."
-          />
-          <section className="flex flex-row justify-between items-center w-full">
-            <p className="text-lg text-ev-text">Select photo (optional):</p>
-            <Input
-              name="select_photo_task_sidebar"
-              type="file"
-              className="text-ev-text"
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                if (e.target.files && e.target.files[0]) {
-                  const file = e.target.files[0];
-                  setNewTaskPhoto(file);
-                }
-              }}
-            />
-          </section>
-          <button
-            onClick={handleAddTaskFromOverlay}
-            className="mt-4 w-full text-ev-white bg-ev-blue hover:bg-ev-darkblue font-semibold rounded-lg px-6 py-3 hover:scale-105 duration-300 transition-all focus:outline-none focus:ring-2 focus:ring-mc-blue focus:ring-opacity-50"
-          >
-            Add Task to Workspace List
-          </button>
-        </section>
-      </Overlay>
+        onSubmitSuccess={handleAddTaskSuccess}
+        currentUserEmail={User.authUser?.email}
+        currentWorkspaceId={User.workspaceData?.currentWorkspace?.id?.toString()}
+        workspaceUsers={workspaceUsers}
+      />
 
       <AddTaskFormForMap
         isOpen={isNewTaskFormOpen}
@@ -846,7 +1045,6 @@ function MapEditor() {
         workspaceUsers={workspaceUsers}
       />
 
-      {/* <section className="flex flex-row items-start h-[calc(100vh-var(--navbar-height,64px)-var(--footer-height,50px))] gap-8 w-[95vw] mx-auto pt-4 z-0"> */}
       <section className="flex flex-row items-center justify-start h-full gap-8 w-[90vw]">
         <SidebarTemplate activeIcon="map" />
         <section className="flex flex-row w-full justify-center h-full gap-4 max-lg:text-sm max-lg:flex-col">
@@ -904,12 +1102,6 @@ function MapEditor() {
                       key={task.id}
                       draggable={true}
                       onDragStart={(e) => handleDragStart(e, task.id, true)}
-                      onDragEnd={(e) => {
-                        e.currentTarget.classList.remove(
-                          "bg-blue-100",
-                          "border-blue-400",
-                        );
-                      }}
                       className="p-3 border border-gray-200 rounded-lg cursor-grab hover:bg-gray-100 flex items-center gap-2 transition-colors duration-150 group"
                     >
                       <Image
@@ -969,16 +1161,15 @@ function MapEditor() {
                       <strong>Category:</strong> {selectedTask.category}
                     </p>
                   )}
-                  {selectedTask.image &&
-                    typeof selectedTask.image === "string" && (
-                      <Image
-                        src={selectedTask.image}
-                        alt="Task image"
-                        width={64}
-                        height={64}
-                        className="rounded mt-2 object-cover"
-                      />
-                    )}
+                  {selectedTask.image && (
+                    <Image
+                      src={selectedTask.image}
+                      alt="Task image"
+                      width={64}
+                      height={64}
+                      className="rounded mt-2 object-cover"
+                    />
+                  )}
                   <p>
                     <strong>Position:</strong>{" "}
                     {selectedTask.position.join(", ")}
@@ -995,7 +1186,6 @@ function MapEditor() {
           <main className="flex flex-col h-full flex-grow">
             <section className="flex flex-wrap items-center w-full bg-ev-primary p-3 rounded-xl gap-3 mb-4 shadow-md">
               <Input
-                name="add_task_to_sidebar_button"
                 type="button"
                 className="text-ev-white bg-ev-green hover:bg-ev-darkgreen font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none focus:ring-2 focus:ring-ev-green-darker duration-300"
                 value="Add Task to Workspace List"
@@ -1003,7 +1193,6 @@ function MapEditor() {
                 title="Create new task and add to 'Available Tasks' sidebar"
               />
               <Input
-                name="remove_task_button"
                 type="button"
                 className="text-ev-white bg-ev-red hover:bg-ev-darkred font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none focus:ring-2 focus:ring-ev-red-darker duration-300"
                 value="Remove Selected from Map"
@@ -1011,7 +1200,6 @@ function MapEditor() {
                 title="Remove selected task from map"
               />
               <Input
-                name="connect_tasks_button"
                 type="button"
                 className={`text-ev-white ${
                   connectionMode
@@ -1036,7 +1224,7 @@ function MapEditor() {
               className="flex-grow h-full rounded-2xl overflow-hidden shadow-lg relative"
               ref={mapContainerRef}
             >
-              <div className="absolute top-2 left-0 right-0 flex justify-center z-[999] pointer-events-none">
+              <div className="absolute top-2 left-0 right-0 flex justify-center z-[1] pointer-events-none">
                 <div className="bg-ev-primary bg-opacity-80 text-ev-text px-4 py-2 rounded-lg shadow-md text-sm">
                   Drag tasks from sidebars and drop them on the map
                 </div>
@@ -1080,12 +1268,6 @@ function MapEditor() {
                     key={task.id}
                     draggable={true}
                     onDragStart={(e) => handleDragStart(e, task.id, true)}
-                    onDragEnd={(e) => {
-                      e.currentTarget.classList.remove(
-                        "bg-blue-100",
-                        "border-blue-400",
-                      );
-                    }}
                     className="p-3 border border-gray-200 rounded-lg cursor-grab hover:bg-gray-100 flex items-center gap-2 transition-colors duration-150 group"
                   >
                     <Image
@@ -1145,16 +1327,15 @@ function MapEditor() {
                     <strong>Category:</strong> {selectedTask.category}
                   </p>
                 )}
-                {selectedTask.image &&
-                  typeof selectedTask.image === "string" && (
-                    <Image
-                      src={selectedTask.image}
-                      alt="Task image"
-                      width={64}
-                      height={64}
-                      className="rounded mt-2 object-cover"
-                    />
-                  )}
+                {selectedTask.image && (
+                  <Image
+                    src={selectedTask.image}
+                    alt="Task image"
+                    width={64}
+                    height={64}
+                    className="rounded mt-2 object-cover"
+                  />
+                )}
                 <p>
                   <strong>Position:</strong> {selectedTask.position.join(", ")}
                 </p>
