@@ -1,3 +1,5 @@
+import Dashboard from "@/app/hub/page";
+
 const rustHost = "http://localhost:3501";
 const pythonHost = "http://localhost:8000";
 
@@ -46,6 +48,7 @@ const ApiLinks = {
   removeTask: (workspaceId: string, taskId: string) => {
     return rustHost + "/workspace/" + workspaceId + "/tasks/delete/" + taskId;
   },
+  dashboard: rustHost + "/workspace/dashboard",
   // removeWorker: ()
 } as const;
 

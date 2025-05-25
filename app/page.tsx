@@ -3,10 +3,13 @@ import { FooterSmall } from "@/components/templates/FooterSmall";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useLayoutEffect } from "react";
 
 export default function Page() {
   const router = useRouter();
-  router.push("/auth/login");
+  useLayoutEffect(() => {
+    router.push("/auth/login");
+  }, [router]);
 
   return (
     <div className="h-svh w-svw flex flex-col items-center justify-between">

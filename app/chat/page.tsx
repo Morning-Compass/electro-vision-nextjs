@@ -11,7 +11,7 @@ import Input from "@/components/Input";
 import ContentBlockElement from "@/components/ContentBlockElement";
 import CustomMenu from "@/components/CustomMenu";
 import Link from "next/link";
-import React, {useState} from "react";
+import React, { useState } from "react";
 
 export default function Chat() {
   const subPage = "chat/employee";
@@ -76,16 +76,16 @@ export default function Chat() {
           <ContentBlockElement
             id={2341421}
             employee="Ahmed Rashdan"
-            role="Help Desk Executive"
-            department="IT Department"
+            role="Worker"
+            department="plan.pdf"
             link={subPage}
             linkValue={linkValue}
           />
           <ContentBlockElement
             id={2341421}
             employee="Ahmed Rashdan"
-            role="Help Desk Executive"
-            department="IT Department"
+            role="Worker"
+            department="plan2.pdf"
             link={subPage}
             linkValue={linkValue}
           />
