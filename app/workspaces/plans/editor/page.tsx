@@ -846,7 +846,8 @@ function MapEditor() {
         workspaceUsers={workspaceUsers}
       />
 
-      <section className="flex flex-row items-start h-[calc(100vh-var(--navbar-height,64px)-var(--footer-height,50px))] gap-8 w-[95vw] mx-auto pt-4 z-0">
+      {/* <section className="flex flex-row items-start h-[calc(100vh-var(--navbar-height,64px)-var(--footer-height,50px))] gap-8 w-[95vw] mx-auto pt-4 z-0"> */}
+      <section className="flex flex-row items-center justify-start h-full gap-8 w-[90vw]">
         <SidebarTemplate activeIcon="map" />
         <section className="flex flex-row w-full justify-center h-full gap-4 max-lg:text-sm max-lg:flex-col">
           <section className="flex flex-row gap-8">
@@ -979,7 +980,8 @@ function MapEditor() {
                       />
                     )}
                   <p>
-                    <strong>Position:</strong> {selectedTask.position.join(", ")}
+                    <strong>Position:</strong>{" "}
+                    {selectedTask.position.join(", ")}
                   </p>
                 </section>
               ) : (
