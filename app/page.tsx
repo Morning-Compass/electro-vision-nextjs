@@ -1,16 +1,12 @@
-// page.tsx
 "use client";
-
 import { FooterSmall } from "@/components/templates/FooterSmall";
-import Link from "next/link";
 import Image from "next/image";
-// import EmblaCarousel from "@/components/carousel/EmblaCarousel";
-import PageTemplate from "@/components/templates/PageTemplate";
-// import { EmblaOptionsType } from "embla-carousel";
-import useUserContext from "@/ev-contexts/userContextProvider";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-export default function Home() {
-  const { User, UserDispatch } = useUserContext();
+export default function Page() {
+  const router = useRouter();
+  router.push("/auth/login");
 
   return (
     <div className="h-svh w-svw flex flex-col items-center justify-between">
@@ -43,6 +39,7 @@ export default function Home() {
           className="absolute z-5 w-1/2 sm:w-1/3 md:w-1/4 lg:w-1/5 max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg"
         />
       </section>
+      <section>You Will Be Redirected</section>
       <FooterSmall />
       {/* </PageTemplate> */}
     </div>
