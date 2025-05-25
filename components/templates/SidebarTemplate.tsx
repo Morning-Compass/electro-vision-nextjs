@@ -20,10 +20,10 @@ export default function SidebarTemplate({ activeIcon }: SidebarProps) {
         imageClassName={getIconClass("./category.svg")}
         link="/hub"
       />
-      <SidebarElement
+      {/* <SidebarElement
         imageSrc="/timeline.svg"
         imageClassName={getIconClass("./timeline.svg")}
-      />
+      /> */}
       <SidebarElement
         imageSrc="/chat.svg"
         imageClassName={getIconClass("./chat.svg")}
@@ -34,11 +34,11 @@ export default function SidebarTemplate({ activeIcon }: SidebarProps) {
         imageClassName={getIconClass("./map.svg")}
         link="/workspaces"
       />
-      <SidebarElement
+      {/* <SidebarElement
         imageSrc="/alert.svg"
         imageClassName={getIconClass("./alert.svg")}
         link="/employees-problems"
-      />
+      /> */}
       <SidebarElement
         imageSrc="/task.svg"
         imageClassName={getIconClass("./task.svg")}
