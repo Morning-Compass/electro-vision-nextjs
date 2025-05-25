@@ -58,7 +58,7 @@ export default function Register() {
         authUser: {
           id: response.id,
           username: response.username,
-          accountVerified: response.account_valid,
+          account_verified: response.account_valid,
           email: response.email,
           token: response.token,
           createdAt: response.created_at,

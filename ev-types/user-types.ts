@@ -23,20 +23,20 @@ export type AuthUser = {
   id: string | null;
   username: string | null;
   email: string | null;
-  createdAt: Date | null;
-  accountVerified: boolean | null;
+  created_at: Date | null;
+  account_verified: boolean | null;
   roles: string[] | null;
   token: string | null;
 };
 
 export type FullUser = {
-  authUserId: Pick<AuthUser, "id">;
+  auth_user_id: Pick<AuthUser, "id">;
   phone: string | null;
-  phoneDialCode: string | null;
+  phone_dial_code: string | null;
   title: string | null;
   education: string | null;
-  birthDate: Date | null;
-  accountBankNumber: string | null;
+  birth_date: Date | null;
+  account_bank_umber: string | null;
   profile_picture: string | null;
 };
 
@@ -45,5 +45,5 @@ export type WorkspaceUser = {
   username: string;
   email: string;
   position: string | null;
-  workspaceRole: string;
+  workspace_role: string;
 };

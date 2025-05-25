@@ -457,6 +457,9 @@ export default function WorkspaceDetails() {
     getTasks();
   }, []);
 
+  console.log("users");
+  console.log(workspaceUsers);
+
   return (
     <PageTemplate>
       <NavbarTemplate />
@@ -592,6 +595,7 @@ export default function WorkspaceDetails() {
                             setSelectedWorkersIds={setSelectedWokrersIds}
                             selectedWorkersIds={selectedWorkersIds}
                             workspaceUsers={workspaceUsers}
+                            role={workspaceUser.workspace_role}
                           />
                         ))}
                       </>
@@ -728,6 +732,7 @@ export default function WorkspaceDetails() {
                           setSelectedWorkersIds={setSelectedWokrersIds}
                           selectedWorkersIds={selectedWorkersIds}
                           workspaceUsers={workspaceUsers}
+                          role={workspaceUser.workspace_role}
                         />
                       ))}
                     </>

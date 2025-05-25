@@ -76,7 +76,7 @@ export default function WorkerDetailsPage() {
                     Position: {worker.position || "N/A"}
                   </p>
                   <p className="text-ev-darkgray dark:text-ev-secondary-text text-lg">
-                    Role: {worker.workspaceRole ?? "Not Assigned"}
+                    Role: {worker.workspace_role ?? "Not Assigned"}
                   </p>
                   <p className="text-ev-darkgray dark:text-ev-secondary-text text-lg">
                     Id: {worker.id}

@@ -13,6 +13,7 @@ type WorkerEntryProps = {
   setSelectedWorkersIds: Dispatch<SetStateAction<number[]>>;
   selectedWorkersIds: number[];
   workspaceUsers: WorkspaceUser[];
+  role: string;
 };
 
 export default function WorkerEntry({
@@ -23,6 +24,7 @@ export default function WorkerEntry({
   workspaceUsers,
   selectedWorkersIds,
   setSelectedWorkersIds,
+  role,
 }: WorkerEntryProps) {
   const { User, UserDispatch } = useUserContext();
   const [selected, setSelected] = useState(false);
@@ -87,6 +89,9 @@ export default function WorkerEntry({
         />
         <p className="text-xl text-nowrap m-2 max-sm:text-base">
           {id === (User.authUser?.id ?? -1) ? "(You) " + username : username}
+        </p>
+        <p className="text-xl text-nowrap m-2 max-sm:text-base ml-auto pr-1">
+          {role}
         </p>
       </div>
     </Link>
