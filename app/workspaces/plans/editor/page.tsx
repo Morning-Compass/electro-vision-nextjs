@@ -805,13 +805,12 @@ function MapEditor() {
         });
         const rustTasks = rustResponse;
 
-        // Match all Python tasks with Rust data
         const matchedTasks = pythonTasks
           .map((pyTask: any) => {
             const rustTask = rustTasks.find(
               (rTask: any) => rTask.id === pyTask.task_id,
             );
-            if (rustTask) {
+            if (rustTask && rustTask.task_type === "DEFAULT") {
               return {
                 id: rustTask.id.toString(),
                 label: rustTask.title,
@@ -875,9 +874,49 @@ function MapEditor() {
   const handleOpenOverlay = () => setIsOverlayOpen(true);
   const handleCloseOverlay = () => setIsOverlayOpen(false);
 
-  const handleAddTaskSuccess = useCallback((newTask: TaskNodeData) => {
-    setAvailableTasks((prev) => [...prev, newTask]);
-  }, []);
+  // ADDING THE DAMN TASK TO SIDEBAR
+  const handleAddTaskSuccess = useCallback(async () => {
+    try {
+      const workspaceId = User.workspaceData?.currentWorkspace?.id?.toString();
+      if (!workspaceId) {
+        toast.error("Workspace ID not found.");
+        return;
+      }
+      const ownerEmail = User.authUser?.email;
+      if (!ownerEmail) {
+        toast.error("User email not found.");
+        return;
+      }
+
+      // Fetch tasks from Rust API filtered by task_type 'MAP'
+      const response = await OLF.post(ApiLinks.listTasks(workspaceId), {
+        owner_email: ownerEmail,
+        task_type: "MAP", // Assuming the API accepts this filter
+      });
+
+      // Transform response to TaskNodeData format
+      const mapTasks: TaskNodeData[] = response.map((task: any) => ({
+        id: task.id.toString(),
+        label: task.title,
+        description: task.description,
+        image: task.description_multimedia
+          ? `data:image/jpeg;base64,${task.description_multimedia}`
+          : null,
+        position: [0, 0], // Default position for available tasks
+        type: "customTask",
+        importance: task.importance,
+        category: task.category,
+        assignee_email: task.assignee_email,
+      }));
+
+      // Update available tasks list
+      console.log(mapTasks);
+      setAvailableTasks(mapTasks);
+    } catch (error) {
+      console.error("Error loading MAP tasks:", error);
+      toast.error("Failed to refresh task list");
+    }
+  }, [User.authUser?.email, User.workspaceData?.currentWorkspace?.id]);
 
   const handleNewTaskFormSubmitSuccess = (
     apiResponse: TaskApiResponse,
