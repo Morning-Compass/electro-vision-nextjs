@@ -15,146 +15,193 @@ import FormErrorParahraph from "@/components/templates/FormErrorParagraph";
 import OLF from "@/ev-lib/ElectroVisionFetch";
 import toast from "react-hot-toast";
 import ContentBlock from "@/components/ContentBlock";
+import {
+  DatePickerNoTime,
+  DateTimePicker,
+} from "@/components/datepicker/Datepicker";
+import { Country, State, City } from "country-state-city";
+import Select from "react-select";
+import ApiLinks from "@/ev-const/api-links";
 
-const EditCredentialWrap = ({ children }: { children: ReactNode }) => (
-  <div className="flex flex-row items-center justify-center">{children}</div>
+import iso2toiso3 from "@/ev-const/iso2toiso3.json";
+
+type UserRegistrationForm = {
+  phone_number: string;
+  phone_dial_code: string;
+  country_of_origin: string;
+  title: string;
+  education: string | null;
+  birth_date: Date | null;
+  account_bank_number: string;
+  email: string;
+  photo: string | null;
+  citizenships_countries_iso3: string[];
+};
+
+const titles = [
+  { value: "Mr", label: "Mr" },
+  { value: "Mrs", label: "Mrs" },
+  { value: "Ms", label: "Ms" },
+  { value: "Dr", label: "Dr" },
+];
+
+const educationLevels = [
+  { value: null, label: "None" },
+  { value: "High School", label: "High School" },
+  { value: "Bachelor", label: "Bachelor's Degree" },
+  { value: "Master", label: "Master's Degree" },
+  { value: "PhD", label: "PhD" },
+];
+
+// Create reverse mapping ISO3 -> ISO2
+const iso3toiso2 = Object.entries(iso2toiso3).reduce(
+  (acc, [iso2, iso3]) => {
+    acc[iso3] = iso2;
+    return acc;
+  },
+  {} as Record<string, string>,
 );
-
-type ChangeCredentialAction =
-  | { type: "setNewUsername"; value: string | null }
-  | { type: "setNewEmail"; value: string | null }
-  | { type: "setProfilePicture"; value: string | null }
-  | { type: "setUsernameEditEnabled"; value: boolean }
-  | { type: "setEmailEditEnabled"; value: boolean }
-  | { type: "setAllEditDisabled" };
-
-type ChangeCredentialUser = {
-  username: string | null;
-  email: string | null;
-  profilePicture: string | null;
-  usernameEditEnabled: boolean;
-  emailEditEnabled: boolean;
-};
-
-const changeCredentialReducer = (
-  state: ChangeCredentialUser,
-  action: ChangeCredentialAction,
-): ChangeCredentialUser => {
-  switch (action.type) {
-    case "setNewUsername":
-      return { ...state, username: action.value };
-    case "setNewEmail":
-      return { ...state, email: action.value };
-    case "setProfilePicture":
-      return { ...state, profilePicture: action.value };
-    case "setUsernameEditEnabled":
-      return { ...state, usernameEditEnabled: action.value };
-    case "setEmailEditEnabled":
-      return { ...state, emailEditEnabled: action.value };
-    case "setAllEditDisabled":
-      return { ...state, emailEditEnabled: false, usernameEditEnabled: false };
-    default:
-      return state;
-  }
-};
-
-type ChangeCredentialUserForm = Pick<
-  ChangeCredentialUser,
-  "username" | "email"
->;
 
 const AccountPage = () => {
   const { User, UserDispatch } = useUserContext();
-  const [newCredentials, newCredentialsDispatch] = useReducer(
-    changeCredentialReducer,
-    {
-      username: User.authUser?.username,
-      email: User.authUser?.email,
-      profilePicture: User.fullUser?.profile_picture,
-      usernameEditEnabled: false,
-      emailEditEnabled: false,
-    } as ChangeCredentialUser,
+  const [countries] = useState(
+    Country.getAllCountries().map((country) => ({
+      value: country.isoCode, // ISO2 code here
+      label: country.name,
+    })),
   );
+  const [selectedCitizenships, setSelectedCitizenships] = useState<
+    { value: string; label: string }[]
+  >([]);
 
   const {
     register,
     handleSubmit,
-    formState: { errors },
-    getValues,
+    formState: { errors, isSubmitting },
+    control,
     setValue,
-  } = useForm<ChangeCredentialUserForm>({
-    mode: "onTouched",
-    reValidateMode: "onChange",
+    reset,
+  } = useForm<UserRegistrationForm>({
+    defaultValues: {
+      phone_number: "",
+      phone_dial_code: "48",
+      country_of_origin: "Poland",
+      title: "Mr",
+      education: null,
+      birth_date: null,
+      account_bank_number: "",
+      email: User.authUser?.email || "",
+      photo: User.fullUser?.profile_picture || null,
+      citizenships_countries_iso3: [],
+    },
   });
 
-  const onSubmit: SubmitHandler<ChangeCredentialUserForm> = async (data) => {
-    try {
-      await OLF.put("future change credentials", {
-        token: "future jwt token",
-        credentials: data,
+  useEffect(() => {
+    // Load user data if available
+    if (User.fullUser) {
+      reset({
+        phone_number: User.fullUser.phone || "",
+        phone_dial_code: User.fullUser.phone_dial_code || "48",
+        country_of_origin: User.fullUser.county_of_origin || "Poland",
+        title: User.fullUser.title || "Mr",
+        education: User.fullUser.education || null,
+        birth_date: User.fullUser.birth_date || null,
+        account_bank_number: User.fullUser.account_bank_number || "",
+        email: User.authUser?.email || "",
+        photo: User.fullUser.profile_picture || null,
+        citizenships_countries_iso3:
+          User.fullUser.citizenships_countries_iso3 || [],
       });
-      newCredentialsDispatch({ type: "setAllEditDisabled" });
-      toast.success("Credentials changed successfully", { duration: 3000 });
-    } catch (e) {
-      toast.error("Changing credentials went wrong", { duration: 3000 });
+
+      // Map ISO3 -> ISO2 for UI select value
+      setSelectedCitizenships(
+        (User.fullUser.citizenships_countries_iso3 || []).map((iso3) => {
+          const iso2 = iso3toiso2[iso3];
+          return {
+            value: iso2 || iso3,
+            label: Country.getCountryByCode(iso2 || "")?.name || iso3,
+          };
+        }),
+      );
+    }
+  }, [User, reset]);
+
+  const onSubmit: SubmitHandler<UserRegistrationForm> = async (data) => {
+    try {
+      // Convert selected ISO2 codes to ISO3 for payload
+      const payload = {
+        ...data,
+        citizenships_countries_iso3: selectedCitizenships.map(
+          (c) => iso2toiso3[c.value] || c.value,
+        ),
+      };
+
+      console.log("pay load");
+      console.log(payload);
+
+      const endpoint = User.fullUser
+        ? ApiLinks.updateUserProfile
+        : ApiLinks.registerUserProfile;
+
+      const method = User.fullUser ? "put" : "post";
+
+      const res = await OLF[method](endpoint, payload);
+
+      toast.success(
+        User.fullUser
+          ? "Profile updated successfully"
+          : "Profile created successfully",
+      );
+
+      // Update user context
+      UserDispatch({
+        type: "setFullUser",
+        value: {
+          phone: payload.phone_number ?? null,
+          phone_dial_code: payload.phone_dial_code ?? null,
+          title: payload.title ?? null,
+          education: payload.education ?? null,
+          birth_date: payload.birth_date ?? null,
+          account_bank_number: payload.account_bank_number ?? null,
+          profile_picture: payload.photo ?? null,
+          county_of_origin: payload.country_of_origin ?? null,
+          citizenships_countries_iso3:
+            payload.citizenships_countries_iso3 ?? [],
+        },
+      });
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to save profile",
+      );
     }
   };
 
-  const handleUserProfilePictureSet = async (
+  const handleProfilePictureChange = (
     e: React.ChangeEvent<HTMLInputElement>,
   ) => {
-    if (e.target.files && e.target.files[0]) {
+    if (e.target.files?.[0]) {
       const file = e.target.files[0];
       const reader = new FileReader();
       reader.onload = () => {
+        const base64 = reader.result as string;
+        setValue("photo", base64);
         UserDispatch({
           type: "setProfilePicture",
-          value: reader.result as string,
+          value: base64,
         });
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleUserProfilePictureDelete = async () => {
-    try {
-      UserDispatch({ type: "setProfilePicture", value: null });
-      await OLF.delete("future link to delete", {
-        token: "future JWT token",
-      });
-    } catch (e) {
-      toast.error("Deleting photo went wrong", { duration: 3000 });
-    }
+  const handleRemoveProfilePicture = () => {
+    setValue("photo", null);
+    UserDispatch({
+      type: "setProfilePicture",
+      value: null,
+    });
   };
-
-  const setUserImage = async () => {
-    try {
-      if (!User.fullUser?.profile_picture) throw new Error();
-      await OLF.post("future api link", {
-        token: "future JWT token",
-        user_image: User.fullUser?.profile_picture,
-      });
-    } catch (e) {
-      toast.error("Setting photo went wrong", { duration: 3000 });
-    }
-  };
-
-  const handleUserProfilePictureSubmit = (
-    e: React.FormEvent<HTMLFormElement>,
-  ) => {
-    e.preventDefault();
-    setUserImage();
-  };
-
-  const [prevUserImage, setPrevUserImage] = useState(
-    User.fullUser?.profile_picture,
-  );
-
-  useEffect(() => {
-    if (User.fullUser?.profile_picture !== prevUserImage) {
-      setPrevUserImage(User.fullUser?.profile_picture);
-    }
-  }, [User.fullUser?.profile_picture, prevUserImage]);
 
   return (
     <PageTemplate>
@@ -163,154 +210,206 @@ const AccountPage = () => {
         <ContentBlock>
           <article className="flex flex-col items-center justify-center mt-12 mb-12 gap-12">
             <header className="text-3xl font-bold mt-8 mb-2 mr-6 ml-6 text-center">
-              Electro Vision Settings
+              {User.fullUser ? "Update Profile" : "Complete Registration"}
             </header>
-            <figure className="mr-4 ml-4 flex items-center justify-center flex-col gap-6">
+
+            {/* Profile Picture */}
+            <figure className="flex flex-col items-center gap-4">
               <Image
-                src={User.fullUser?.profile_picture ?? "/default-user.png"}
-                alt="pfp"
-                height={300}
-                width={300}
-                loading="lazy"
-                className="rounded-full aspect-square"
+                src={User.fullUser?.profile_picture || "/default-user.png"}
+                alt="Profile"
+                width={150}
+                height={150}
+                className="rounded-full aspect-square object-cover"
               />
-              <form onSubmit={handleUserProfilePictureSubmit}>
-                <input
-                  type="file"
-                  name="file"
-                  accept=".png, .jpg, .jpeg"
-                  id="upload"
-                  hidden={true}
-                  onChange={handleUserProfilePictureSet}
-                />
-                {User.fullUser?.profile_picture !== prevUserImage ? (
-                  <Button type="submit" value="OK" customWidth="w-14" />
-                ) : null}
-              </form>
-              <div className="flex items-center justify-center gap-4">
-                <label
-                  htmlFor="upload"
-                  className="flex items-center justify-center text-center bg-ev-blue text-ev-white min-w-24 min-h-8 w-[12vw] h-[3vh] font-bold rounded-xl hover:scale-110 duration-300"
-                >
-                  Choose
+              <div className="flex gap-4">
+                <label className="cursor-pointer bg-ev-blue text-white px-4 py-2 rounded-lg hover:scale-105 transition">
+                  Change Photo
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleProfilePictureChange}
+                  />
                 </label>
-                <Button
-                  type="button"
-                  value="Delete"
-                  className="flex items-center justify-center text-center bg-ev-blue text-white min-w-24 min-h-8 w-[12vw] h-[3vh] font-bold rounded-xl hover:scale-110 duration-300"
-                  onClick={handleUserProfilePictureDelete}
-                />
+                {User.fullUser?.profile_picture && (
+                  <button
+                    type="button"
+                    onClick={handleRemoveProfilePicture}
+                    className="bg-ev-red text-white px-4 py-2 rounded-lg hover:scale-105 transition"
+                  >
+                    Remove
+                  </button>
+                )}
               </div>
             </figure>
-            <figure>
-              <form
-                className="flex flex-col items-center justify-center gap-2"
-                onSubmit={handleSubmit(onSubmit)}
-              >
-                <EditCredentialWrap>
-                  <FormErrorWrap>
-                    <input
-                      {...register("username", {
-                        minLength: {
-                          value: AuthConst.minUsernameLength,
-                          message: `Username must have at least ${AuthConst.minUsernameLength} characters`,
-                        },
-                        maxLength: {
-                          value: AuthConst.maxUsernameLength,
-                          message: `Username must have less than ${AuthConst.maxUsernameLength} characters`,
-                        },
-                        validate: (username) => {
-                          if (!newCredentials.usernameEditEnabled) return true;
-                          const regexResult = Regex.usernameModification.test(
-                            username ?? "",
-                          );
-                          if (!regexResult) {
-                            return "Username must have only numbers letters and _";
-                          }
-                          return true;
-                        },
-                      })}
-                      type="text"
-                      placeholder="New Username"
-                      disabled={!newCredentials.usernameEditEnabled}
-                      className={`border-4 bg-ev-primary-bg text-ev-text border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800 ${newCredentials.usernameEditEnabled ? "border-6 border-emerald-500" : ""}`}
-                    />
-                    <FormErrorParahraph errorObject={errors.username} />
-                  </FormErrorWrap>
-                  <div
-                    className="max-h-12 min-h-8 h-[10vh] aspect-square grid place-items-center"
-                    onClick={() => {
-                      if (newCredentials.usernameEditEnabled) {
-                        setValue("username", "");
-                      }
-                      newCredentialsDispatch({
-                        type: "setUsernameEditEnabled",
-                        value: !newCredentials.usernameEditEnabled,
-                      });
-                    }}
-                  >
-                    <Image
-                      src={"/cogwheel.png"}
-                      width={32}
-                      height={32}
-                      alt="E"
-                      className="duration-300 hover:scale-125"
-                    />
-                  </div>
-                </EditCredentialWrap>
-                <EditCredentialWrap>
-                  <FormErrorWrap>
-                    <input
-                      type="email"
-                      {...register("email", {
-                        validate: (email) => {
-                          if (!newCredentials.emailEditEnabled) return true;
-                          const emailRegexResult = Regex.emailRegistration.test(
-                            email ?? "",
-                          );
-                          if (!emailRegexResult) {
-                            return "Email must be correct";
-                          }
-                          return true;
-                        },
-                      })}
-                      placeholder="New Email"
-                      disabled={!newCredentials.emailEditEnabled}
-                      className={`border-4 bg-ev-primary-bg text-ev-text border-solid rounded-2xl max-w-[40rem] min-w-56 w-[30vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800 ${newCredentials.usernameEditEnabled ? "border-6 border-emerald-500" : ""}`}
-                    />
-                    <FormErrorParahraph errorObject={errors.email} />
-                  </FormErrorWrap>
-                  <div
-                    className="max-h-12 min-h-8 h-[10vh] aspect-square grid place-items-center"
-                    onClick={() => {
-                      if (newCredentials.emailEditEnabled) {
-                        setValue("email", "");
-                      }
-                      newCredentialsDispatch({
-                        type: "setEmailEditEnabled",
-                        value: !newCredentials.emailEditEnabled,
-                      });
-                    }}
-                  >
-                    <Image
-                      src={"/cogwheel.png"}
-                      width={32}
-                      height={32}
-                      alt="E"
-                      className="duration-300 hover:scale-125"
-                    />
-                  </div>
-                </EditCredentialWrap>
-                {(newCredentials.usernameEditEnabled ||
-                  newCredentials.emailEditEnabled) && (
-                  <Button
-                    type="submit"
-                    value="OK"
-                    additionalClassName="duration-300 hover:scale-110"
+
+            {/* Registration Form */}
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="w-full max-w-md space-y-6"
+            >
+              {/* Email (readonly if already registered) */}
+              <FormErrorWrap>
+                <label className="block text-sm font-medium">Email</label>
+                <input
+                  {...register("email", {
+                    required: "Email is required",
+                    pattern: {
+                      value: Regex.emailRegistration,
+                      message: "Invalid email format",
+                    },
+                  })}
+                  type="email"
+                  disabled={!!User.fullUser}
+                  className="w-full px-3 py-2 bg-ev-primary-bg rounded-lg"
+                />
+                <FormErrorParahraph errorObject={errors.email} />
+              </FormErrorWrap>
+
+              {/* Phone Number */}
+              <div className="flex gap-4">
+                <FormErrorWrap>
+                  <label className="block text-sm font-medium">Dial Code</label>
+                  <input
+                    {...register("phone_dial_code", {
+                      required: "Required",
+                    })}
+                    type="text"
+                    className="w-full px-3 py-2 bg-ev-primary-bg rounded-lg"
                   />
-                )}
-              </form>
-            </figure>
+                  <FormErrorParahraph errorObject={errors.phone_dial_code} />
+                </FormErrorWrap>
+                <FormErrorWrap>
+                  <label className="block text-sm font-medium">
+                    Phone Number
+                  </label>
+                  <input
+                    {...register("phone_number", {
+                      required: "Phone number is required",
+                    })}
+                    type="text"
+                    className="w-full px-3 py-2 bg-ev-primary-bg rounded-lg"
+                  />
+                  <FormErrorParahraph errorObject={errors.phone_number} />
+                </FormErrorWrap>
+              </div>
+
+              {/* Country of Origin */}
+              <FormErrorWrap>
+                <label className="block text-sm font-medium">
+                  Country of Origin
+                </label>
+                <select
+                  {...register("country_of_origin", {
+                    required: "Required",
+                  })}
+                  className="w-full px-3 py-2 bg-ev-primary-bg rounded-lg"
+                >
+                  {countries.map((country) => (
+                    <option key={country.value} value={country.label}>
+                      {country.label}
+                    </option>
+                  ))}
+                </select>
+                <FormErrorParahraph errorObject={errors.country_of_origin} />
+              </FormErrorWrap>
+
+              {/* Title */}
+              <FormErrorWrap>
+                <label className="block text-sm font-medium">Title</label>
+                <select
+                  {...register("title", {
+                    required: "Required",
+                  })}
+                  className="w-full px-3 py-2 bg-ev-primary-bg rounded-lg"
+                >
+                  {titles.map((title) => (
+                    <option key={title.value} value={title.value}>
+                      {title.label}
+                    </option>
+                  ))}
+                </select>
+                <FormErrorParahraph errorObject={errors.title} />
+              </FormErrorWrap>
+
+              {/* Education */}
+              <FormErrorWrap>
+                <label className="block text-sm font-medium">
+                  Education Level
+                </label>
+                <select
+                  {...register("education")}
+                  className="w-full px-3 py-2 bg-ev-primary-bg rounded-lg"
+                >
+                  {educationLevels.map((level) => (
+                    <option
+                      key={level.value || "null"}
+                      value={level.value || ""}
+                    >
+                      {level.label}
+                    </option>
+                  ))}
+                </select>
+              </FormErrorWrap>
+
+              {/* Birth Date */}
+              <FormErrorWrap>
+                <label className="block text-sm font-medium">Birth Date</label>
+                <div className="relative z-50">
+                  <DatePickerNoTime
+                    name="birth_date"
+                    control={control}
+                    placeholder="Select Your Birth Date"
+                    className="w-full px-3 py-2 bg-ev-primary-bg rounded-lg"
+                  />
+                </div>
+                <FormErrorParahraph errorObject={errors.birth_date} />
+              </FormErrorWrap>
+
+              {/* Bank Account */}
+              <FormErrorWrap>
+                <label className="block text-sm font-medium">
+                  Bank Account Number
+                </label>
+                <input
+                  {...register("account_bank_number", {
+                    required: "Bank account is required",
+                  })}
+                  type="text"
+                  className="w-full px-3 py-2 bg-ev-primary-bg rounded-lg"
+                />
+                <FormErrorParahraph errorObject={errors.account_bank_number} />
+              </FormErrorWrap>
+
+              {/* Citizenships */}
+              <FormErrorWrap>
+                <label className="block text-sm font-medium">
+                  Citizenships (select multiple)
+                </label>
+                <Select
+                  isMulti
+                  options={countries}
+                  value={selectedCitizenships}
+                  onChange={(selected) =>
+                    setSelectedCitizenships([...selected])
+                  }
+                  className="text-black"
+                />
+              </FormErrorWrap>
+
+              {/* Submit Button */}
+              <div className="pt-4">
+                <Button
+                  type="submit"
+                  value={
+                    User.fullUser ? "Update Profile" : "Complete Registration"
+                  }
+                  disabled={isSubmitting}
+                  className="w-full bg-ev-blue text-white py-3 rounded-lg hover:scale-105 transition disabled:opacity-50"
+                />
+              </div>
+            </form>
           </article>
         </ContentBlock>
       </section>

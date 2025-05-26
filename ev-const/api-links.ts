@@ -49,6 +49,13 @@ const ApiLinks = {
     return rustHost + "/workspace/" + workspaceId + "/tasks/delete/" + taskId;
   },
   dashboard: rustHost + "/workspace/dashboard",
+  registerUserProfile: rustHost + "/user/register",
+  updateUserProfile: rustHost + "/user/update",
+  listUserProfile: rustHost + "/user/list",
+  removeUserProfile: (id: string) => {
+    return rustHost + "/user/delete/" + id;
+  },
+
   // removeWorker: ()
 } as const;
 

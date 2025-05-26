@@ -125,15 +125,15 @@ export default function WorkspaceDetails() {
       <>
         <Overlay isOpen={isTaskOpen} onClose={() => setIsTaskOpen(false)}>
           <form
-            className="flex flex-col gap-6 w-full"
+            className="flex flex-col gap-2 sm:gap-6 w-full"
             onSubmit={handleSubmit(onSubmit)}
             noValidate
           >
-            <p className="text-4xl mb-10">Create New Task</p>
+            <p className="text-2xl sm:text-4xl mb-10">Create New Task</p>
 
             <FormErrorWrap>
               <div className="flex flex-col gap-4">
-                <p className="text-xl">Title*</p>
+                <p className="sm:text-xl">Title*</p>
                 <Input
                   type="text"
                   placeholder="Task title..."
@@ -152,7 +152,7 @@ export default function WorkspaceDetails() {
 
             <FormErrorWrap>
               <div className="flex flex-col gap-4">
-                <p className="text-xl">Description</p>
+                <p className="sm:text-xl">Description</p>
                 <Input
                   type="text"
                   placeholder="Task description..."
@@ -165,7 +165,7 @@ export default function WorkspaceDetails() {
 
             <FormErrorWrap>
               <div className="flex flex-col gap-4">
-                <p className="text-xl">Photo</p>
+                <p className="sm:text-xl">Photo</p>
 
                 <label
                   htmlFor="multimedia-file"
@@ -199,7 +199,7 @@ export default function WorkspaceDetails() {
 
             <FormErrorWrap>
               <div className="flex flex-col gap-4">
-                <p className="text-xl">Assignee Email*</p>
+                <p className="sm:text-xl">Assignee Email*</p>
                 <select
                   className="px-3 py-2 bg-ev-primary-bg text-ev-dark-gray rounded-lg w-full hover:scale-105 transition appearance-none"
                   {...register("assignee_email", {
@@ -220,7 +220,7 @@ export default function WorkspaceDetails() {
 
             <FormErrorWrap>
               <div className="flex flex-col gap-4">
-                <p className="text-xl">Importance*</p>
+                <p className="sm:text-xl">Importance*</p>
                 <select
                   className="px-3 py-2 bg-ev-primary-bg text-ev-dark-gray rounded-lg w-full hover:scale-105 transition appearance-none"
                   {...register("importance", {
@@ -241,7 +241,7 @@ export default function WorkspaceDetails() {
 
             <FormErrorWrap>
               <div className="flex flex-col gap-4">
-                <p className="text-xl">Category</p>
+                <p className="sm:text-xl">Category</p>
                 <Input
                   type="text"
                   placeholder="e.g., Lamps, Sockets"
@@ -254,7 +254,7 @@ export default function WorkspaceDetails() {
 
             <FormErrorWrap>
               <div className="flex flex-col gap-4">
-                <p className="text-xl">Due Date</p>
+                <p className="sm:text-xl">Due Date</p>
                 <DateTimePicker
                   name="due_date"
                   control={control}
@@ -308,15 +308,15 @@ export default function WorkspaceDetails() {
     return (
       <Overlay isOpen={isAddOpen} onClose={() => setIsAddOpen(false)}>
         <form
-          className="flex flex-col gap-6 w-full"
+          className="flex flex-col gap-3 sm:gap-6 w-full"
           onSubmit={handleSubmit(onSubmit)}
           noValidate
         >
-          <p className="text-4xl mb-10">Add Worker</p>
+          <p className="text-2xl sm:text-4xl mb-10">Add Worker</p>
 
           <FormErrorWrap>
             <div className="flex flex-col gap-4">
-              <p className="text-xl">Invited Email</p>
+              <p className="sm:text-xl">Invited Email</p>
               <Input
                 type="text"
                 placeholder="email..."
@@ -467,7 +467,9 @@ export default function WorkspaceDetails() {
       <AddTaskLogic />
 
       <section className="flex flex-row items-center justify-start h-full gap-8 w-[90vw]">
-        <SidebarTemplate activeIcon="map" />
+        <div className="hidden sm:flex">
+          <SidebarTemplate activeIcon="map" />
+        </div>
         <ContentBlock>
           <div className="flex flex-row items-center justify-between mb-8 ml-8 mr-8 max-[1700px]:ml-0 max-[1700px]:mr-0">
             <Link
@@ -596,6 +598,7 @@ export default function WorkspaceDetails() {
                             selectedWorkersIds={selectedWorkersIds}
                             workspaceUsers={workspaceUsers}
                             role={workspaceUser.workspace_role}
+                            // photo={workspaceUser.p}
                           />
                         ))}
                       </>

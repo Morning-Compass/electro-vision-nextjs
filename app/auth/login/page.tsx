@@ -10,7 +10,7 @@ import NavbarTemplate from "@/components/templates/NavbarTemplate";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import { FooterSmall } from "@/components/templates/FooterSmall";
-import { User, User as UserEntityType } from "@/ev-types/user-types";
+import { FullUser, User, User as UserEntityType } from "@/ev-types/user-types";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { LogOptions } from "vite";
 import FormErrorWrap from "@/components/templates/FormErrorWrap";
@@ -65,7 +65,7 @@ export default function Login() {
         password: data.password,
       });
 
-      const user: User = {
+      let user: User = {
         authUser: {
           id: response.id,
           username: response.username,
@@ -79,6 +79,14 @@ export default function Login() {
         theme: Themes.light,
         workspaceData: null,
       };
+
+      const responseFullUser = await OLF.post(ApiLinks.listUserProfile, {
+        email: user.authUser?.email,
+        id: user.authUser?.id,
+      });
+
+      const fullUser: FullUser = responseFullUser;
+      user = { ...user, fullUser: fullUser };
 
       UserDispatch({ type: "setUser", value: user });
       toast.success("Login Successfull");

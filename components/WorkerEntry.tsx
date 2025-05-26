@@ -44,14 +44,15 @@ export default function WorkerEntry({
           setSelected((p) => !p);
         }}
       >
-        <Image
+        {/* <Image
           src={photo ?? "/default-user.png"}
           alt="Employee"
           width={56}
           height={56}
           className="rounded-full m-2"
-        />
-        <p className="text-xl text-nowrap m-2 max-sm:text-base">
+        /> */}
+        <div className="h-14 m-2"></div>
+        <p className="text-xl text-nowrap m-2 max-sm:text-base ">
           {id === (User.authUser?.id ?? -1) ? "(You) " + username : username}
         </p>
       </div>
@@ -79,14 +80,15 @@ export default function WorkerEntry({
       prefetch={false}
       href={"/workspaces/plans/users/details"}
     >
-      <div className="flex justify-start items-center gap-2 flex-row w-full bg-ev-primary shadow-md  hover:scale-110 duration-300  rounded-xl p-1">
-        <Image
+      <div className="flex justify-start items-center gap-2 flex-row w-full bg-ev-primary shadow-md  hover:scale-110 duration-300  rounded-xl p-1 ">
+        {/* <Image
           src={photo ?? "/default-user.png"}
           alt="Employee"
           width={56}
           height={56}
           className="rounded-full m-2"
-        />
+        /> */}
+        <div className="h-14 m-2"></div>
         <p className="text-xl text-nowrap m-2 max-sm:text-base">
           {id === (User.authUser?.id ?? -1) ? "(You) " + username : username}
         </p>

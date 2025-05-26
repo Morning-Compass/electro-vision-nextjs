@@ -30,14 +30,15 @@ export type AuthUser = {
 };
 
 export type FullUser = {
-  auth_user_id: Pick<AuthUser, "id">;
   phone: string | null;
   phone_dial_code: string | null;
   title: string | null;
   education: string | null;
   birth_date: Date | null;
-  account_bank_umber: string | null;
+  account_bank_number: string | null;
   profile_picture: string | null;
+  county_of_origin: string | null;
+  citizenships_countries_iso3: string[] | null;
 };
 
 export type WorkspaceUser = {
@@ -46,4 +47,5 @@ export type WorkspaceUser = {
   email: string;
   position: string | null;
   workspace_role: string;
+  photo: string | null;
 };

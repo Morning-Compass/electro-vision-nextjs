@@ -80,7 +80,7 @@ export default function Dashboard() {
             {/* Workspace Stats */}
             <div className="bg-ev-primary-bg p-6 rounded-3xl shadow-sm">
               <h2 className="text-xl font-semibold mb-4">Workspaces</h2>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-3 gap-4 items-center justify-center">
                 <StatCard
                   title="Total"
                   value={data.workspaceStats.total}
@@ -93,7 +93,7 @@ export default function Dashboard() {
                   color="bg-green-500"
                 />
                 <StatCard
-                  title="Completed"
+                  title="Done"
                   value={data.workspaceStats.completed}
                   color="bg-blue-500"
                 />

@@ -355,7 +355,7 @@ export default function Page() {
                   </div>
                 </div>
                 <p className="text-ev-text dark:text-ev-secondary-text text-lg overflow-y-auto max-h-full">
-                  Assigner: {task?.assignee_email}
+                  Assigner: {task?.assigner_email}
                 </p>
                 <p className="text-ev-text dark:text-ev-secondary-text text-lg overflow-y-auto max-h-full">
                   Assignee: {task?.assignee_email}

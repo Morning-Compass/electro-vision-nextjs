@@ -13,11 +13,7 @@ export type MenuProps = {
   activeIcon?: string;
 };
 
-export function Menu({
-  isOpen,
-  onClose,
-  activeIcon = "",
-}: MenuProps) {
+export function Menu({ isOpen, onClose, activeIcon = "" }: MenuProps) {
   if (!isOpen) return null;
   const { User } = useUserContext();
 
@@ -27,7 +23,7 @@ export function Menu({
   };
 
   return (
-    <section className="fixed mt-120 mr-40 ml-4 z-10 bg-ev-primary pl-8 w-3/4 rounded-3xl text-ev-text border-solid border-4 max-[500px]:mr-28">
+    <section className="fixed mt-[30rem] mr-40 ml-4 z-10 bg-ev-primary pl-8 w-3/4 rounded-3xl text-ev-text border-solid border-4 max-[500px]:mr-28">
       <ul className="flex flex-col items-start">
         <SidebarElement
           imageSrc="/category.svg"
@@ -35,10 +31,10 @@ export function Menu({
           link="/hub"
           pageName="Dashboard"
         />
-        <SidebarElement
+        {/* <SidebarElement
           imageSrc="/timeline.svg"
           imageClassName={getIconClass("./timeline.svg")}
-        />
+        /> */}
         <SidebarElement
           imageSrc="/chat.svg"
           imageClassName={getIconClass("./chat.svg")}
@@ -51,12 +47,12 @@ export function Menu({
           link="/workspaces"
           pageName="Workspaces"
         />
-        <SidebarElement
+        {/* <SidebarElement
           imageSrc="/alert.svg"
           imageClassName={getIconClass("./alert.svg")}
           link="/employees-problems"
           pageName="Employees Problems"
-        />
+        /> */}
         <SidebarElement
           imageSrc="/task.svg"
           imageClassName={getIconClass("./task.svg")}
@@ -74,7 +70,9 @@ export function Menu({
             <div className="flex flexr-row items-center gap-4">
               <NavbarUserInfo
                 username={User.authUser.username}
-                userPropfilePicture={User.fullUser?.profile_picture ?? undefined}
+                userPropfilePicture={
+                  User.fullUser?.profile_picture ?? undefined
+                }
               />
               <div>
                 <LogoutButton />
