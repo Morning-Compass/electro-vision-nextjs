@@ -106,13 +106,11 @@ export default function WorkerDetailsPage() {
         } catch (err) {
           console.error("Error fetching full user details:", err);
 
-          setErrorFullUser(
-            "An unexpected error occurred while fetching full user details.",
-          );
+          setErrorFullUser("User has not fully registered yet.");
 
-          toast.error(
-            "An unexpected error occurred while fetching full user details.",
-          );
+          // toast.error(
+          //   "An unexpected error occurred while fetching full user details.",
+          // );
         } finally {
           setLoadingFullUser(false);
         }
@@ -199,9 +197,7 @@ export default function WorkerDetailsPage() {
                       Loading additional user details...
                     </p>
                   ) : errorFullUser ? (
-                    <p className="text-red-500 text-lg">
-                      Error: {errorFullUser}
-                    </p>
+                    <p className="text-ev-text text-lg">{errorFullUser}</p>
                   ) : fullUserDetails ? (
                     <>
                       <p className="text-ev-darkgray dark:text-ev-secondary-text text-lg">

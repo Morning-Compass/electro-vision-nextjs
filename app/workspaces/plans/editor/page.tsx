@@ -815,7 +815,7 @@ function MapEditor() {
         setTasks(matchedTasks);
       } catch (error) {
         console.error("Error fetching tasks:", error);
-        toast.error("Failed to load tasks.");
+        // toast.error("Failed to load tasks.");
       }
     };
 

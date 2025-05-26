@@ -114,10 +114,11 @@ export default function WorkspaceDetails() {
         reset();
         getTasks(); // Refresh the tasks list
       } catch (error) {
-        console.error("Error creating task:", error);
-        toast.error(
-          error instanceof Error ? error.message : "Failed to create task",
-        );
+        // console.error("Error creating task:", error);
+        // toast.error(
+        //   error instanceof Error ? error.message : "Failed to create task",
+        // );
+        toast.error("File too large");
       }
     };
 
