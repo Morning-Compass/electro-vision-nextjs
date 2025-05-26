@@ -80,13 +80,13 @@ export default function Login() {
         workspaceData: null,
       };
 
-      const responseFullUser = await OLF.post(ApiLinks.listUserProfile, {
-        email: user.authUser?.email,
-        id: user.authUser?.id,
-      });
+      // const responseFullUser = await OLF.post(ApiLinks.listUserProfile, {
+      //   email: user.authUser?.email,
+      //   id: user.authUser?.id,
+      // });
 
-      const fullUser: FullUser = responseFullUser;
-      user = { ...user, fullUser: fullUser };
+      // const fullUser: FullUser = responseFullUser;
+      // user = { ...user, fullUser: fullUser };
 
       UserDispatch({ type: "setUser", value: user });
       toast.success("Login Successfull");
