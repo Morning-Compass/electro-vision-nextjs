@@ -489,12 +489,30 @@ const AddTaskOverlay: React.FC<AddTaskOverlayProps> = ({
         status: "TODO",
         due_date: data.due_date || null,
         description_multimedia: data.multimedia || null,
+        task_type: "MAP",
       };
 
       const res = await OLF.post(
         ApiLinks.createTasks(currentWorkspaceId),
         taskPayload,
       );
+
+      try {
+        await OLF.post(ApiLinks.addPythonTask, {
+          task_id: res.id.toString(),
+          workspace_id: currentWorkspaceId,
+          offset_x: 0,
+          offset_y: 0,
+        });
+      } catch (error) {
+        await OLF.delete(
+          ApiLinks.removeTask(currentWorkspaceId.toString(), res.id.toString()),
+        );
+        console.error("Error adding Python task:", error);
+        toast.error(
+          error instanceof Error ? error.message : "Failed to add Python task",
+        );
+      }
 
       const newTask: TaskNodeData = {
         id: res.id.toString(),
