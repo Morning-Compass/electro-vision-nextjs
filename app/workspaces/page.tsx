@@ -33,6 +33,10 @@ export default function Workspaces() {
   const [isCreatingWorkspace, setIsCreatingWorkspace] = useState(false);
   const [isCustomMenuOpen, setIsCustomMenuOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedWorkspaceIds, setSelectedWorkspaceIds] = useState<number[]>(
+    [],
+  );
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
   const loadingMessages = [
     "Preparing your space...",
@@ -350,14 +354,20 @@ export default function Workspaces() {
                   value="Add"
                   onClick={() => setIsOverlayOpen(true)}
                 />
+                {/* Desktop Remove Button */}
                 <Input
                   name="remove"
                   type="button"
                   className="text-white bg-ev-red rounded-lg px-4 py-2 hover:scale-105 active:scale-95 duration-200 whitespace-nowrap w-[6vw] min-w-[5.5rem]"
                   value="Remove"
-                  onClick={() =>
-                    toast.error("Delete functionality not implemented.")
-                  }
+                  onClick={() => {
+                    if (selectedWorkspaceIds.length === 0) {
+                      toast.error("No workspaces selected");
+                      return;
+                    }
+                    setIsDeleteConfirmOpen(true);
+                  }}
+                  disabled={selectedWorkspaceIds.length === 0}
                 />
               </div>
               <button
@@ -421,6 +431,14 @@ export default function Workspaces() {
                     key={workspace.id}
                     workspace={workspace}
                     setLoading={setIsLoading}
+                    isSelected={selectedWorkspaceIds.includes(workspace.id)}
+                    onToggleSelect={(workspaceId, isChecked) => {
+                      setSelectedWorkspaceIds((prev) =>
+                        isChecked
+                          ? [...prev, workspaceId]
+                          : prev.filter((id) => id !== workspaceId),
+                      );
+                    }}
                   />
                 ))}
               </div>
@@ -430,6 +448,49 @@ export default function Workspaces() {
       </section>
 
       <FooterSmall />
+      {/* Delete Confirmation Overlay */}
+      <Overlay
+        isOpen={isDeleteConfirmOpen}
+        onClose={() => setIsDeleteConfirmOpen(false)}
+      >
+        <div className="flex flex-col gap-6 items-center w-full">
+          <p className="text-2xl sm:text-3xl mb-4">Confirm Deletion</p>
+          <p className="text-lg text-center">
+            Are you sure you want to delete {selectedWorkspaceIds.length}{" "}
+            selected workspace{selectedWorkspaceIds.length > 1 ? "s" : ""}?
+          </p>
+          <div className="flex gap-4 w-full">
+            <Input
+              type="button"
+              value="Cancel"
+              onClick={() => setIsDeleteConfirmOpen(false)}
+              className="px-4 py-2 bg-ev-gray text-white rounded-lg hover:scale-105 duration-300 w-full"
+            />
+            <Input
+              type="button"
+              value="Confirm Delete"
+              onClick={async () => {
+                try {
+                  await Promise.all(
+                    selectedWorkspaceIds.map(async (id) => {
+                      await OLF.delete(ApiLinks.removeWorkspace(id.toString()));
+                    }),
+                  );
+
+                  toast.success("Workspaces deleted successfully");
+                  setSelectedWorkspaceIds([]);
+                  fetchData();
+                  setIsDeleteConfirmOpen(false);
+                } catch (error) {
+                  console.error("Delete failed:", error);
+                  toast.error("Failed to delete workspaces");
+                }
+              }}
+              className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-105 duration-300 w-full"
+            />
+          </div>
+        </div>
+      </Overlay>
     </PageTemplate>
   );
 }

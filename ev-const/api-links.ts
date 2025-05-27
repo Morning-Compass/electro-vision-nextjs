@@ -55,6 +55,9 @@ const ApiLinks = {
   removeUserProfile: (id: string) => {
     return rustHost + "/user/delete/" + id;
   },
+  removeWorkspace: (id: string) => {
+    return rustHost + "/workspace/" + id;
+  },
 
   // removeWorker: ()
 } as const;
