@@ -24,5 +24,6 @@ export type Task = {
   due_date: Date | null;
   status: "HELP_NEEDED" | "TODO" | "IN_PROGRESS" | "COMPLETED" | "CANCELED";
   importance: "LOW" | "MEDIUM" | "HIGH";
+  task_type: "DEFAULT" | "MAP";
   //future multimedium
 };

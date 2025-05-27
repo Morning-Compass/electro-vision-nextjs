@@ -428,8 +428,10 @@ export default function WorkspaceDetails() {
 
       const resj = await res.json();
       const tasks: Task[] = resj["response"];
-      setTasks(tasks);
-      console.log("tasks:", tasks);
+      const nonMappedTasks = tasks.filter(
+        (task) => task.task_type === "DEFAULT",
+      );
+      setTasks(nonMappedTasks);
     } catch (error) {
       console.error("Failed to fetch tasks:", error);
     }

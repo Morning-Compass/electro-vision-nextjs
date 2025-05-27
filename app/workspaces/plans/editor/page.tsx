@@ -258,7 +258,7 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
               id="taskTitleMap"
               type="text"
               placeholder="Task title..."
-              className="w-full p-3 bg-ev-gray text-ev-dark-gray rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
+              className="w-full p-3 bg-ev-main-bg text-ev-dark-gray rounded-lg focus:ring-2 focus:ring-ev-blue focus:border-transparent outline-none"
               error={errors.title?.message}
               register={register("title", {
                 required: "Title is required",
@@ -280,7 +280,7 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
               id="taskDescriptionMap"
               type="text"
               placeholder="Task description..."
-              className="w-full p-3 bg-ev-gray text-ev-dark-gray rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
+              className="w-full p-3 bg-ev-main-bg text-ev-dark-gray rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
               error={errors.description?.message}
               register={register("description")}
             />
@@ -294,7 +294,7 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
             </label>
             <label
               htmlFor="multimedia-file"
-              className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg cursor-pointer w-full hover:scale-105 transition text-left"
+              className="px-3 py-2 bg-ev-main-bg text-ev-dark-gray rounded-lg cursor-pointer w-full hover:scale-105 transition text-left"
             >
               Upload Photo
             </label>
@@ -326,7 +326,7 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
             </label>
             <select
               id="taskAssigneeMap"
-              className="w-full p-3 bg-ev-gray text-ev-dark-gray rounded-lg hover:scale-105 transition appearance-none focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
+              className="w-full p-3 bg-ev-main-bg text-ev-dark-gray rounded-lg hover:scale-105 transition appearance-none focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
               {...register("assignee_email", {
                 required: "Assignee is required",
               })}
@@ -358,7 +358,7 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
             </label>
             <select
               id="taskImportanceMap"
-              className="w-full p-3 bg-ev-gray text-ev-dark-gray rounded-lg hover:scale-105 transition appearance-none focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
+              className="w-full p-3 bg-ev-main-bg text-ev-dark-gray rounded-lg hover:scale-105 transition appearance-none focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
               {...register("importance", {
                 required: "Importance is required",
               })}
@@ -385,7 +385,7 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
               id="taskCategoryMap"
               type="text"
               placeholder="e.g., Lamps, Sockets"
-              className="w-full p-3 bg-ev-gray text-ev-dark-gray rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
+              className="w-full p-3 bg-ev-main-bg text-ev-dark-gray rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
               error={errors.category?.message}
               register={register("category")}
             />
@@ -400,7 +400,7 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
             <DateTimePicker
               name="due_date"
               control={control as Control<TaskFormProps>}
-              className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg w-full"
+              className="px-3 py-2 bg-ev-main-bg text-ev-dark-gray rounded-lg w-full"
             />
             {errors.due_date && (
               <p className="text-ev-red text-sm mt-1">
@@ -564,7 +564,7 @@ const AddTaskOverlay: React.FC<AddTaskOverlayProps> = ({
               id="taskTitle"
               type="text"
               placeholder="Task title..."
-              className="w-full p-3 bg-ev-gray text-ev-dark-gray rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
+              className="w-full p-3 bg-ev-main-bg text-ev-dark-gray rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
               error={errors.title?.message}
               register={register("title", {
                 required: "Title is required",
@@ -586,7 +586,7 @@ const AddTaskOverlay: React.FC<AddTaskOverlayProps> = ({
               id="taskDescription"
               type="text"
               placeholder="Task description..."
-              className="w-full p-3 bg-ev-gray text-ev-dark-gray rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
+              className="w-full p-3 bg-ev-main-bg text-ev-dark-gray rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
               error={errors.description?.message}
               register={register("description")}
             />
@@ -600,7 +600,7 @@ const AddTaskOverlay: React.FC<AddTaskOverlayProps> = ({
             </label>
             <label
               htmlFor="multimedia-file-overlay"
-              className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg cursor-pointer w-full hover:scale-105 transition text-left"
+              className="px-3 py-2 bg-ev-main-bg text-ev-dark-gray rounded-lg cursor-pointer w-full hover:scale-105 transition text-left"
             >
               Upload Photo
             </label>
@@ -632,7 +632,7 @@ const AddTaskOverlay: React.FC<AddTaskOverlayProps> = ({
             </label>
             <select
               id="taskAssignee"
-              className="w-full p-3 bg-ev-gray text-ev-dark-gray rounded-lg hover:scale-105 transition appearance-none focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
+              className="w-full p-3 bg-ev-main-bg text-ev-dark-gray rounded-lg hover:scale-105 transition appearance-none focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
               {...register("assignee_email", {
                 required: "Assignee is required",
               })}
@@ -664,7 +664,7 @@ const AddTaskOverlay: React.FC<AddTaskOverlayProps> = ({
             </label>
             <select
               id="taskImportance"
-              className="w-full p-3 bg-ev-gray text-ev-dark-gray rounded-lg hover:scale-105 transition appearance-none focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
+              className="w-full p-3 bg-ev-main-bg text-ev-dark-gray rounded-lg hover:scale-105 transition appearance-none focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
               {...register("importance", {
                 required: "Importance is required",
               })}
@@ -691,7 +691,7 @@ const AddTaskOverlay: React.FC<AddTaskOverlayProps> = ({
               id="taskCategory"
               type="text"
               placeholder="e.g., Lamps, Sockets"
-              className="w-full p-3 bg-ev-gray text-ev-dark-gray rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
+              className="w-full p-3 bg-ev-main-bg text-ev-dark-gray rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
               error={errors.category?.message}
               register={register("category")}
             />
@@ -706,7 +706,7 @@ const AddTaskOverlay: React.FC<AddTaskOverlayProps> = ({
             <DateTimePicker
               name="due_date"
               control={control as Control<TaskFormProps>}
-              className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg w-full"
+              className="px-3 py-2 bg-ev-main-bg text-ev-dark-gray rounded-lg w-full"
             />
             {errors.due_date && (
               <p className="text-ev-red text-sm mt-1">
