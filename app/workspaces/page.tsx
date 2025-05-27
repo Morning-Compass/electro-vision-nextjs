@@ -92,7 +92,7 @@ export default function Workspaces() {
       );
 
       const imageMetadataResponse: PythonReponse = await OLF.get(
-        `${ApiLinks.retrieveFiles}/${userId}`,
+        `${ApiLinks.retrieveFiles}/${fetchedWorkspaces[0].owner_id}`, // in future list for id in workspaces since owners might differ for now its only one
       );
 
       setCoverImagesData(imageMetadataResponse);

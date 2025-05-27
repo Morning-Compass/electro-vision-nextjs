@@ -9,6 +9,7 @@ export type Workspace = {
   ev_subscription: string;
   name: string;
   role: string;
+  owner_id: number;
   coverPhoto: string | File | null;
 };
 

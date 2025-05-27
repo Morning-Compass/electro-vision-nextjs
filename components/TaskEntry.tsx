@@ -8,7 +8,7 @@ import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 type TaskEntryProps = {
   task: Task;
-  workspaceUsers: WorkspaceUser[];
+  workspaceUsers: WorkspaceUser[] | null;
   selectable: boolean;
   setSelectedTasksIds: Dispatch<SetStateAction<number[]>>;
   selectedTasksIds: number[];
