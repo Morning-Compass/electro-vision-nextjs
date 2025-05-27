@@ -155,6 +155,8 @@ export default function LeafletMap({
     return null;
   }
 
+  console.log(tasks);
+
   return (
     <MapContainer
       className="h-full w-full z-0"
@@ -193,8 +195,12 @@ export default function LeafletMap({
           position={task.position}
           draggable={true}
           icon={
-            task.type === "defaultTask"
-              ? defaultTaskIcon || new L.Icon.Default()
+            task.image
+              ? new L.Icon({
+                  iconUrl: task.image,
+                  iconSize: [40, 40],
+                  iconAnchor: [12, 41],
+                })
               : customTaskIcon || new L.Icon.Default()
           }
           eventHandlers={{
