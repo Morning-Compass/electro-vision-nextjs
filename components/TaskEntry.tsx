@@ -8,7 +8,7 @@ import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 type TaskEntryProps = {
   task: Task;
-  workspaceUsers: WorkspaceUser[] | null;
+  workspaceUsers: WorkspaceUser[];
   selectable: boolean;
   setSelectedTasksIds: Dispatch<SetStateAction<number[]>>;
   selectedTasksIds: number[];
@@ -71,7 +71,17 @@ export default function TaskEntry({
 
   return selectable ? (
     <div>
-      <div className="flex justify-start items-center gap-2 flex-row w-full bg-ev-primary shadow-md hover:scale-105 duration-300 rounded-xl p-1">
+      <div
+        className={`flex justify-start items-center gap-2 flex-row w-full bg-ev-primary ${selected ? "border-ev-red border-2 " : "border-ev-green border-2 "} shadow-md hover:scale-105 duration-300 rounded-xl p-1 `}
+        onClick={() => {
+          setSelectedTasksIds((prev) =>
+            prev.includes(task.id)
+              ? prev.filter((id) => id !== task.id)
+              : [...prev, task.id],
+          );
+          setSelected((p) => !p);
+        }}
+      >
         <Image
           src={imageSrc}
           alt="Task"
@@ -81,17 +91,19 @@ export default function TaskEntry({
           className={` ${isbase64 ? "rounded-full" : ""} m-2 aspect-square bg-ev-primary`}
         />
         <p className="text-xl text-nowrap m-2">{title}</p>
-        <p
-          className={`text-xl text-nowrap ml-auto p-4 ${
-            importance === "LOW"
-              ? "text-green-400"
-              : importance === "MEDIUM"
-                ? "text-yellow-500"
-                : "text-red-600"
-          }`}
-        >
-          {importance}
-        </p>
+        <div className="w-1/4 flex items-center ml-auto">
+          <p
+            className={`text-xl text-nowrap ${
+              importance === "LOW"
+                ? "text-green-400"
+                : importance === "MEDIUM"
+                  ? "text-yellow-500"
+                  : "text-red-600"
+            }`}
+          >
+            {importance}
+          </p>
+        </div>
       </div>
     </div>
   ) : (
@@ -128,17 +140,19 @@ export default function TaskEntry({
             className={` ${isbase64 ? "rounded-full" : ""} m-2 aspect-square bg-ev-primary`}
           />
           <p className="text-xl text-nowrap m-2">{title}</p>
-          <p
-            className={`text-xl text-nowrap ml-auto p-4 ${
-              importance === "LOW"
-                ? "text-green-400"
-                : importance === "MEDIUM"
-                  ? "text-yellow-500"
-                  : "text-red-600"
-            }`}
-          >
-            {importance}
-          </p>
+          <div className="w-1/4 flex items-center ml-auto">
+            <p
+              className={`text-xl text-nowrap ${
+                importance === "LOW"
+                  ? "text-green-400"
+                  : importance === "MEDIUM"
+                    ? "text-yellow-500"
+                    : "text-red-600"
+              }`}
+            >
+              {importance}
+            </p>
+          </div>
         </div>
       </Link>
     </div>

@@ -58,6 +58,12 @@ export default function WorkspaceDetails() {
   console.log("Selected workers ids:");
   console.log(selectedWorkersIds);
 
+  console.log("tasks removal:");
+  console.log(taskRemoval);
+
+  console.log("workers removal:");
+  console.log(workerRemoval);
+
   type TaskFormProps = {
     title: string;
     description: string;
