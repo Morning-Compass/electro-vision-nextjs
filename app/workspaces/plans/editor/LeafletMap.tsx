@@ -201,7 +201,7 @@ export default function LeafletMap({
                   iconSize: [40, 40],
                   iconAnchor: [12, 41],
                 })
-              : customTaskIcon || new L.Icon.Default()
+              : defaultTaskIcon
           }
           eventHandlers={{
             click: () => onTaskSelect(task.id),

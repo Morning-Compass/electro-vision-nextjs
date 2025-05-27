@@ -1165,7 +1165,7 @@ function MapEditor() {
     <PageTemplate>
       <NavbarTemplate />
       <Link
-        href="/workspaces/"
+        href="/workspaces/plans"
         className="text-ev-accent-text hover:text-ev-accent-text/80 text-lg font-medium flex items-center transition-colors duration-200"
       >
         ← Back
