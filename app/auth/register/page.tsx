@@ -22,6 +22,7 @@ import Themes from "@/ev-const/themes";
 import useUserContext from "@/ev-contexts/userContextProvider";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import LoadingModal from "@/components/LoadingModal";
 
 export default function Register() {
   type formProps = {
@@ -45,8 +46,10 @@ export default function Register() {
   //const [response, setResponse] = useState<any>();
   const { User, UserDispatch } = useUserContext();
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
   const onSubmit: SubmitHandler<formProps> = async (data) => {
+    setIsLoading(true);
     try {
       const response = await OLF.post(ApiLinks.register, {
         username: data.username,
@@ -61,7 +64,7 @@ export default function Register() {
           account_verified: response.account_valid,
           email: response.email,
           token: response.token,
-          createdAt: response.created_at,
+          created_at: response.created_at,
           roles: response.roles,
         },
         fullUser: null,
@@ -79,11 +82,14 @@ export default function Register() {
         error instanceof Error ? error.message : "Registration failed",
         { duration: 5000 },
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <PageTemplate allowUnauthenticated={true}>
+      {isLoading && <LoadingModal />}
       <NavbarTemplate />
       <section className="flex flex-row justify-around text-ev-text bg-ev-primary-bg w-[58vw] min-w-72 opacity-95 rounded-[1.5rem] mt-auto mb-auto ev-blur transition-colors duration-500 p-6 max-h-[90vh]">
         <Image

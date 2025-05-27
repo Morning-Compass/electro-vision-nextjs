@@ -336,7 +336,9 @@ export default function Workspaces() {
         <SidebarTemplate activeIcon="map" />
         <ContentBlock>
           <section className="flex flex-row items-center justify-between gap-4 max-sm:gap-1">
-            <h2 className="text-3xl font-semibold max-lg:text-2xl max-md:text-3xl max-sm:text-base w-auto">Workspaces</h2>
+            <h2 className="text-3xl font-semibold max-lg:text-2xl max-md:text-3xl max-sm:text-base w-auto">
+              Workspaces
+            </h2>
             <section className="flex items-center gap-2 sm:gap-4">
               <SearchButton />
               <div className="flex flex-row justify-end gap-8 w-1/2 max-[1650px]:w-[60%] max-[1350px]:gap-2 max-[1350px]:w-[55%] max-xl:justify-start max-md:hidden">

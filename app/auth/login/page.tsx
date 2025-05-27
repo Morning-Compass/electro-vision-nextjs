@@ -22,6 +22,7 @@ import Themes from "@/ev-const/themes";
 import useUserContext from "@/ev-contexts/userContextProvider";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import LoadingModal from "@/components/LoadingModal";
 
 export default function Login() {
   type FormProps = {
@@ -47,9 +48,12 @@ export default function Login() {
   const [loginOption, setLoginOption] = useState<"email" | "username">("email");
 
   const { User, UserDispatch } = useUserContext();
+  const [isLoading, setIsLoading] = useState(false);
+
   const router = useRouter();
 
   const onSubmit: SubmitHandler<FormProps> = async (data) => {
+    setIsLoading(true);
     const loginLink =
       loginOption === loginOptions.email
         ? ApiLinks.loginEmail
@@ -93,16 +97,19 @@ export default function Login() {
       router.push("/hub");
       router.refresh();
     } catch (error) {
-      console.error("Registration error:", error);
+      console.error("Login error:", error);
       toast.error(
-        error instanceof Error ? `${error.message}` : "Registration failed",
+        error instanceof Error ? `${error.message}` : "Login failed",
         { duration: 5000 },
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <PageTemplate allowUnauthenticated={true}>
+      {isLoading && <LoadingModal />}
       <NavbarTemplate />
       <section className="flex flex-row justify-around text-ev-text bg-ev-primary-bg w-[55vw] min-w-72 opacity-95 rounded-[1.5rem] mt-auto mb-auto ev-blur transition-colors duration-500 p-6 max-h-[75vh]">
         <Image
