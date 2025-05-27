@@ -775,7 +775,7 @@ function MapEditor() {
       setWorkspaceUsers(workers);
     } catch (error) {
       console.error("Failed to fetch workspace users:", error);
-      toast.error("Failed to load workspace users.");
+      // toast.error("Failed to load workspace users.");
     }
   };
 
@@ -1197,80 +1197,84 @@ function MapEditor() {
         <SidebarTemplate activeIcon="map" />
         <section className="flex flex-row w-full justify-center h-full gap-4 max-lg:text-sm max-lg:flex-col">
           <section className="flex flex-row gap-8">
-            <aside className="flex flex-col gap-4 h-full bg-ev-primary p-4 rounded-xl shadow-lg max-h-[calc(100vh-var(--navbar-height,64px)-var(--footer-height,50px)-3rem)] overflow-y-auto w-60 sticky top-4">
-              <h3 className="text-xl font-semibold mb-2 text-ev-text">
-                Task Types
-              </h3>
-              <p className="text-sm text-ev-text italic mb-2">
-                Drag task types to the map to create & place them
-              </p>
-              <section
-                draggable={true}
-                onDragStart={(e) => handleDragStart(e, "defaultTask")}
-                className="p-3 border border-gray-200 rounded-lg cursor-grab hover:bg-gray-100 flex items-center gap-2 transition-colors duration-150 group"
-                title="Drag to place a new 'Default Task' on map"
-              >
-                <Image
-                  src="/outlet.png"
-                  alt="Default Task Type"
-                  width={24}
-                  height={24}
-                />
-                <span className="text-ev-text flex-grow">Default Task</span>
-              </section>
-              <section
-                draggable={true}
-                onDragStart={(e) => handleDragStart(e, "customTask")}
-                className="p-3 border border-gray-200 rounded-lg cursor-grab hover:bg-gray-100 flex items-center gap-2 transition-colors duration-150 group"
-                title="Drag to place a new 'Custom Task' on map"
-              >
-                <Image
-                  src="/problem.png"
-                  alt="Custom Task Type"
-                  width={24}
-                  height={24}
-                />
-                <span className="text-ev-text flex-grow">Custom Task</span>
-              </section>
-            </aside>
+            {User.workspaceData?.currentWorkspace?.role === "CREATOR" ? (
+              <aside className="flex flex-col gap-4 h-full bg-ev-primary p-4 rounded-xl shadow-lg max-h-[calc(100vh-var(--navbar-height,64px)-var(--footer-height,50px)-3rem)] overflow-y-auto w-60 sticky top-4">
+                <h3 className="text-xl font-semibold mb-2 text-ev-text">
+                  Task Types
+                </h3>
+                <p className="text-sm text-ev-text italic mb-2">
+                  Drag task types to the map to create & place them
+                </p>
+                <section
+                  draggable={true}
+                  onDragStart={(e) => handleDragStart(e, "defaultTask")}
+                  className="p-3 border border-gray-200 rounded-lg cursor-grab hover:bg-gray-100 flex items-center gap-2 transition-colors duration-150 group"
+                  title="Drag to place a new 'Default Task' on map"
+                >
+                  <Image
+                    src="/outlet.png"
+                    alt="Default Task Type"
+                    width={24}
+                    height={24}
+                  />
+                  <span className="text-ev-text flex-grow">Default Task</span>
+                </section>
+                <section
+                  draggable={true}
+                  onDragStart={(e) => handleDragStart(e, "customTask")}
+                  className="p-3 border border-gray-200 rounded-lg cursor-grab hover:bg-gray-100 flex items-center gap-2 transition-colors duration-150 group"
+                  title="Drag to place a new 'Custom Task' on map"
+                >
+                  <Image
+                    src="/problem.png"
+                    alt="Custom Task Type"
+                    width={24}
+                    height={24}
+                  />
+                  <span className="text-ev-text flex-grow">Custom Task</span>
+                </section>
+              </aside>
+            ) : null}
           </section>
 
           <main className="flex flex-col h-full flex-grow">
-            <section className="flex flex-wrap items-center w-full bg-ev-primary p-3 rounded-xl gap-3 mb-4 shadow-md">
-              <Input
-                type="button"
-                className="text-ev-white bg-ev-green hover:bg-ev-darkgreen font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none focus:ring-2 focus:ring-ev-green-darker duration-300"
-                value="Add Task to Workspace List"
-                onClick={handleOpenOverlay}
-                title="Create new task and add to 'Available Tasks' sidebar"
-              />
-              <Input
-                type="button"
-                className="text-ev-white bg-ev-red hover:bg-ev-darkred font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none focus:ring-2 focus:ring-ev-red-darker duration-300"
-                value="Remove Selected from Map"
-                onClick={handleRemoveSelected}
-                title="Remove selected task from map"
-              />
-              <Input
-                type="button"
-                className={`text-ev-white ${
-                  connectionMode
-                    ? "bg-ev-orange"
-                    : "bg-ev-blue hover:bg-ev-darkblue"
-                } font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none focus:ring-2 focus:ring-mc-blue-darker duration-300`}
-                value={connectionMode ? "Cancel Connection" : "Connect Tasks"}
-                onClick={() => {
-                  setConnectionMode(!connectionMode);
-                  setConnectionSource(null);
-                }}
-                title={
-                  connectionMode
-                    ? "Cancel creating connection"
-                    : "Create connection between two tasks on map"
-                }
-              />
-              <SearchButton />
-            </section>
+            {User.workspaceData?.currentWorkspace?.role === "CREATOR" ? (
+              <section className="flex flex-wrap items-center w-full bg-ev-primary p-3 rounded-xl gap-3 mb-4 shadow-md">
+                <Input
+                  type="button"
+                  className="text-ev-white bg-ev-green hover:bg-ev-darkgreen font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none focus:ring-2 focus:ring-ev-green-darker duration-300"
+                  value="Add Task to Workspace List"
+                  onClick={handleOpenOverlay}
+                  title="Create new task and add to 'Available Tasks' sidebar"
+                />
+                <Input
+                  type="button"
+                  className="text-ev-white bg-ev-red hover:bg-ev-darkred font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none focus:ring-2 focus:ring-ev-red-darker duration-300"
+                  value="Remove Selected from Map"
+                  onClick={handleRemoveSelected}
+                  title="Remove selected task from map"
+                />
+                <Input
+                  type="button"
+                  className={`text-ev-white ${
+                    connectionMode
+                      ? "bg-ev-orange"
+                      : "bg-ev-blue hover:bg-ev-darkblue"
+                  } font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none focus:ring-2 focus:ring-mc-blue-darker duration-300`}
+                  value={connectionMode ? "Cancel Connection" : "Connect Tasks"}
+                  onClick={() => {
+                    setConnectionMode(!connectionMode);
+                    setConnectionSource(null);
+                  }}
+                  title={
+                    connectionMode
+                      ? "Cancel creating connection"
+                      : "Create connection between two tasks on map"
+                  }
+                />
+                <SearchButton />
+              </section>
+            ) : null}
 
             <section
               className="flex-grow h-full rounded-2xl overflow-hidden shadow-lg relative"
@@ -1304,100 +1308,103 @@ function MapEditor() {
             </section>
           </main>
 
-          <aside className="flex flex-col gap-4 h-full bg-ev-primary p-4 rounded-xl shadow-lg max-h-[calc(100vh-var(--navbar-height,64px)-var(--footer-height,50px)-3rem)] overflow-y-auto w-72 sticky top-4 max-lg:hidden">
-            <section>
+          {User.workspaceData?.currentWorkspace?.role === "CREATOR" ? (
+            <aside className="flex flex-col gap-4 h-full bg-ev-primary p-4 rounded-xl shadow-lg max-h-[calc(100vh-var(--navbar-height,64px)-var(--footer-height,50px)-3rem)] overflow-y-auto w-72 sticky top-4 max-lg:hidden">
+              <section>
+                <h3 className="text-xl font-semibold mb-2 text-ev-text">
+                  Available Tasks
+                </h3>
+                {availableTasks.length > 0 && (
+                  <p className="text-sm text-ev-text italic mb-2">
+                    Drag tasks from here to the map to place them
+                  </p>
+                )}
+                <div className="space-y-2 mb-4">
+                  {availableTasks.map((task) => (
+                    <div
+                      key={task.id}
+                      draggable={true}
+                      onDragStart={(e) => handleDragStart(e, task.id, true)}
+                      className="p-3 border border-gray-200 rounded-lg cursor-grab hover:bg-gray-100 flex items-center gap-2 transition-colors duration-150 group"
+                    >
+                      <Image
+                        src={
+                          task.image ||
+                          (task.type === "defaultTask"
+                            ? "/outlet.png"
+                            : "/problem.png")
+                        }
+                        alt={task.label}
+                        width={24}
+                        height={24}
+                        className="rounded object-cover"
+                      />
+                      <span className="text-ev-text truncate flex-grow">
+                        {task.label}
+                      </span>
+                    </div>
+                  ))}
+                  {availableTasks.length === 0 && (
+                    <p className="text-sm text-ev-text italic p-2">
+                      No tasks in the workspace list. Add some using the button
+                      above.
+                    </p>
+                  )}
+                </div>
+              </section>
+              <hr className="border-gray-200 my-2" />
               <h3 className="text-xl font-semibold mb-2 text-ev-text">
-                Available Tasks
+                Task Details
               </h3>
-              {availableTasks.length > 0 && (
-                <p className="text-sm text-ev-text italic mb-2">
-                  Drag tasks from here to the map to place them
-                </p>
-              )}
-              <div className="space-y-2 mb-4">
-                {availableTasks.map((task) => (
-                  <div
-                    key={task.id}
-                    draggable={true}
-                    onDragStart={(e) => handleDragStart(e, task.id, true)}
-                    className="p-3 border border-gray-200 rounded-lg cursor-grab hover:bg-gray-100 flex items-center gap-2 transition-colors duration-150 group"
-                  >
+              {selectedTask ? (
+                <section className="p-3 border border-gray-200 rounded-lg text-sm text-ev-text space-y-2">
+                  <p>
+                    <strong>ID:</strong> {selectedTask.id}
+                  </p>
+                  <p>
+                    <strong>Label:</strong> {selectedTask.label}
+                  </p>
+                  {selectedTask.description && (
+                    <p>
+                      <strong>Description:</strong> {selectedTask.description}
+                    </p>
+                  )}
+                  {selectedTask.assignee_email && (
+                    <p>
+                      <strong>Assignee:</strong> {selectedTask.assignee_email}
+                    </p>
+                  )}
+                  {selectedTask.importance && (
+                    <p>
+                      <strong>Importance:</strong> {selectedTask.importance}
+                    </p>
+                  )}
+                  {selectedTask.category && (
+                    <p>
+                      <strong>Category:</strong> {selectedTask.category}
+                    </p>
+                  )}
+                  {selectedTask.image && (
                     <Image
-                      src={
-                        task.image ||
-                        (task.type === "defaultTask"
-                          ? "/outlet.png"
-                          : "/problem.png")
-                      }
-                      alt={task.label}
-                      width={24}
-                      height={24}
-                      className="rounded object-cover"
+                      src={selectedTask.image}
+                      alt="Task image"
+                      width={64}
+                      height={64}
+                      className="rounded mt-2 object-cover"
                     />
-                    <span className="text-ev-text truncate flex-grow">
-                      {task.label}
-                    </span>
-                  </div>
-                ))}
-                {availableTasks.length === 0 && (
-                  <p className="text-sm text-ev-text italic p-2">
-                    No tasks in the workspace list. Add some using the button
-                    above.
-                  </p>
-                )}
-              </div>
-            </section>
-            <hr className="border-gray-200 my-2" />
-            <h3 className="text-xl font-semibold mb-2 text-ev-text">
-              Task Details
-            </h3>
-            {selectedTask ? (
-              <section className="p-3 border border-gray-200 rounded-lg text-sm text-ev-text space-y-2">
-                <p>
-                  <strong>ID:</strong> {selectedTask.id}
-                </p>
-                <p>
-                  <strong>Label:</strong> {selectedTask.label}
-                </p>
-                {selectedTask.description && (
+                  )}
                   <p>
-                    <strong>Description:</strong> {selectedTask.description}
+                    <strong>Position:</strong>{" "}
+                    {selectedTask.position.join(", ")}
                   </p>
-                )}
-                {selectedTask.assignee_email && (
-                  <p>
-                    <strong>Assignee:</strong> {selectedTask.assignee_email}
-                  </p>
-                )}
-                {selectedTask.importance && (
-                  <p>
-                    <strong>Importance:</strong> {selectedTask.importance}
-                  </p>
-                )}
-                {selectedTask.category && (
-                  <p>
-                    <strong>Category:</strong> {selectedTask.category}
-                  </p>
-                )}
-                {selectedTask.image && (
-                  <Image
-                    src={selectedTask.image}
-                    alt="Task image"
-                    width={64}
-                    height={64}
-                    className="rounded mt-2 object-cover"
-                  />
-                )}
-                <p>
-                  <strong>Position:</strong> {selectedTask.position.join(", ")}
-                </p>
-              </section>
-            ) : (
-              <section className="p-3 border border-gray-200 rounded-md text-sm text-ev-text">
-                Select a task on the map to see its details.
-              </section>
-            )}
-          </aside>
+                </section>
+              ) : (
+                <section className="p-3 border border-gray-200 rounded-md text-sm text-ev-text">
+                  Select a task on the map to see its details.
+                </section>
+              )}
+            </aside>
+          ) : null}
         </section>
       </section>
       <FooterSmall />
