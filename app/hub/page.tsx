@@ -74,7 +74,7 @@ export default function Dashboard() {
     <PageTemplate bgClass="#F1F2F6">
       <NavbarTemplate />
       <section className="flex flex-row items-center h-full gap-8 w-[90vw]">
-        <SidebarTemplate activeIcon="dashboard" />
+        <SidebarTemplate activeIcon="category" />
         <ContentBlock>
           <div className="w-full space-y-8">
             {/* Workspace Stats */}
