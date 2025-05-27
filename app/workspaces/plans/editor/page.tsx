@@ -830,6 +830,24 @@ function MapEditor() {
           .filter((task: TaskNodeData | null) => task !== null);
 
         setTasks(matchedTasks);
+
+        const mapTasks: TaskNodeData[] = rustResponse
+          .filter((task: any) => task.task_type === "MAP") // Add this filter
+          .map((task: any) => ({
+            id: task.id.toString(),
+            label: task.title,
+            description: task.description,
+            image: task.description_multimedia
+              ? `data:image/jpeg;base64,${task.description_multimedia}`
+              : null,
+            importance: task.importance,
+            category: task.category,
+            assignee_email: task.assignee_email,
+          }));
+
+        // Update available tasks list
+        console.log(mapTasks);
+        setAvailableTasks(mapTasks);
       } catch (error) {
         console.error("Error fetching tasks:", error);
         // toast.error("Failed to load tasks.");
@@ -891,23 +909,22 @@ function MapEditor() {
       // Fetch tasks from Rust API filtered by task_type 'MAP'
       const response = await OLF.post(ApiLinks.listTasks(workspaceId), {
         owner_email: ownerEmail,
-        task_type: "MAP", // Assuming the API accepts this filter
       });
 
-      // Transform response to TaskNodeData format
-      const mapTasks: TaskNodeData[] = response.map((task: any) => ({
-        id: task.id.toString(),
-        label: task.title,
-        description: task.description,
-        image: task.description_multimedia
-          ? `data:image/jpeg;base64,${task.description_multimedia}`
-          : null,
-        position: [0, 0], // Default position for available tasks
-        type: "customTask",
-        importance: task.importance,
-        category: task.category,
-        assignee_email: task.assignee_email,
-      }));
+      const mapTasks: TaskNodeData[] = response
+        .filter((task: any) => task.task_type === "MAP") // Add this filter
+        .map((task: any) => ({
+          id: task.id.toString(),
+          label: task.title,
+          description: task.description,
+          image: task.description_multimedia
+            ? `data:image/jpeg;base64,${task.description_multimedia}`
+            : null,
+          position: [0, 0], // Default position for available tasks
+          importance: task.importance,
+          category: task.category,
+          assignee_email: task.assignee_email,
+        }));
 
       // Update available tasks list
       console.log(mapTasks);
@@ -945,7 +962,7 @@ function MapEditor() {
         const taskToMove = availableTasks.find((t) => t.id === taskId);
         if (taskToMove) {
           const newTaskOnMap: TaskNodeData = { ...taskToMove, position };
-          setAvailableTasks((prev) => prev.filter((t) => t.id !== taskId));
+          // setAvailableTasks((prev) => prev.filter((t) => t.id !== taskId)); //removing task from the right hand bar
           setTasks((prevMapTasks) => [...prevMapTasks, newTaskOnMap]);
           toast.success(`Task "${newTaskOnMap.label}" added to map.`);
         }
