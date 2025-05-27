@@ -392,20 +392,23 @@ export default function WorkspaceDetails() {
   };
 
   const getWorkers = async () => {
-    const res = await OLF.post(
-      ApiLinks.listWorkspaceUsersByWorkspaceIdAndEmail(
-        User.workspaceData?.currentWorkspace?.id.toString() ?? "-1",
-      ),
-      {
-        email: User.authUser?.email,
-      },
-    );
-    console.log(res);
-    const workers: WorkspaceUser[] = res;
-    setWorkspaceUsers(workers);
+    if (User.workspaceData?.currentWorkspace?.role === "CREATOR") {
+      const res = await OLF.post(
+        ApiLinks.listWorkspaceUsersByWorkspaceIdAndEmail(
+          User.workspaceData?.currentWorkspace?.id.toString() ?? "-1",
+        ),
+        {
+          email: User.authUser?.email,
+        },
+      );
+      console.log(res);
+      const workers: WorkspaceUser[] = res;
+      setWorkspaceUsers(workers);
+    }
   };
 
   const getTasks = async () => {
+    console.log("getting tasks...");
     try {
       const res = await fetch(
         ApiLinks.listTasks(
@@ -421,6 +424,9 @@ export default function WorkspaceDetails() {
           }),
         },
       );
+
+      console.log("response of taskssss");
+      console.log(res);
 
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
@@ -460,8 +466,8 @@ export default function WorkspaceDetails() {
     getTasks();
   }, []);
 
-  console.log("users");
-  console.log(workspaceUsers);
+  // console.log("users");
+  // console.log(workspaceUsers);
 
   return (
     <PageTemplate>
@@ -544,49 +550,210 @@ export default function WorkspaceDetails() {
                 </div>
               </div>
               <div className="flex flex-col gap-8 w-1/4 max-[1700px]:w-full">
-                <div className=" p-6 bg-ev-primary-bg overflow-y-scroll rounded-xl h-1/2">
+                {User.workspaceData?.currentWorkspace?.role === "CREATOR" ? (
+                  <div className=" p-6 bg-ev-primary-bg overflow-y-scroll rounded-xl h-1/2">
+                    <div className="flex justify-between items-center mb-10 border-b-4 gap-4 pb-4">
+                      <p className="text-2xl">Workers</p>
+                      <SearchButton customWidth="w-full" />
+                    </div>
+                    <div className="flex justify-around mb-10 items-center">
+                      {User.workspaceData?.currentWorkspace?.role ===
+                      "CREATOR" ? (
+                        <>
+                          <Input
+                            name="add"
+                            type="button"
+                            value="Add"
+                            onClick={() => setIsAddOpen(true)}
+                            customWidth="w-3/4"
+                            className="px-4 py-2 bg-ev-green text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                          />
+                          {!workerRemoval ? (
+                            <Input
+                              name="remove"
+                              type="button"
+                              value="Remove"
+                              onClick={() => setWorkerRemoval((p) => !p)}
+                              customWidth="w-3/4"
+                              className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                            />
+                          ) : (
+                            <>
+                              <Input
+                                name="cancel"
+                                type="button"
+                                value="Cancel"
+                                onClick={() => setWorkerRemoval(false)}
+                                customWidth="w-3/4"
+                                className="px-4 py-2 bg-ev-blue text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                              />
+                              <Input
+                                name="delete"
+                                type="button"
+                                value="Delete"
+                                onClick={() => removeWorkers()}
+                                customWidth="w-3/4"
+                                className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                              />
+                            </>
+                          )}
+                        </>
+                      ) : null}
+                    </div>
+                    <div className="flex flex-col gap-4 mb-10 w-full">
+                      {workspaceUsers !== null ? (
+                        <>
+                          {workspaceUsers.map((workspaceUser, i) => (
+                            <WorkerEntry
+                              id={workspaceUser.id}
+                              username={workspaceUser.username}
+                              key={i}
+                              selectable={workerRemoval}
+                              setSelectedWorkersIds={setSelectedWokrersIds}
+                              selectedWorkersIds={selectedWorkersIds}
+                              workspaceUsers={workspaceUsers}
+                              role={workspaceUser.workspace_role}
+                              // photo={workspaceUser.p}
+                            />
+                          ))}
+                        </>
+                      ) : (
+                        <p>Workspace doesn't have any users</p>
+                      )}
+                    </div>
+                  </div>
+                ) : null}
+
+                <div
+                  className={` p-6 bg-ev-primary-bg overflow-y-scroll rounded-xl ${
+                    User.workspaceData?.currentWorkspace?.role === "CREATOR"
+                      ? "h-1/2"
+                      : "h-full"
+                  } `}
+                >
+                  <div className="flex justify-between items-center mb-10 border-b-4 gap-4 pb-4">
+                    <p className="text-2xl">Tasks</p>
+                    <SearchButton customWidth="w-full" />
+                  </div>
+                  <div className="flex justify-around mb-10 items-center">
+                    {User.workspaceData?.currentWorkspace?.role ===
+                    "CREATOR" ? (
+                      <>
+                        <Input
+                          name="add_task"
+                          type="button"
+                          value="Add"
+                          onClick={() => setIsTaskOpen(true)}
+                          customWidth="w-3/4"
+                          className="px-4 py-2 bg-ev-green text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                        />
+                        {!taskRemoval ? (
+                          <Input
+                            name="remove"
+                            type="button"
+                            value="Remove"
+                            onClick={() => setTaskRemoval((p) => !p)}
+                            customWidth="w-3/4"
+                            className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                          />
+                        ) : (
+                          <>
+                            <Input
+                              name="cancel"
+                              type="button"
+                              value="Cancel"
+                              onClick={() => setTaskRemoval(false)}
+                              customWidth="w-3/4"
+                              className="px-4 py-2 bg-ev-blue text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                            />
+                            <Input
+                              name="delete"
+                              type="button"
+                              value="Delete"
+                              onClick={() => removeTasks()}
+                              customWidth="w-3/4"
+                              className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                            />
+                          </>
+                        )}
+                      </>
+                    ) : null}
+                  </div>
+                  <div className="flex flex-col gap-4 mb-10 w-full">
+                    {tasks === null ||
+                    tasks === undefined ||
+                    tasks.length === 0 ? (
+                      <p>Workspace doesn't have any tasks</p>
+                    ) : (
+                      <>
+                        {tasks.map((task, i) => (
+                          <TaskEntry
+                            task={task}
+                            key={i}
+                            workspaceUsers={workspaceUsers}
+                            selectable={taskRemoval}
+                            setSelectedTasksIds={setSelectedTasksIds}
+                            selectedTasksIds={selectedTasksIds}
+                          />
+                        ))}
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            // seond case
+            <div className="flex flex-row gap-8 w-full overflow-y-hidden h-full max-[950px]:flex-col">
+              {User.workspaceData?.currentWorkspace?.role === "CREATOR" ? (
+                <div className=" p-6 bg-ev-primary-bg overflow-y-scroll rounded-xl h-full w-full">
                   <div className="flex justify-between items-center mb-10 border-b-4 gap-4 pb-4">
                     <p className="text-2xl">Workers</p>
                     <SearchButton customWidth="w-full" />
                   </div>
                   <div className="flex justify-around mb-10 items-center">
-                    <Input
-                      name="add"
-                      type="button"
-                      value="Add"
-                      onClick={() => setIsAddOpen(true)}
-                      customWidth="w-3/4"
-                      className="px-4 py-2 bg-ev-green text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                    />
-                    {!workerRemoval ? (
-                      <Input
-                        name="remove"
-                        type="button"
-                        value="Remove"
-                        onClick={() => setWorkerRemoval((p) => !p)}
-                        customWidth="w-3/4"
-                        className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                      />
-                    ) : (
+                    {User.workspaceData?.currentWorkspace?.role ===
+                    "CREATOR" ? (
                       <>
                         <Input
-                          name="cancel"
+                          name="add"
                           type="button"
-                          value="Cancel"
-                          onClick={() => setWorkerRemoval(false)}
+                          value="Add"
+                          onClick={() => setIsAddOpen(true)}
                           customWidth="w-3/4"
-                          className="px-4 py-2 bg-ev-blue text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                          className="px-4 py-2 bg-ev-green text-white rounded-lg hover:scale-110 duration-300 w-3/4"
                         />
-                        <Input
-                          name="delete"
-                          type="button"
-                          value="Delete"
-                          onClick={() => removeWorkers()}
-                          customWidth="w-3/4"
-                          className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                        />
+                        {!workerRemoval ? (
+                          <Input
+                            name="remove"
+                            type="button"
+                            value="Remove"
+                            onClick={() => setWorkerRemoval((p) => !p)}
+                            customWidth="w-3/4"
+                            className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                          />
+                        ) : (
+                          <>
+                            <Input
+                              name="cancel"
+                              type="button"
+                              value="Cancel"
+                              onClick={() => setWorkerRemoval(false)}
+                              customWidth="w-3/4"
+                              className="px-4 py-2 bg-ev-blue text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                            />
+                            <Input
+                              name="delete"
+                              type="button"
+                              value="Delete"
+                              onClick={() => removeWorkers()}
+                              customWidth="w-3/4"
+                              className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                            />
+                          </>
+                        )}
                       </>
-                    )}
+                    ) : null}
                   </div>
                   <div className="flex flex-col gap-4 mb-10 w-full">
                     {workspaceUsers !== null ? (
@@ -601,7 +768,6 @@ export default function WorkspaceDetails() {
                             selectedWorkersIds={selectedWorkersIds}
                             workspaceUsers={workspaceUsers}
                             role={workspaceUser.workspace_role}
-                            // photo={workspaceUser.p}
                           />
                         ))}
                       </>
@@ -610,143 +776,7 @@ export default function WorkspaceDetails() {
                     )}
                   </div>
                 </div>
-
-                <div className=" p-6 bg-ev-primary-bg overflow-y-scroll rounded-xl h-1/2">
-                  <div className="flex justify-between items-center mb-10 border-b-4 gap-4 pb-4">
-                    <p className="text-2xl">Tasks</p>
-                    <SearchButton customWidth="w-full" />
-                  </div>
-                  <div className="flex justify-around mb-10 items-center">
-                    <Input
-                      name="add_task"
-                      type="button"
-                      value="Add"
-                      onClick={() => setIsTaskOpen(true)}
-                      customWidth="w-3/4"
-                      className="px-4 py-2 bg-ev-green text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                    />
-                    {!taskRemoval ? (
-                      <Input
-                        name="remove"
-                        type="button"
-                        value="Remove"
-                        onClick={() => setTaskRemoval((p) => !p)}
-                        customWidth="w-3/4"
-                        className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                      />
-                    ) : (
-                      <>
-                        <Input
-                          name="cancel"
-                          type="button"
-                          value="Cancel"
-                          onClick={() => setTaskRemoval(false)}
-                          customWidth="w-3/4"
-                          className="px-4 py-2 bg-ev-blue text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                        />
-                        <Input
-                          name="delete"
-                          type="button"
-                          value="Delete"
-                          onClick={() => removeTasks()}
-                          customWidth="w-3/4"
-                          className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                        />
-                      </>
-                    )}
-                  </div>
-                  <div className="flex flex-col gap-4 mb-10 w-full">
-                    {tasks === null ||
-                    tasks === undefined ||
-                    tasks.length === 0 ? (
-                      <p>Workspace doesn't have any tasks</p>
-                    ) : (
-                      <>
-                        {workspaceUsers &&
-                          tasks.map((task, i) => (
-                            <TaskEntry
-                              task={task}
-                              key={i}
-                              workspaceUsers={workspaceUsers}
-                              selectable={taskRemoval}
-                              setSelectedTasksIds={setSelectedTasksIds}
-                              selectedTasksIds={selectedTasksIds}
-                            />
-                          ))}
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            // seond case
-            <div className="flex flex-row gap-8 w-full overflow-y-hidden h-full max-[950px]:flex-col">
-              <div className=" p-6 bg-ev-primary-bg overflow-y-scroll rounded-xl h-full w-full">
-                <div className="flex justify-between items-center mb-10 border-b-4 gap-4 pb-4">
-                  <p className="text-2xl">Workers</p>
-                  <SearchButton customWidth="w-full" />
-                </div>
-                <div className="flex justify-around mb-10 items-center">
-                  <Input
-                    name="add"
-                    type="button"
-                    value="Add"
-                    onClick={() => setIsAddOpen(true)}
-                    customWidth="w-3/4"
-                    className="px-4 py-2 bg-ev-green text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                  />
-                  {!workerRemoval ? (
-                    <Input
-                      name="remove"
-                      type="button"
-                      value="Remove"
-                      onClick={() => setWorkerRemoval((p) => !p)}
-                      customWidth="w-3/4"
-                      className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                    />
-                  ) : (
-                    <>
-                      <Input
-                        name="cancel"
-                        type="button"
-                        value="Cancel"
-                        onClick={() => setWorkerRemoval(false)}
-                        customWidth="w-3/4"
-                        className="px-4 py-2 bg-ev-blue text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                      />
-                      <Input
-                        name="delete"
-                        type="button"
-                        value="Delete"
-                        onClick={() => removeWorkers()}
-                        customWidth="w-3/4"
-                        className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                      />
-                    </>
-                  )}
-                </div>
-                <div className="flex flex-col gap-4 mb-10 w-full">
-                  {workspaceUsers !== null ? (
-                    <>
-                      {workspaceUsers.map((workspaceUser, i) => (
-                        <WorkerEntry
-                          id={workspaceUser.id}
-                          username={workspaceUser.username}
-                          key={i}
-                          selectable={workerRemoval}
-                          setSelectedWorkersIds={setSelectedWokrersIds}
-                          selectedWorkersIds={selectedWorkersIds}
-                          workspaceUsers={workspaceUsers}
-                          role={workspaceUser.workspace_role}
-                        />
-                      ))}
-                    </>
-                  ) : (
-                    <p>Workspace doesn't have any users</p>
-                  )}
-                </div>
-              </div>
+              ) : null}
 
               <div className=" p-6 bg-ev-primary-bg overflow-y-scroll rounded-xl h-full w-full">
                 <div className="flex justify-between items-center mb-10 border-b-4 gap-4 pb-4">
@@ -754,43 +784,47 @@ export default function WorkspaceDetails() {
                   <SearchButton customWidth="w-full" />
                 </div>
                 <div className="flex justify-around mb-10 items-center">
-                  <Input
-                    name="add_task"
-                    type="button"
-                    value="Add"
-                    onClick={() => setIsTaskOpen(true)}
-                    customWidth="w-3/4"
-                    className="px-4 py-2 bg-ev-green text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                  />
-                  {!taskRemoval ? (
-                    <Input
-                      name="remove"
-                      type="button"
-                      value="Remove"
-                      onClick={() => setTaskRemoval((p) => !p)}
-                      customWidth="w-3/4"
-                      className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                    />
-                  ) : (
+                  {User.workspaceData?.currentWorkspace?.role === "CREATOR" ? (
                     <>
                       <Input
-                        name="cancel"
+                        name="add_task"
                         type="button"
-                        value="Cancel"
-                        onClick={() => setTaskRemoval(false)}
+                        value="Add"
+                        onClick={() => setIsTaskOpen(true)}
                         customWidth="w-3/4"
-                        className="px-4 py-2 bg-ev-blue text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                        className="px-4 py-2 bg-ev-green text-white rounded-lg hover:scale-110 duration-300 w-3/4"
                       />
-                      <Input
-                        name="delete"
-                        type="button"
-                        value="Delete"
-                        onClick={() => removeTasks()}
-                        customWidth="w-3/4"
-                        className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                      />
+                      {!taskRemoval ? (
+                        <Input
+                          name="remove"
+                          type="button"
+                          value="Remove"
+                          onClick={() => setTaskRemoval((p) => !p)}
+                          customWidth="w-3/4"
+                          className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                        />
+                      ) : (
+                        <>
+                          <Input
+                            name="cancel"
+                            type="button"
+                            value="Cancel"
+                            onClick={() => setTaskRemoval(false)}
+                            customWidth="w-3/4"
+                            className="px-4 py-2 bg-ev-blue text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                          />
+                          <Input
+                            name="delete"
+                            type="button"
+                            value="Delete"
+                            onClick={() => removeTasks()}
+                            customWidth="w-3/4"
+                            className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
+                          />
+                        </>
+                      )}
                     </>
-                  )}
+                  ) : null}
                 </div>
                 <div className="flex flex-col gap-4 mb-10 w-full">
                   {tasks === null ||
@@ -799,17 +833,16 @@ export default function WorkspaceDetails() {
                     <p>Workspace doesn't have any tasks</p>
                   ) : (
                     <>
-                      {workspaceUsers &&
-                        tasks.map((task, i) => (
-                          <TaskEntry
-                            task={task}
-                            key={i}
-                            workspaceUsers={workspaceUsers}
-                            selectable={taskRemoval}
-                            setSelectedTasksIds={setSelectedTasksIds}
-                            selectedTasksIds={selectedTasksIds}
-                          />
-                        ))}
+                      {tasks.map((task, i) => (
+                        <TaskEntry
+                          task={task}
+                          key={i}
+                          workspaceUsers={workspaceUsers}
+                          selectable={taskRemoval}
+                          setSelectedTasksIds={setSelectedTasksIds}
+                          selectedTasksIds={selectedTasksIds}
+                        />
+                      ))}
                     </>
                   )}
                 </div>

@@ -32,6 +32,7 @@ export default function Workspaces() {
   const [workspaces, setWorkspaces] = useState<Workspace[] | null>(null);
   const [isCreatingWorkspace, setIsCreatingWorkspace] = useState(false);
   const [isCustomMenuOpen, setIsCustomMenuOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const loadingMessages = [
     "Preparing your space...",
@@ -403,6 +404,7 @@ export default function Workspaces() {
                     className="bg-gray-200 rounded-xl aspect-video animate-pulse"
                   />
                 ))}
+                {currentLoadingMessage}
               </div>
             )}
 
@@ -415,7 +417,11 @@ export default function Workspaces() {
             {workspaces !== null && workspaces.length > 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 w-full">
                 {workspaces.map((workspace) => (
-                  <WorkspaceEntry key={workspace.id} workspace={workspace} />
+                  <WorkspaceEntry
+                    key={workspace.id}
+                    workspace={workspace}
+                    setLoading={setIsLoading}
+                  />
                 ))}
               </div>
             )}

@@ -7,9 +7,10 @@ import React from "react";
 
 type WorkspaceEntryProps = {
   workspace: Workspace;
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-const WorkspaceEntry = ({ workspace }: WorkspaceEntryProps) => {
+const WorkspaceEntry = ({ workspace, setLoading }: WorkspaceEntryProps) => {
   const { User, UserDispatch } = useUserContext();
 
   const getSvgDataUri = (rawSvg: string): string => {

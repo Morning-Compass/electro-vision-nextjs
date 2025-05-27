@@ -65,6 +65,8 @@ export default function Page() {
 
   console.log(task);
 
+  const creator = User.workspaceData?.currentWorkspace?.role === "CREATOR";
+
   // States for edit modes and overlays
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [isEditingDetails, setIsEditingDetails] = useState(false);
@@ -289,12 +291,14 @@ export default function Page() {
                   <h2 className="text-2xl font-semibold  text-ev-text dark:text-ev-text">
                     Description
                   </h2>
-                  <button
-                    onClick={() => setIsEditingDescription(true)}
-                    className="text-ev-accent-text hover:text-ev-accent-text/80 text-lg font-medium transition-colors duration-200"
-                  >
-                    Edit
-                  </button>
+                  {creator ? (
+                    <button
+                      onClick={() => setIsEditingDescription(true)}
+                      className="text-ev-accent-text hover:text-ev-accent-text/80 text-lg font-medium transition-colors duration-200"
+                    >
+                      Edit
+                    </button>
+                  ) : null}
                 </div>
                 <p className="text-ev-text dark:text-ev-secondary-text text-lg overflow-y-auto max-h-full">
                   {task?.description || "Description has not been set."}
@@ -308,12 +312,14 @@ export default function Page() {
                     <h2 className="text-2xl font-semibold text-ev-text dark:text-ev-text">
                       Photo
                     </h2>
-                    <button
-                      onClick={() => setIsEditingPhoto(true)}
-                      className="text-ev-accent-text hover:text-ev-accent-text/80 text-lg font-medium transition-colors duration-200"
-                    >
-                      Edit
-                    </button>
+                    {creator ? (
+                      <button
+                        onClick={() => setIsEditingPhoto(true)}
+                        className="text-ev-accent-text hover:text-ev-accent-text/80 text-lg font-medium transition-colors duration-200"
+                      >
+                        Edit
+                      </button>
+                    ) : null}
                   </div>
                   <div className="relative w-full h-full">
                     <Image
@@ -337,21 +343,27 @@ export default function Page() {
                     Details
                   </h2>
                   <div className=" flex flex-row items-center justify-center gap-8">
-                    {isMultimedia ? null : (
+                    {creator ? (
+                      <>
+                        {isMultimedia ? null : (
+                          <button
+                            onClick={() => setIsEditingPhoto(true)}
+                            className="text-ev-accent-text hover:text-ev-accent-text/80 text-lg font-medium transition-colors duration-200"
+                          >
+                            Add Photo
+                          </button>
+                        )}
+                      </>
+                    ) : null}
+
+                    {creator ? (
                       <button
-                        onClick={() => setIsEditingPhoto(true)}
+                        onClick={() => setIsEditingDetails(true)}
                         className="text-ev-accent-text hover:text-ev-accent-text/80 text-lg font-medium transition-colors duration-200"
                       >
-                        Add Photo
+                        Edit
                       </button>
-                    )}
-
-                    <button
-                      onClick={() => setIsEditingDetails(true)}
-                      className="text-ev-accent-text hover:text-ev-accent-text/80 text-lg font-medium transition-colors duration-200"
-                    >
-                      Edit
-                    </button>
+                    ) : null}
                   </div>
                 </div>
                 <p className="text-ev-text dark:text-ev-secondary-text text-lg overflow-y-auto max-h-full">

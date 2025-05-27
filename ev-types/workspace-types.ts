@@ -8,6 +8,7 @@ export type Workspace = {
   geolocation: String | null;
   ev_subscription: string;
   name: string;
+  role: string;
   coverPhoto: string | File | null;
 };
 
