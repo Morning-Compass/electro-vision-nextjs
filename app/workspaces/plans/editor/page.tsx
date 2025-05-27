@@ -957,21 +957,89 @@ function MapEditor() {
   };
 
   const handleTaskDrop = useCallback(
-    (nodeType: string, position: [number, number], taskId?: string) => {
-      if (taskId) {
-        const taskToMove = availableTasks.find((t) => t.id === taskId);
-        if (taskToMove) {
-          const newTaskOnMap: TaskNodeData = { ...taskToMove, position };
-          // setAvailableTasks((prev) => prev.filter((t) => t.id !== taskId)); //removing task from the right hand bar
-          setTasks((prevMapTasks) => [...prevMapTasks, newTaskOnMap]);
-          toast.success(`Task "${newTaskOnMap.label}" added to map.`);
+    async (nodeType: string, position: [number, number], taskId?: string) => {
+      try {
+        const workspaceId = User.workspaceData?.currentWorkspace?.id;
+        if (!workspaceId) {
+          toast.error("Workspace context missing");
+          return;
         }
-      } else {
-        setDroppedTaskDetails({ position, nodeType });
-        setIsNewTaskFormOpen(true);
+
+        if (taskId) {
+          const taskToMove = availableTasks.find((t) => t.id === taskId);
+          if (!taskToMove) {
+            toast.error("Task not found in available tasks");
+            return;
+          }
+
+          // 1. Create task in Rust (main/task backend)
+          const rustPayload = {
+            assigner_email: User.authUser?.email, // adjust if different
+            assignee_email: taskToMove.assignee_email,
+            title: taskToMove.label,
+            description: taskToMove.description,
+            importance: taskToMove.importance,
+            category: taskToMove.category,
+            status: "TODO",
+            due_date: null,
+            description_multimedia: null,
+            task_type: "DEFAULT",
+          };
+
+          const rustRes = await OLF.post(
+            ApiLinks.createTasks(workspaceId.toString()),
+            rustPayload,
+          );
+
+          const newTaskId = rustRes.id.toString();
+
+          // 2. Optimistic UI update
+          const newTaskOnMap: TaskNodeData = {
+            ...taskToMove,
+            id: newTaskId,
+            position,
+          };
+          setTasks((prev) => [...prev, newTaskOnMap]);
+          toast.success(`Task "${newTaskOnMap.label}" added to map.`);
+
+          // 3. Register task position in Python
+          try {
+            await OLF.post(ApiLinks.addPythonTask, {
+              task_id: newTaskId,
+              workspace_id: workspaceId,
+              offset_x: position[0],
+              offset_y: position[1],
+            });
+          } catch (error: any) {
+            // Rollback Rust task if Python fails
+            await OLF.delete(
+              ApiLinks.removeTask(workspaceId.toString(), newTaskId),
+            );
+            setTasks((prev) => prev.filter((t) => t.id !== newTaskId));
+            toast.error(
+              error instanceof Error
+                ? error.message
+                : "Failed to register task with Python backend.",
+            );
+          }
+        } else {
+          setDroppedTaskDetails({ position, nodeType });
+          setIsNewTaskFormOpen(true);
+        }
+      } catch (error: any) {
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred.",
+        );
       }
     },
-    [availableTasks],
+    [
+      availableTasks,
+      User.workspaceData?.currentWorkspace?.id,
+      User.authUser?.email,
+      handleAddTaskSuccess,
+    ],
   );
 
   const handleTaskDragEnd = useCallback(
