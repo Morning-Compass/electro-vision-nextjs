@@ -514,40 +514,42 @@ export default function WorkspaceDetails() {
                   />
                 </Link>
 
-                <div className="flex flex-col gap-2 p-6 bg-ev-primary-bg rounded-xl">
-                  <p className="text-3xl font-semibold mb-2">
-                    Workspace Details
-                  </p>
-                  <p>
-                    Start Date:{" "}
-                    {User.workspaceData?.currentWorkspace?.start_date?.toString()}
-                  </p>
-                  <p>
-                    Due Date:{" "}
-                    {User.workspaceData?.currentWorkspace?.finish_date?.toString() ||
-                      "Not yet established"}
-                  </p>
-                  <p>
-                    Subscription Tier:{" "}
-                    {User.workspaceData?.currentWorkspace?.ev_subscription}
-                  </p>
-                  <p>
-                    Geolocation:{" "}
-                    {User.workspaceData?.currentWorkspace?.geolocation ||
-                      "Not yet established"}
-                  </p>
-                  <p>
-                    Filename:{" "}
-                    {User.workspaceData?.currentWorkspace?.plan_file_name}
-                  </p>
-                  <Input
-                    name="settings"
-                    type="button"
-                    value="Settings"
-                    onClick={() => setIsSettingsOpen(true)}
-                    className="px-4 py-2 bg-ev-blue text-white rounded-lg hover:scale-105 duration-300 w-[80%] p-2 m-4"
-                  />
-                </div>
+                {User.workspaceData?.currentWorkspace?.role === "CREATOR" ? (
+                  <div className="flex flex-col gap-2 p-6 bg-ev-primary-bg rounded-xl">
+                    <p className="text-3xl font-semibold mb-2">
+                      Workspace Details
+                    </p>
+                    <p>
+                      Start Date:{" "}
+                      {User.workspaceData?.currentWorkspace?.start_date?.toString()}
+                    </p>
+                    <p>
+                      Due Date:{" "}
+                      {User.workspaceData?.currentWorkspace?.finish_date?.toString() ||
+                        "Not yet established"}
+                    </p>
+                    <p>
+                      Subscription Tier:{" "}
+                      {User.workspaceData?.currentWorkspace?.ev_subscription}
+                    </p>
+                    <p>
+                      Geolocation:{" "}
+                      {User.workspaceData?.currentWorkspace?.geolocation ||
+                        "Not yet established"}
+                    </p>
+                    <p>
+                      Filename:{" "}
+                      {User.workspaceData?.currentWorkspace?.plan_file_name}
+                    </p>
+                    {/* <Input
+                      name="settings"
+                      type="button"
+                      value="Settings"
+                      onClick={() => setIsSettingsOpen(true)}
+                      className="px-4 py-2 bg-ev-blue text-white rounded-lg hover:scale-105 duration-300 w-[80%] p-2 m-4"
+                    /> */}
+                  </div>
+                ) : null}
               </div>
               <div className="flex flex-col gap-8 w-1/4 max-[1700px]:w-full">
                 {User.workspaceData?.currentWorkspace?.role === "CREATOR" ? (
