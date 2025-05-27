@@ -19,6 +19,7 @@ import OLF from "@/ev-lib/ElectroVisionFetch";
 import ApiLinks from "@/ev-const/api-links";
 import { DateTimePicker } from "@/components/datepicker/Datepicker";
 import { WorkspaceUser } from "@/ev-types/user-types";
+import Link from "next/link";
 
 // Define types
 interface TaskNodeData {
@@ -1163,6 +1164,12 @@ function MapEditor() {
   return (
     <PageTemplate>
       <NavbarTemplate />
+      <Link
+        href="/workspaces/"
+        className="text-ev-accent-text hover:text-ev-accent-text/80 text-lg font-medium flex items-center transition-colors duration-200"
+      >
+        ← Back
+      </Link>
       <AddTaskOverlay
         isOpen={isOverlayOpen}
         onClose={handleCloseOverlay}

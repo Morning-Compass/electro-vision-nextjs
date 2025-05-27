@@ -34,16 +34,6 @@ export default function SidebarTemplate({ activeIcon }: SidebarProps) {
         imageClassName={getIconClass("./map.svg")}
         link="/workspaces"
       />
-      {/* <SidebarElement
-        imageSrc="/alert.svg"
-        imageClassName={getIconClass("./alert.svg")}
-        link="/employees-problems"
-      /> */}
-      <SidebarElement
-        imageSrc="/task.svg"
-        imageClassName={getIconClass("./task.svg")}
-        link="/employees-tasks"
-      />
       <SidebarElement
         imageSrc="/people.svg"
         imageClassName={getIconClass("./people.svg")}

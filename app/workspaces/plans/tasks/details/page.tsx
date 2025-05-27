@@ -266,7 +266,7 @@ export default function Page() {
     <PageTemplate>
       <NavbarTemplate />
       <section className="flex flex-row items-center justify-start h-full gap-8 w-[90vw]">
-        <SidebarTemplate activeIcon="task" />
+        <SidebarTemplate activeIcon="map" />
         <ContentBlock>
           <div className="flex flex-col items-center justify-center gap-8 h-full w-full p-4">
             {/* Title and Back Button Row */}
