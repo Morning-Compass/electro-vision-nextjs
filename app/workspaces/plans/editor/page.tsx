@@ -53,6 +53,7 @@ type TaskFormProps = {
 interface TaskApiResponse {
   id: number;
   title: string;
+  image?: string;
   description?: string;
   importance: "LOW" | "MEDIUM" | "HIGH";
   category?: string;
@@ -189,6 +190,7 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
       const taskPayload = {
         assigner_email: currentUserEmail,
         assignee_email: data.assignee_email,
+        image: data.multimedia,
         title: data.title,
         description: data.description,
         importance: data.importance,
@@ -483,6 +485,7 @@ const AddTaskOverlay: React.FC<AddTaskOverlayProps> = ({
         assigner_email: currentUserEmail,
         assignee_email: data.assignee_email,
         title: data.title,
+        image: data.multimedia,
         description: data.description,
         importance: data.importance,
         category: data.category,
@@ -518,9 +521,7 @@ const AddTaskOverlay: React.FC<AddTaskOverlayProps> = ({
         id: res.id.toString(),
         label: res.title,
         description: res.description,
-        image: res.description_multimedia
-          ? `data:image/jpeg;base64,${res.description_multimedia}`
-          : null,
+        image: res.description_multimedia,
         position: [0, 0],
         type: "customTask",
         importance: res.importance,
@@ -815,9 +816,7 @@ function MapEditor() {
                 id: rustTask.id.toString(),
                 label: rustTask.title,
                 description: rustTask.description,
-                image: rustTask.description_multimedia
-                  ? `data:image/jpeg;base64,${rustTask.description_multimedia}`
-                  : null,
+                image: rustTask.description_multimedia,
                 position: [pyTask.offset_x, pyTask.offset_y],
                 type: "customTask",
                 importance: rustTask.importance,
@@ -837,9 +836,7 @@ function MapEditor() {
             id: task.id.toString(),
             label: task.title,
             description: task.description,
-            image: task.description_multimedia
-              ? `data:image/jpeg;base64,${task.description_multimedia}`
-              : null,
+            image: task.description_multimedia,
             importance: task.importance,
             category: task.category,
             assignee_email: task.assignee_email,
@@ -917,10 +914,7 @@ function MapEditor() {
           id: task.id.toString(),
           label: task.title,
           description: task.description,
-          image: task.description_multimedia
-            ? `data:image/jpeg;base64,${task.description_multimedia}`
-            : null,
-          position: [0, 0], // Default position for available tasks
+          image: task.description_multimedia,
           importance: task.importance,
           category: task.category,
           assignee_email: task.assignee_email,
@@ -942,6 +936,7 @@ function MapEditor() {
   ) => {
     const newMapTask: TaskNodeData = {
       id: apiResponse.id?.toString() || `api_task_${Date.now()}`,
+      image: apiResponse.image,
       label: apiResponse.title,
       description: apiResponse.description,
       position: mapPosition,
@@ -977,12 +972,13 @@ function MapEditor() {
             assigner_email: User.authUser?.email, // adjust if different
             assignee_email: taskToMove.assignee_email,
             title: taskToMove.label,
+            image: taskToMove.image,
             description: taskToMove.description,
             importance: taskToMove.importance,
             category: taskToMove.category,
             status: "TODO",
             due_date: null,
-            description_multimedia: null,
+            description_multimedia: taskToMove.image,
             task_type: "DEFAULT",
           };
 
@@ -1096,6 +1092,7 @@ function MapEditor() {
           assigner_email: User.authUser?.email,
           assignee_email: task.assignee_email,
           title: task.title,
+          image: task.multimedia,
           description: task.description,
           importance: task.importance,
           category: task.category,
@@ -1105,6 +1102,7 @@ function MapEditor() {
         };
         await OLF.post(ApiLinks.createTasks(task.workspace_id), taskPayload);
       }
+
       setTasks((prev) => prev.filter((task) => task.id !== selectedTaskId));
       setConnections((prev) =>
         prev.filter(
@@ -1161,6 +1159,7 @@ function MapEditor() {
     ? tasks.find((task) => task.id === selectedTaskId)
     : null;
 
+  console.log(tasks);
   return (
     <PageTemplate>
       <NavbarTemplate />
@@ -1226,102 +1225,6 @@ function MapEditor() {
                 />
                 <span className="text-ev-text flex-grow">Custom Task</span>
               </section>
-            </aside>
-
-            <aside className="hidden flex-col gap-4 h-full bg-ev-primary p-4 rounded-xl shadow-lg max-h-[calc(100vh-var(--navbar-height,64px)-var(--footer-height,50px)-3rem)] overflow-y-auto w-72 sticky top-4 max-lg:block">
-              <section>
-                <h3 className="text-xl font-semibold mb-2 text-ev-text">
-                  Available Tasks
-                </h3>
-                {availableTasks.length > 0 && (
-                  <p className="text-sm text-ev-text italic mb-2">
-                    Drag tasks from here to the map to place them
-                  </p>
-                )}
-                <div className="space-y-2 mb-4">
-                  {availableTasks.map((task) => (
-                    <div
-                      key={task.id}
-                      draggable={true}
-                      onDragStart={(e) => handleDragStart(e, task.id, true)}
-                      className="p-3 border border-gray-200 rounded-lg cursor-grab hover:bg-gray-100 flex items-center gap-2 transition-colors duration-150 group"
-                    >
-                      <Image
-                        src={
-                          task.image ||
-                          (task.type === "defaultTask"
-                            ? "/outlet.png"
-                            : "/problem.png")
-                        }
-                        alt={task.label}
-                        width={24}
-                        height={24}
-                        className="rounded object-cover"
-                      />
-                      <span className="text-ev-text truncate flex-grow">
-                        {task.label}
-                      </span>
-                    </div>
-                  ))}
-                  {availableTasks.length === 0 && (
-                    <p className="text-sm text-ev-text italic p-2">
-                      No tasks in the workspace list. Add some using the button
-                      above.
-                    </p>
-                  )}
-                </div>
-              </section>
-              <hr className="border-gray-200 my-2" />
-              <h3 className="text-xl font-semibold mb-2 text-ev-text">
-                Task Details
-              </h3>
-              {selectedTask ? (
-                <section className="p-3 border border-gray-200 rounded-lg text-sm text-ev-text space-y-2">
-                  <p>
-                    <strong>ID:</strong> {selectedTask.id}
-                  </p>
-                  <p>
-                    <strong>Label:</strong> {selectedTask.label}
-                  </p>
-                  {selectedTask.description && (
-                    <p>
-                      <strong>Description:</strong> {selectedTask.description}
-                    </p>
-                  )}
-                  {selectedTask.assignee_email && (
-                    <p>
-                      <strong>Assignee:</strong> {selectedTask.assignee_email}
-                    </p>
-                  )}
-                  {selectedTask.importance && (
-                    <p>
-                      <strong>Importance:</strong> {selectedTask.importance}
-                    </p>
-                  )}
-                  {selectedTask.category && (
-                    <p>
-                      <strong>Category:</strong> {selectedTask.category}
-                    </p>
-                  )}
-                  {selectedTask.image && (
-                    <Image
-                      src={selectedTask.image}
-                      alt="Task image"
-                      width={64}
-                      height={64}
-                      className="rounded mt-2 object-cover"
-                    />
-                  )}
-                  <p>
-                    <strong>Position:</strong>{" "}
-                    {selectedTask.position.join(", ")}
-                  </p>
-                </section>
-              ) : (
-                <section className="p-3 border border-gray-200 rounded-md text-sm text-ev-text">
-                  Select a task on the map to see its details.
-                </section>
-              )}
             </aside>
           </section>
 
