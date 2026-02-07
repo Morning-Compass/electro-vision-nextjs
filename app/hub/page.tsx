@@ -23,6 +23,8 @@ import {
 import { DashboardData, DashboardRequest } from "@/ev-types/dashboard";
 import OLF from "@/ev-lib/ElectroVisionFetch";
 import ApiLinks from "@/ev-const/api-links";
+import UnauthorizedTemplate from "@/components/templates/UnauthorizedTemplate";
+import { useRouter } from "next/navigation";
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
@@ -31,13 +33,25 @@ export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await OLF.post(ApiLinks.dashboard, {
-          owner_email: User?.authUser?.email,
+        const response = await OLF.post(
+          ApiLinks.dashboard,
+          {
+            owner_email: User?.authUser?.email,
+          },
+          undefined,
+          User.authUser?.token ?? "",
+        ).catch((error) => {
+          console.log(error);
+          if (error.response?.status == 401) {
+            return <UnauthorizedTemplate />;
+          }
+          throw error;
         });
 
         // Transform snake_case to camelCase
@@ -50,7 +64,15 @@ export default function Dashboard() {
         console.log(response);
 
         setData(transformedData as DashboardData);
-      } catch (err) {
+      } catch (err: any) {
+        if (
+          err.message?.includes("401") ||
+          err.message?.includes("Unauthorized") ||
+          err.message?.includes("Authorization header")
+        ) {
+          console.log("unauthorized, redirect");
+          router.push("/unauthorized");
+        }
         console.error("Failed to fetch dashboard data:", err);
         setError("Failed to load dashboard data");
       } finally {

@@ -74,6 +74,7 @@ export default function Register() {
 
       UserDispatch({ type: "setUser", value: user });
       toast.success("Registration Successful!");
+      localStorage.setItem("jwt_token", user.authUser?.token ?? "");
       router.push("/hub");
       router.refresh();
     } catch (error) {

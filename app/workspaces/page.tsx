@@ -19,6 +19,7 @@ import WorkspaceEntry from "@/components/WorkspaceEntry";
 import toast from "react-hot-toast";
 import { getFilePreview, revokeObjectUrl } from "@/ev-lib/fileUtils";
 import CustomMenu from "@/components/CustomMenu";
+import UnauthorizedTemplate from "@/components/templates/UnauthorizedTemplate";
 
 export default function Workspaces() {
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
@@ -89,11 +90,25 @@ export default function Workspaces() {
       const fetchedWorkspaces: Workspace[] = await OLF.post(
         ApiLinks.listWorkspaces,
         { email: userEmail },
-      );
+        undefined,
+        User.authUser?.token ?? "",
+      ).catch((error) => {
+        console.log(error);
+        if (error.response?.status == 401) {
+          return <UnauthorizedTemplate />;
+        }
+        throw error;
+      });
 
       const imageMetadataResponse: PythonReponse = await OLF.get(
-        `${ApiLinks.retrieveFiles}/${fetchedWorkspaces[0].owner_id}`, // in future list for id in workspaces since owners might differ for now its only one
-      );
+        `${ApiLinks.retrieveFiles}/${fetchedWorkspaces[0].owner_id}`,
+        undefined,
+        User.authUser?.token ?? "", // in future list for id in workspaces since owners might differ for now its only one
+      ).catch((error) => {
+        if (error.response?.status == 401) {
+          return <UnauthorizedTemplate />;
+        }
+      });
 
       setCoverImagesData(imageMetadataResponse);
       console.log(fetchedWorkspaces);

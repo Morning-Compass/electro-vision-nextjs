@@ -1,3 +1,4 @@
+import "@/ev-lib/localStorage-polyfill";
 import type { Metadata } from "next";
 import { Lexend } from "next/font/google";
 import "./globals.css";
@@ -15,6 +16,27 @@ export const metadata: Metadata = {
   description: "Electro Vision",
 };
 
+// Inline script must run before any other script so localStorage is fixed
+// when Tauri WebView exposes a broken localStorage (e.g. --localstorage-file without valid path)
+const localStoragePolyfill = `
+(function() {
+  if (typeof window === 'undefined') return;
+  try {
+    if (typeof localStorage.getItem !== 'function') {
+      var storage = {};
+      window.localStorage = {
+        getItem: function(k) { return storage[k] != null ? String(storage[k]) : null; },
+        setItem: function(k, v) { storage[k] = String(v); },
+        removeItem: function(k) { delete storage[k]; },
+        clear: function() { storage = {}; },
+        key: function(i) { return Object.keys(storage)[i] || null; },
+        get length() { return Object.keys(storage).length; }
+      };
+    }
+  } catch (e) {}
+})();
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -23,6 +45,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${lexend.className} antialiased`}>
+        <script dangerouslySetInnerHTML={{ __html: localStoragePolyfill }} />
         <UserContextProvider>
           {children}
           <Toaster position="top-center" />

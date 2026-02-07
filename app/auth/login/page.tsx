@@ -68,7 +68,7 @@ export default function Login() {
           : loginOptions.username]: data.credential,
         password: data.password,
       });
-
+      console.log(response);
       let user: User = {
         authUser: {
           id: response.id,
@@ -93,6 +93,7 @@ export default function Login() {
       // user = { ...user, fullUser: fullUser };
 
       UserDispatch({ type: "setUser", value: user });
+      localStorage.setItem("jwt_token", user.authUser?.token ?? "");
       toast.success("Login Successfull");
       router.push("/hub");
       router.refresh();

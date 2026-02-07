@@ -7,6 +7,7 @@ const ApiLinks = {
   register: rustHost + "/auth/register",
   loginEmail: rustHost + "/auth/login/email",
   loginUsername: rustHost + "/auth/login/username",
+  loginToken: rustHost + "/auth/login/token",
   validateAccount: rustHost + "/auth/validate/account",
   resetPasswordRequest: rustHost + "/auth/reset/password/", //token after /
   resetPassword: rustHost + "/auth/reset/password",
@@ -22,6 +23,7 @@ const ApiLinks = {
   removeFile: pythonHost + "/images/remove-file",
   inviteWorker: rustHost + "/workspace/invitation/create",
   addPythonTask: pythonHost + "/tasks/add-task",
+
   listPythonTasks: (workspaceId: string) => {
     return pythonHost + "/tasks/list-tasks-by-workspace/" + workspaceId;
   },
