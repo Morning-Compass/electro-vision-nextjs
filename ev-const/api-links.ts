@@ -13,14 +13,14 @@ const ApiLinks = {
   resetPassword: rustHost + "/auth/reset/password",
   verifySession: rustHost + "/auth/validate/session",
   createWorkspace: rustHost + "/workspace/create",
-  uploadImage: pythonHost + "/images/upload/",
+  uploadImage: rustHost + "/images/upload/",
   listWorkspaces: rustHost + "/workspace/list",
   listWorkspaceUsersByWorkspaceIdAndEmail: (id: string) => {
     return rustHost + "/workspace/" + id + "/users/list";
   },
-  listFiles: pythonHost + "/images/list-files/",
-  retrieveFiles: pythonHost + "/images/all-files",
-  removeFile: pythonHost + "/images/remove-file",
+  listFiles: rustHost + "/images/list-files/",
+  retrieveFiles: rustHost + "/images/all-files",
+  removeFile: rustHost + "/images/remove-file",
   inviteWorker: rustHost + "/workspace/invitation/create",
   addPythonTask: pythonHost + "/tasks/add-task",
 

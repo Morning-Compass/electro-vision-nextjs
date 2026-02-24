@@ -18,6 +18,10 @@ export class ElectroVisionFetch {
       ? new Headers(headers)
       : new Headers(headers || this.defaultHeaders);
 
+    if (isFormData) {
+      requestHeaders.delete("Content-Type");
+    }
+
     const body = isFormData
       ? data
       : data && typeof data !== "string"
@@ -61,13 +65,17 @@ export class ElectroVisionFetch {
       ? "Bearer " + authorization
       : authorization;
 
-    const combinedHeaders =
-      headers !== null && headers !== undefined
-        ? new Headers(headers)
-        : new Headers();
+    const combinedHeaders = new Headers(this.defaultHeaders);
+
+    if (headers !== null && headers !== undefined) {
+      const providedHeaders = new Headers(headers);
+      providedHeaders.forEach((value, key) => {
+        combinedHeaders.set(key, value);
+      });
+    }
 
     if (authorization !== null && authorization !== undefined) {
-      combinedHeaders.append("Authorization", authorization);
+      combinedHeaders.set("Authorization", authorization);
     }
     return this.makeRequest(method, endpointUrl, data, combinedHeaders);
   }

@@ -100,10 +100,15 @@ export default function Workspaces() {
         throw error;
       });
 
+      if (!fetchedWorkspaces || fetchedWorkspaces.length === 0) {
+        setWorkspaces([]);
+        return;
+      }
+
       const imageMetadataResponse: PythonReponse = await OLF.get(
         `${ApiLinks.retrieveFiles}/${fetchedWorkspaces[0].owner_id}`,
         undefined,
-        User.authUser?.token ?? "", // in future list for id in workspaces since owners might differ for now its only one
+        User.authUser?.token ?? "",
       ).catch((error) => {
         if (error.response?.status == 401) {
           return <UnauthorizedTemplate />;
@@ -213,8 +218,13 @@ export default function Workspaces() {
 
     let imageUploadedSuccessfully = false;
     try {
-      console.log("Uploading image via Python backend...");
-      const uploadResponse = await OLF.post(ApiLinks.uploadImage, formData);
+      console.log("Uploading image...");
+      const uploadResponse = await OLF.post(
+        ApiLinks.uploadImage,
+        formData,
+        undefined,
+        User.authUser?.token ?? "",
+      );
       console.log("Image Upload response:", uploadResponse);
       imageUploadedSuccessfully = true;
       toast.success("Image uploaded successfully.");
@@ -238,6 +248,8 @@ export default function Workspaces() {
         const response_workspace = await OLF.post(
           ApiLinks.createWorkspace,
           workspacePayload,
+          undefined,
+          User.authUser?.token ?? "",
         );
         console.log("Rust created workspace response:", response_workspace);
         toast.success("Workspace added successfully!");
@@ -259,6 +271,8 @@ export default function Workspaces() {
           await OLF.delete(
             `${ApiLinks.removeFile}/${userIdStr}/${selectedFile.name}`,
             {},
+            undefined,
+            User.authUser?.token ?? "",
           );
           console.log(`Successfully removed image: ${selectedFile.name}`);
           toast.error("Image upload canceled.");
@@ -488,7 +502,12 @@ export default function Workspaces() {
                 try {
                   await Promise.all(
                     selectedWorkspaceIds.map(async (id) => {
-                      await OLF.delete(ApiLinks.removeWorkspace(id.toString()));
+                      await OLF.delete(
+                        ApiLinks.removeWorkspace(id.toString()),
+                        undefined,
+                        undefined,
+                        User.authUser?.token ?? "",
+                      );
                     }),
                   );
 

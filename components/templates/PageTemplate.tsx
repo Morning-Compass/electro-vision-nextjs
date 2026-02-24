@@ -54,6 +54,8 @@ const PageTemplate = ({
       localStorage.setItem("jwt_token", user.authUser?.token ?? "");
     } catch (error) {
       console.error("Login error:", error);
+      localStorage.removeItem("jwt_token");
+      UserDispatch({ type: "setUser", value: { authUser: null, fullUser: null, theme: Themes.light, workspaceData: null } });
       router.push("/auth/login");
       toast.error(
         error instanceof Error ? `${error.message}` : "Login failed",
@@ -65,6 +67,7 @@ const PageTemplate = ({
   };
 
   useLayoutEffect(() => {
+    if (allowUnauthenticated) return;
     if (!isUserValid()) {
       loginByToken();
     }
