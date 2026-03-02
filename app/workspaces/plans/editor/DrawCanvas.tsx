@@ -544,6 +544,9 @@ export default function DrawCanvas({
 
   if (!visible) return null;
 
+  const activeLayer = layers.find((l) => l.id === activeLayerId);
+  const activeLayerVisible = activeLayer?.visible ?? true;
+
   return (
     <div ref={containerRef} className="absolute inset-0 z-[500]">
       {/* Background layers (visible, not active) */}
@@ -562,13 +565,17 @@ export default function DrawCanvas({
       {/* Active drawing canvas */}
       <canvas
         ref={canvasRef}
-        className={`absolute inset-0 ${!activeLayerId
-            ? "cursor-not-allowed"
-            : tool === "text"
-              ? "cursor-text"
-              : "cursor-crosshair"
+        className={`absolute inset-0 ${!activeLayerId || !activeLayerVisible
+          ? "cursor-not-allowed"
+          : tool === "text"
+            ? "cursor-text"
+            : "cursor-crosshair"
           }`}
-        style={{ zIndex: 501 }}
+        style={{
+          zIndex: 501,
+          opacity: activeLayerVisible ? 1 : 0,
+          pointerEvents: activeLayerVisible ? "auto" : "none",
+        }}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -585,8 +592,8 @@ export default function DrawCanvas({
             key={t.id}
             onClick={() => setTool(t.id)}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${tool === t.id
-                ? "bg-blue-500 text-white shadow-sm"
-                : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+              ? "bg-blue-500 text-white shadow-sm"
+              : "bg-gray-100 hover:bg-gray-200 text-gray-700"
               }`}
           >
             {t.label}
@@ -702,10 +709,10 @@ export default function DrawCanvas({
                 <div
                   key={layer.id}
                   className={`flex items-center gap-1.5 px-2 py-1.5 rounded text-xs transition cursor-pointer ${isActive
-                      ? "bg-blue-100 border-2 border-blue-400"
-                      : layer.visible
-                        ? "bg-gray-50 border border-gray-200 hover:bg-gray-100"
-                        : "bg-gray-50 border border-gray-200 opacity-50"
+                    ? "bg-blue-100 border-2 border-blue-400"
+                    : layer.visible
+                      ? "bg-gray-50 border border-gray-200 hover:bg-gray-100"
+                      : "bg-gray-50 border border-gray-200 opacity-50"
                     }`}
                   onClick={() => handleSelectLayer(layer.id)}
                 >
