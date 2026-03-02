@@ -20,6 +20,9 @@ const ApiLinks = {
   },
   listFiles: rustHost + "/images/list-files/",
   retrieveFiles: rustHost + "/images/all-files",
+  retrieveAllImages: (userId: string) => rustHost + "/images/all-images/" + userId,
+  imageFile: (userId: string, fileName: string) =>
+    rustHost + "/images/file/" + userId + "/" + fileName,
   removeFile: rustHost + "/images/remove-file",
   inviteWorker: rustHost + "/workspace/invitation/create",
   addPythonTask: pythonHost + "/tasks/add-task",
@@ -61,7 +64,22 @@ const ApiLinks = {
     return rustHost + "/workspace/" + id;
   },
 
-  // removeWorker: ()
+  drawingLayers: {
+    list: (workspaceId: string) =>
+      rustHost + "/workspace/" + workspaceId + "/drawings/list",
+    create: (workspaceId: string) =>
+      rustHost + "/workspace/" + workspaceId + "/drawings/create",
+    rename: (workspaceId: string, layerId: string) =>
+      rustHost + "/workspace/" + workspaceId + "/drawings/" + layerId + "/rename",
+    reorder: (workspaceId: string) =>
+      rustHost + "/workspace/" + workspaceId + "/drawings/reorder",
+    delete: (workspaceId: string, layerId: string) =>
+      rustHost + "/workspace/" + workspaceId + "/drawings/" + layerId,
+    saveImage: (workspaceId: string, layerId: string) =>
+      rustHost + "/workspace/" + workspaceId + "/drawings/" + layerId + "/save",
+    getImage: (workspaceId: string, layerId: string) =>
+      rustHost + "/workspace/" + workspaceId + "/drawings/" + layerId + "/image",
+  },
 } as const;
 
 export default ApiLinks;

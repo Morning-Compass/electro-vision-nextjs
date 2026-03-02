@@ -70,6 +70,8 @@ const LeafletMap = dynamic(() => import("./LeafletMap"), {
   ),
 });
 
+const DrawCanvas = dynamic(() => import("./DrawCanvas"), { ssr: false });
+
 function handleDirectDrop(
   event: DragEvent,
   onDrop: (
@@ -156,6 +158,7 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
     register,
     reset,
     setValue,
+    watch,
     control,
   } = useForm<TaskFormProps>({
     mode: "onTouched",
@@ -327,25 +330,42 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
             <label htmlFor="taskAssigneeMap" className="text-lg">
               Assignee Email*
             </label>
-            <select
-              id="taskAssigneeMap"
-              className="w-full p-3 bg-ev-main-bg text-ev-dark-gray rounded-lg hover:scale-105 transition appearance-none focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
-              {...register("assignee_email", {
-                required: "Assignee is required",
-              })}
-            >
-              {workspaceUsers && workspaceUsers.length > 0 ? (
-                workspaceUsers.map((u, i) => (
-                  <option key={i} value={u.email}>
-                    {u.email}
-                  </option>
-                ))
-              ) : (
+            <div className="flex gap-2">
+              <select
+                id="taskAssigneeMap"
+                value={watch("assignee_email") || ""}
+                className="w-full p-3 bg-ev-main-bg text-ev-dark-gray rounded-lg hover:scale-105 transition appearance-none focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
+                {...register("assignee_email", {
+                  required: "Assignee is required",
+                })}
+              >
                 <option value="" disabled>
-                  No users available
+                  Select assignee...
                 </option>
-              )}
-            </select>
+                {workspaceUsers && workspaceUsers.length > 0 ? (
+                  workspaceUsers.map((u, i) => (
+                    <option key={i} value={u.email}>
+                      {u.email}
+                    </option>
+                  ))
+                ) : (
+                  <option value="" disabled>
+                    No users available
+                  </option>
+                )}
+              </select>
+              <button
+                type="button"
+                onClick={() => {
+                  if (currentUserEmail) {
+                    setValue("assignee_email", currentUserEmail, { shouldValidate: true });
+                  }
+                }}
+                className="px-3 py-2 bg-ev-blue text-white rounded-lg hover:scale-105 transition whitespace-nowrap text-sm"
+              >
+                Assign to me
+              </button>
+            </div>
             {errors.assignee_email && (
               <p className="text-ev-red text-sm mt-1">
                 {errors.assignee_email.message}
@@ -456,6 +476,7 @@ const AddTaskOverlay: React.FC<AddTaskOverlayProps> = ({
     register,
     reset,
     setValue,
+    watch,
     control,
   } = useForm<TaskFormProps>({
     mode: "onTouched",
@@ -632,25 +653,42 @@ const AddTaskOverlay: React.FC<AddTaskOverlayProps> = ({
             <label htmlFor="taskAssignee" className="text-lg">
               Assignee Email*
             </label>
-            <select
-              id="taskAssignee"
-              className="w-full p-3 bg-ev-main-bg text-ev-dark-gray rounded-lg hover:scale-105 transition appearance-none focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
-              {...register("assignee_email", {
-                required: "Assignee is required",
-              })}
-            >
-              {workspaceUsers && workspaceUsers.length > 0 ? (
-                workspaceUsers.map((u, i) => (
-                  <option key={i} value={u.email}>
-                    {u.email}
-                  </option>
-                ))
-              ) : (
+            <div className="flex gap-2">
+              <select
+                id="taskAssignee"
+                value={watch("assignee_email") || ""}
+                className="w-full p-3 bg-ev-main-bg text-ev-dark-gray rounded-lg hover:scale-105 transition appearance-none focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
+                {...register("assignee_email", {
+                  required: "Assignee is required",
+                })}
+              >
                 <option value="" disabled>
-                  No users available
+                  Select assignee...
                 </option>
-              )}
-            </select>
+                {workspaceUsers && workspaceUsers.length > 0 ? (
+                  workspaceUsers.map((u, i) => (
+                    <option key={i} value={u.email}>
+                      {u.email}
+                    </option>
+                  ))
+                ) : (
+                  <option value="" disabled>
+                    No users available
+                  </option>
+                )}
+              </select>
+              <button
+                type="button"
+                onClick={() => {
+                  if (currentUserEmail) {
+                    setValue("assignee_email", currentUserEmail, { shouldValidate: true });
+                  }
+                }}
+                className="px-3 py-2 bg-ev-blue text-white rounded-lg hover:scale-105 transition whitespace-nowrap text-sm"
+              >
+                Assign to me
+              </button>
+            </div>
             {errors.assignee_email && (
               <p className="text-ev-red text-sm mt-1">
                 {errors.assignee_email.message}
@@ -743,6 +781,7 @@ function MapEditor() {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const leafletMapInstanceRef = useRef<any>(null);
 
+  const [drawMode, setDrawMode] = useState(false);
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [tasks, setTasks] = useState<TaskNodeData[]>(initialTasks);
   const [connections, setConnections] =
@@ -1256,11 +1295,10 @@ function MapEditor() {
                 />
                 <Input
                   type="button"
-                  className={`text-ev-white ${
-                    connectionMode
-                      ? "bg-ev-orange"
-                      : "bg-ev-blue hover:bg-ev-darkblue"
-                  } font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none focus:ring-2 focus:ring-mc-blue-darker duration-300`}
+                  className={`text-ev-white ${connectionMode
+                    ? "bg-ev-orange"
+                    : "bg-ev-blue hover:bg-ev-darkblue"
+                    } font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none focus:ring-2 focus:ring-mc-blue-darker duration-300`}
                   value={connectionMode ? "Cancel Connection" : "Connect Tasks"}
                   onClick={() => {
                     setConnectionMode(!connectionMode);
@@ -1270,6 +1308,20 @@ function MapEditor() {
                     connectionMode
                       ? "Cancel creating connection"
                       : "Create connection between two tasks on map"
+                  }
+                />
+                <Input
+                  type="button"
+                  className={`text-ev-white ${drawMode
+                    ? "bg-ev-orange"
+                    : "bg-purple-600 hover:bg-purple-700"
+                    } font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none focus:ring-2 focus:ring-purple-400 duration-300`}
+                  value={drawMode ? "Exit Draw Mode" : "Draw on Plan"}
+                  onClick={() => setDrawMode(!drawMode)}
+                  title={
+                    drawMode
+                      ? "Disable drawing tools"
+                      : "Enable drawing tools to annotate the plan"
                   }
                 />
                 <SearchButton />
@@ -1296,9 +1348,16 @@ function MapEditor() {
                 onTaskSelect={handleTaskSelect}
                 onTaskDrop={handleTaskDrop}
                 onTaskDragEnd={handleTaskDragEnd}
+                drawEnabled={drawMode}
                 setMapInstance={(map) => {
                   leafletMapInstanceRef.current = map;
                 }}
+              />
+              <DrawCanvas
+                visible={drawMode}
+                workspaceId={User.workspaceData?.currentWorkspace?.id ?? 0}
+                token={User.authUser?.token ?? ""}
+                userId={User.workspaceData?.currentWorkspace?.owner_id ?? 0}
               />
               {connectionMode && connectionSource && (
                 <div className="absolute top-0 left-0 right-0 bg-ev-orange text-white p-2 text-center z-[1000]">

@@ -82,12 +82,14 @@ export default function WorkspaceDetails() {
       register,
       reset,
       setValue,
+      watch,
       control,
     } = useForm<TaskFormProps>({
       mode: "onTouched",
       reValidateMode: "onChange",
       defaultValues: {
         importance: "LOW",
+        assignee_email: "",
       },
     });
 
@@ -207,21 +209,38 @@ export default function WorkspaceDetails() {
             <FormErrorWrap>
               <div className="flex flex-col gap-4">
                 <p className="sm:text-xl">Assignee Email*</p>
-                <select
-                  className="px-3 py-2 bg-ev-primary-bg text-ev-dark-gray rounded-lg w-full hover:scale-105 transition appearance-none"
-                  {...register("assignee_email", {
-                    required: "Assignee is required",
-                  })}
-                >
-                  {workspaceUsers &&
-                    workspaceUsers.map((u, i) => {
-                      return (
-                        <option key={i} value={u.email}>
-                          {u.email}
-                        </option>
-                      );
+                <div className="flex gap-2">
+                  <select
+                    value={watch("assignee_email") || ""}
+                    className="px-3 py-2 bg-ev-primary-bg text-ev-dark-gray rounded-lg w-full hover:scale-105 transition appearance-none"
+                    {...register("assignee_email", {
+                      required: "Assignee is required",
                     })}
-                </select>
+                  >
+                    <option value="" disabled>
+                      Select assignee...
+                    </option>
+                    {workspaceUsers &&
+                      workspaceUsers.map((u, i) => {
+                        return (
+                          <option key={i} value={u.email}>
+                            {u.email}
+                          </option>
+                        );
+                      })}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (User.authUser?.email) {
+                        setValue("assignee_email", User.authUser.email, { shouldValidate: true });
+                      }
+                    }}
+                    className="px-3 py-2 bg-ev-blue text-white rounded-lg hover:scale-105 transition whitespace-nowrap text-sm"
+                  >
+                    Assign to me
+                  </button>
+                </div>
               </div>
             </FormErrorWrap>
 
@@ -566,7 +585,7 @@ export default function WorkspaceDetails() {
                     </div>
                     <div className="flex justify-around mb-10 items-center">
                       {User.workspaceData?.currentWorkspace?.role ===
-                      "CREATOR" ? (
+                        "CREATOR" ? (
                         <>
                           <Input
                             name="add"
@@ -621,7 +640,7 @@ export default function WorkspaceDetails() {
                               selectedWorkersIds={selectedWorkersIds}
                               workspaceUsers={workspaceUsers}
                               role={workspaceUser.workspace_role}
-                              // photo={workspaceUser.p}
+                            // photo={workspaceUser.p}
                             />
                           ))}
                         </>
@@ -633,11 +652,10 @@ export default function WorkspaceDetails() {
                 ) : null}
 
                 <div
-                  className={` p-6 bg-ev-primary-bg overflow-y-scroll rounded-xl ${
-                    User.workspaceData?.currentWorkspace?.role === "CREATOR"
+                  className={` p-6 bg-ev-primary-bg overflow-y-scroll rounded-xl ${User.workspaceData?.currentWorkspace?.role === "CREATOR"
                       ? "h-1/2"
                       : "h-full"
-                  } `}
+                    } `}
                 >
                   <div className="flex justify-between items-center mb-10 border-b-4 gap-4 pb-4">
                     <p className="text-2xl">Tasks</p>
@@ -645,7 +663,7 @@ export default function WorkspaceDetails() {
                   </div>
                   <div className="flex justify-around mb-10 items-center">
                     {User.workspaceData?.currentWorkspace?.role ===
-                    "CREATOR" ? (
+                      "CREATOR" ? (
                       <>
                         <Input
                           name="add_task"
@@ -689,8 +707,8 @@ export default function WorkspaceDetails() {
                   </div>
                   <div className="flex flex-col gap-4 mb-10 w-full">
                     {tasks === null ||
-                    tasks === undefined ||
-                    tasks.length === 0 ? (
+                      tasks === undefined ||
+                      tasks.length === 0 ? (
                       <p>Workspace doesn't have any tasks</p>
                     ) : (
                       <>
@@ -721,7 +739,7 @@ export default function WorkspaceDetails() {
                   </div>
                   <div className="flex justify-around mb-10 items-center">
                     {User.workspaceData?.currentWorkspace?.role ===
-                    "CREATOR" ? (
+                      "CREATOR" ? (
                       <>
                         <Input
                           name="add"
@@ -836,8 +854,8 @@ export default function WorkspaceDetails() {
                 </div>
                 <div className="flex flex-col gap-4 mb-10 w-full">
                   {tasks === null ||
-                  tasks === undefined ||
-                  tasks.length === 0 ? (
+                    tasks === undefined ||
+                    tasks.length === 0 ? (
                     <p>Workspace doesn't have any tasks</p>
                   ) : (
                     <>

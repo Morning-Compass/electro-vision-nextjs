@@ -6,14 +6,13 @@ import {
   Popup,
   Polyline,
   useMapEvents,
+  useMap,
   ZoomControl,
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { root } from "postcss";
 import useUserContext from "@/ev-contexts/userContextProvider";
 
-// Define the types for our props
 interface TaskNodeData {
   id: string;
   label: string;
@@ -42,9 +41,31 @@ interface LeafletMapProps {
   ) => void;
   onTaskDragEnd: (id: string, position: [number, number]) => void;
   setMapInstance?: (map: any) => void;
+  drawEnabled?: boolean;
 }
 
-// Component to handle map events including drag and drop
+function MapInteractionToggle({ disabled }: { disabled: boolean }) {
+  const map = useMap();
+  useEffect(() => {
+    if (disabled) {
+      map.dragging.disable();
+      map.touchZoom.disable();
+      map.doubleClickZoom.disable();
+      map.scrollWheelZoom.disable();
+      map.boxZoom.disable();
+      map.keyboard.disable();
+    } else {
+      map.dragging.enable();
+      map.touchZoom.enable();
+      map.doubleClickZoom.enable();
+      map.scrollWheelZoom.enable();
+      map.boxZoom.enable();
+      map.keyboard.enable();
+    }
+  }, [disabled, map]);
+  return null;
+}
+
 function MapEventHandler({
   onTaskDrop,
   setMapInstance,
@@ -97,7 +118,6 @@ function MapEventHandler({
   return null;
 }
 
-// Main Map Component
 export default function LeafletMap({
   tasks,
   connections,
@@ -106,6 +126,7 @@ export default function LeafletMap({
   onTaskDrop,
   onTaskDragEnd,
   setMapInstance,
+  drawEnabled = false,
 }: LeafletMapProps) {
   const { User } = useUserContext();
 
@@ -179,8 +200,8 @@ export default function LeafletMap({
       />
 
       <ZoomControl position="bottomleft" />
+      <MapInteractionToggle disabled={drawEnabled} />
 
-      {/* Map event handler for drag and drop */}
       <MapEventHandler
         onTaskDrop={onTaskDrop}
         setMapInstance={setMapInstance}
@@ -197,10 +218,10 @@ export default function LeafletMap({
           icon={
             task.image
               ? new L.Icon({
-                  iconUrl: task.image,
-                  iconSize: [40, 40],
-                  iconAnchor: [12, 41],
-                })
+                iconUrl: task.image,
+                iconSize: [40, 40],
+                iconAnchor: [12, 41],
+              })
               : defaultTaskIcon
           }
           eventHandlers={{
