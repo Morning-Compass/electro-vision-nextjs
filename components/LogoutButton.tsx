@@ -4,32 +4,41 @@ import Themes from "@/ev-const/themes";
 import useUserContext from "@/ev-contexts/userContextProvider";
 import { User } from "@/ev-types/user-types";
 import { useRouter } from "next/navigation";
-import React from "react";
+import { LogOut } from "lucide-react";
 
-const logout = (router, userDispatch) => {
-  userDispatch({
-    type: "setUser",
-    value: {
-      authUser: null,
-      fullUser: null,
-      theme: Themes.light,
-      currentWorkspace: null,
-    } as User,
-  });
-  router.push("/");
-  router.refresh();
+type LogoutButtonProps = {
+  collapsed?: boolean;
 };
 
-const LogoutButton = () => {
+const LogoutButton = ({ collapsed = false }: LogoutButtonProps) => {
   const { UserDispatch } = useUserContext();
   const router = useRouter();
 
+  const handleLogout = () => {
+    UserDispatch({
+      type: "setUser",
+      value: {
+        authUser: null,
+        fullUser: null,
+        theme: Themes.dark,
+        workspaceData: null,
+      } as User,
+    });
+    localStorage.removeItem("jwt_token");
+    router.push("/auth/login");
+    router.refresh();
+  };
+
   return (
     <button
-      onClick={() => logout(router, UserDispatch)}
-      className="text-ev-text"
+      onClick={handleLogout}
+      title={collapsed ? "Logout" : undefined}
+      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-ev-muted hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 w-full ${
+        collapsed ? "justify-center" : ""
+      }`}
     >
-      Logout
+      <LogOut className="w-4 h-4 flex-shrink-0" />
+      {!collapsed && <span className="text-sm">Logout</span>}
     </button>
   );
 };

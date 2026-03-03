@@ -1,4 +1,5 @@
-import { Task, Workspace } from "./workspace-types";
+import { Task, Workspace, WorkspaceUser } from "./workspace-types";
+export type { WorkspaceUser };
 
 export type User = {
   theme: string;
@@ -41,11 +42,3 @@ export type FullUser = {
   citizenships_countries_iso3: string[] | null;
 };
 
-export type WorkspaceUser = {
-  id: number;
-  username: string;
-  email: string;
-  position: string | null;
-  workspace_role: string;
-  photo: string | null;
-};

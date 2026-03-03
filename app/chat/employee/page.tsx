@@ -1,43 +1,62 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import PageTemplate from "@/components/templates/PageTemplate";
 import NavbarTemplate from "@/components/templates/NavbarTemplate";
-import { FooterSmall } from "@/components/templates/FooterSmall";
 import SidebarTemplate from "@/components/templates/SidebarTemplate";
 import ContentBlock from "@/components/ContentBlock";
-import ContentBlockElement from "@/components/ContentBlockElement";
 import Link from "next/link";
 
-export default function ChatEmployee() {
+function ChatEmployeeContent() {
   const searchParams = useSearchParams();
 
   const id: number = parseInt(searchParams.get("id") ?? "0");
   const employee: string = searchParams.get("employee") ?? "employee";
   const role: string = searchParams.get("role") ?? "role";
   const department: string = searchParams.get("department") ?? "department";
+
+  return (
+    <div className="flex h-screen overflow-hidden">
+      <SidebarTemplate />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <NavbarTemplate />
+        <ContentBlock blockClassName="p-6">
+          <div className="mb-4">
+            <Link href="/chat" className="text-ev-yellow text-sm hover:underline">← Back to Chat</Link>
+          </div>
+          <div className="bg-[#1e293b] border border-[#334155] rounded-2xl p-5">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div>
+                <p className="text-slate-500 text-xs">ID</p>
+                <p className="text-slate-100 font-medium mt-1">{id}</p>
+              </div>
+              <div>
+                <p className="text-slate-500 text-xs">Employee</p>
+                <p className="text-slate-100 font-medium mt-1">{employee}</p>
+              </div>
+              <div>
+                <p className="text-slate-500 text-xs">Role</p>
+                <p className="text-slate-100 font-medium mt-1">{role}</p>
+              </div>
+              <div>
+                <p className="text-slate-500 text-xs">Department</p>
+                <p className="text-slate-100 font-medium mt-1">{department}</p>
+              </div>
+            </div>
+          </div>
+        </ContentBlock>
+      </div>
+    </div>
+  );
+}
+
+export default function ChatEmployee() {
   return (
     <PageTemplate>
-      <NavbarTemplate />
-      <section className="flex flex-row items-center h-full gap-8 w-[90vw]">
-        <SidebarTemplate activeIcon="chat" />
-        <ContentBlock>
-          <section className="bg-gray-200 w-full p-1 h-auto rounded-[0.9em] flex items-center justify-center ">
-            <section
-              className={`flex justify-around text-[1.2em] text-[#3354F4] font-semibold w-full max-lg:text-sm`}
-            >
-              <Link href={"/chat"}>Back</Link>
-              <section className="grid gap-8 ml-4 grid-cols-4 max-md:grid-cols-3 max-md:gap-4">
-                <p>{id}</p>
-                <p>{employee}</p>
-                <p>{role}</p>
-                <p>{department}</p>
-              </section>
-            </section>
-          </section>
-        </ContentBlock>
-      </section>
-      <FooterSmall />
+      <Suspense fallback={null}>
+        <ChatEmployeeContent />
+      </Suspense>
     </PageTemplate>
   );
 }

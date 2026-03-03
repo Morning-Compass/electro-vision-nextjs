@@ -24,7 +24,6 @@ const PageTemplate = ({
   requiredValidUser = true,
 }: CleanPageProps) => {
   const { User, UserDispatch } = useUserContext();
-  const [authenticated, setAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -36,7 +35,7 @@ const PageTemplate = ({
           localStorage.getItem("jwt_token") ?? User.authUser?.token ?? "",
       });
 
-      let user: User = {
+      const user: User = {
         authUser: {
           id: response.id,
           username: response.username,
@@ -47,7 +46,7 @@ const PageTemplate = ({
           roles: response.roles,
         },
         fullUser: null,
-        theme: Themes.light,
+        theme: Themes.dark,
         workspaceData: null,
       };
       UserDispatch({ type: "setUser", value: user });
@@ -55,11 +54,19 @@ const PageTemplate = ({
     } catch (error) {
       console.error("Login error:", error);
       localStorage.removeItem("jwt_token");
-      UserDispatch({ type: "setUser", value: { authUser: null, fullUser: null, theme: Themes.light, workspaceData: null } });
+      UserDispatch({
+        type: "setUser",
+        value: {
+          authUser: null,
+          fullUser: null,
+          theme: Themes.dark,
+          workspaceData: null,
+        },
+      });
       router.push("/auth/login");
       toast.error(
-        error instanceof Error ? `${error.message}` : "Login failed",
-        { duration: 5000 },
+        error instanceof Error ? error.message : "Session expired",
+        { duration: 5000 }
       );
     } finally {
       setIsLoading(false);
@@ -73,25 +80,27 @@ const PageTemplate = ({
     }
   }, []);
 
-  const isUserValid = () => {
-    return !!User.authUser?.id && !!User.authUser?.email;
-  };
+  const isUserValid = () => !!User.authUser?.id && !!User.authUser?.email;
 
-  const baseClasses = `bg-center bg-ev-main-bg bg-fixed bg-cover text-ev-text min-h-screen w-screen font-mono gap-5 theme-${User.theme} flex flex-col items-center h-[100vh] ${bgClass || ""}`;
+  const baseClasses = `theme-${User.theme ?? "dark"} bg-ev-main-bg text-ev-text min-h-screen w-screen flex flex-col ${bgClass ?? ""}`;
 
+  // Auth pages — full screen centered
   if (allowUnauthenticated) {
     return <main className={baseClasses}>{children}</main>;
   }
 
-  const userIsValid = isUserValid();
-  const showLoginPrompt = requiredValidUser && !userIsValid;
-
-  if (showLoginPrompt) {
+  // Require login
+  if (requiredValidUser && !isUserValid() && !isLoading) {
     return (
-      <main className="bg-ev-main-bg text-ev-secondary text-2xl text-center flex items-center justify-center flex-col w-[100vw] h-[100vh]">
-        <p>You need to be logged in to access this page</p>
-        <Link href="/auth/login" className="text-ev-blue mt-4">
-          Login here
+      <main className="bg-[#0a0f1e] theme-dark text-slate-100 text-center flex items-center justify-center flex-col w-screen h-screen gap-4">
+        <div className="text-4xl">⚡</div>
+        <p className="text-lg font-semibold">Authentication required</p>
+        <p className="text-slate-400 text-sm">Please sign in to access this page</p>
+        <Link
+          href="/auth/login"
+          className="mt-2 px-5 py-2.5 bg-ev-yellow text-[#0a0f1e] rounded-xl text-sm font-semibold hover:brightness-110 transition-all"
+        >
+          Sign In
         </Link>
       </main>
     );

@@ -2,18 +2,19 @@ import { ReactNode } from "react";
 
 export type SidebarProps = {
   children: ReactNode;
+  collapsed?: boolean;
 };
 
-function Sidebar({ children, ...props }: SidebarProps) {
+export default function Sidebar({ children, collapsed = false }: SidebarProps) {
   return (
     <nav
-      {...props}
-      // className="flex flex-col self-start ml-8 bg-ev-primary p-4 rounded-[0.9em]"
-      className="flex flex-col bg-ev-primary p-4 rounded-[0.9em] max-sm:hidden"
+      className={`
+        flex flex-col h-full bg-ev-sidebar border-r border-ev-stroke
+        transition-all duration-300 flex-shrink-0
+        ${collapsed ? "w-16" : "w-56"}
+      `.trim()}
     >
       {children}
     </nav>
   );
 }
-
-export default Sidebar;

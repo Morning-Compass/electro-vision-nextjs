@@ -73,40 +73,45 @@ function MapEventHandler({
   onTaskDrop: LeafletMapProps["onTaskDrop"];
   setMapInstance?: (map: any) => void;
 }) {
-  const map = useMapEvents({
-    dragover: (e) => {
-      e.originalEvent.preventDefault();
-      // Add a visual cue that this is a droppable area
-      if (e.originalEvent.dataTransfer) {
-        e.originalEvent.dataTransfer.dropEffect = "copy";
-      }
-    },
-    dragenter: (e) => {
-      e.originalEvent.preventDefault();
-    },
-    drop: (e) => {
-      e.originalEvent.preventDefault();
+  // useMapEvents needs at least one Leaflet event to initialise; use a no-op
+  const map = useMapEvents({ load: () => {} });
 
-      // Get data from dataTransfer
-      const dataTransfer = e.originalEvent.dataTransfer;
+  // Drag-and-drop events are DOM events, not Leaflet events — attach via useEffect
+  useEffect(() => {
+    const container = map.getContainer();
+
+    const onDragOver = (e: DragEvent) => {
+      e.preventDefault();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
+    };
+    const onDragEnter = (e: DragEvent) => { e.preventDefault(); };
+    const onDrop = (e: DragEvent) => {
+      e.preventDefault();
+      const dataTransfer = e.dataTransfer;
       if (!dataTransfer) return;
 
-      // Get the mouse position on the map
-      const latlng = map.mouseEventToLatLng(e.originalEvent);
+      const latlng = map.mouseEventToLatLng(e as unknown as MouseEvent);
       const position: [number, number] = [latlng.lat, latlng.lng];
 
-      // Get taskId or nodeType directly using the specific data formats
       const taskId = dataTransfer.getData("application/taskId");
       const nodeType = !taskId && dataTransfer.getData("application/nodeType");
 
-      // Execute the appropriate drop action
       if (taskId) {
         onTaskDrop("customTask", position, taskId);
       } else if (nodeType) {
         onTaskDrop(nodeType, position);
       }
-    },
-  });
+    };
+
+    container.addEventListener("dragover", onDragOver);
+    container.addEventListener("dragenter", onDragEnter);
+    container.addEventListener("drop", onDrop);
+    return () => {
+      container.removeEventListener("dragover", onDragOver);
+      container.removeEventListener("dragenter", onDragEnter);
+      container.removeEventListener("drop", onDrop);
+    };
+  }, [map, onTaskDrop]);
 
   // Make the map instance available to the parent component
   useEffect(() => {
@@ -135,8 +140,8 @@ export default function LeafletMap({
     // Only run on client side
     if (typeof window === "undefined") return;
 
-    // Fix the default icon paths
-    delete L.Icon.Default.prototype._getIconUrl;
+    // Fix the default icon paths (Leaflet runtime property not in TS types)
+    delete (L.Icon.Default.prototype as any)._getIconUrl;
     L.Icon.Default.mergeOptions({
       iconRetinaUrl: "/marker-icon-2x.png",
       iconUrl: "/marker-icon.png",
@@ -194,7 +199,7 @@ export default function LeafletMap({
     >
       {/* Custom background image */}
       <ImageOverlay
-        url={User.workspaceData?.currentWorkspace?.coverPhoto || "/problem.png"}
+        url={(User.workspaceData?.currentWorkspace?.coverPhoto as string) || "/problem.png"}
         bounds={bounds}
         opacity={0.8}
       />
@@ -222,7 +227,7 @@ export default function LeafletMap({
                 iconSize: [40, 40],
                 iconAnchor: [12, 41],
               })
-              : defaultTaskIcon
+              : (defaultTaskIcon ?? undefined)
           }
           eventHandlers={{
             click: () => onTaskSelect(task.id),

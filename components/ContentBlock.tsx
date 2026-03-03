@@ -6,22 +6,25 @@ export type ContentBlockProps = {
   blockClassName?: string;
 };
 
-function ContentBlock({
+export default function ContentBlock({
   children,
   containerClassName,
   blockClassName,
 }: ContentBlockProps) {
   return (
-    <section
-      className={`flex flex-1 justify-center ${containerClassName || ""}`}
+    <div
+      className={`flex flex-1 min-w-0 flex-col overflow-hidden ${containerClassName ?? ""}`}
     >
-      <section
-        className={`flex h-[80vh] overflow-x-auto flex-col justify-start text-ev-text bg-ev-primary w-full min-w-72 opacity-95 rounded-[1.5rem] mb-auto ev-blur transition-colors duration-500 p-6 ${blockClassName || ""}`}
+      <div
+        className={`
+          flex-1 flex flex-col overflow-y-auto
+          text-ev-text bg-ev-main-bg
+          transition-colors duration-300
+          ${blockClassName ?? ""}
+        `.trim()}
       >
         {children}
-      </section>
-    </section>
+      </div>
+    </div>
   );
 }
-
-export default ContentBlock;

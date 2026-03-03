@@ -1,4 +1,11 @@
-import { WorkspaceUser } from "@/ev-types/user-types";
+export type WorkspaceUser = {
+  id: number;
+  username: string;
+  email: string;
+  position: string | null;
+  workspace_role: string;
+  photo: string | null;
+};
 
 export type Workspace = {
   id: number;

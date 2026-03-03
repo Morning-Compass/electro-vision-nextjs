@@ -1,50 +1,56 @@
-import { ReactNode } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { Stats } from "fs";
+"use client";
 
-export type SidebarElementprops = {
-  link?: string;
-  imageSrc: string;
-  imageAlt?: string;
-  imageWidth?: string;
-  imageHeight?: string;
-  containerClassName?: string; // for li element
-  linkClassName?: string; // for Link element
-  imageClassName?: string;
-  pageName?: string; // for Menu
-} & React.HTMLAttributes<HTMLLIElement>;
+import Link from "next/link";
+import { ReactNode } from "react";
+
+// New props (used by new SidebarTemplate)
+type NewSidebarElementProps = {
+  icon: ReactNode;
+  label: string;
+  href: string;
+  active?: boolean;
+  collapsed?: boolean;
+};
 
 export default function SidebarElement({
-  link,
-  imageSrc,
-  imageAlt = "Sidebar Icon",
-  containerClassName = "",
-  linkClassName = "",
-  imageClassName = "",
-  pageName = "",
-  ...props
-}: SidebarElementprops) {
+  icon,
+  label,
+  href,
+  active = false,
+  collapsed = false,
+}: NewSidebarElementProps) {
   return (
-    <li
-      className={`flex-grow-1 flex justify-center ${containerClassName}`}
-      {...props}
+    <Link
+      href={href}
+      title={collapsed ? label : undefined}
+      className={`
+        relative flex items-center gap-3 px-3 py-2.5 rounded-xl
+        transition-all duration-200 group
+        ${
+          active
+            ? "bg-ev-yellow/10 text-ev-yellow"
+            : "text-ev-muted hover:text-ev-text hover:bg-ev-surface/50"
+        }
+        ${collapsed ? "justify-center" : ""}
+      `.trim()}
     >
-      <Link
-        className={`hover:scale-125 duration-200 pt-4 pb-4 flex flex-row items-center text-ev-text ${linkClassName}`}
-        href={link ?? ""}
-      >
-        <Image
-          src={imageSrc}
-          alt={imageAlt}
-          width={32}
-          height={32}
-          className={`object-contain ${imageClassName} `}
-        />
-        {pageName && (
-          <span className="ml-4">{pageName}</span>
-        )}
-      </Link>
-    </li>
+      {active && (
+        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-ev-yellow rounded-r-full" />
+      )}
+
+      <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+        {icon}
+      </span>
+
+      {!collapsed && (
+        <span className="text-sm font-medium whitespace-nowrap">{label}</span>
+      )}
+
+      {collapsed && (
+        <span className="absolute left-full ml-3 px-2.5 py-1.5 bg-ev-surface border border-ev-stroke text-ev-text text-xs rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-ev-card">
+          {label}
+        </span>
+      )}
+    </Link>
   );
 }

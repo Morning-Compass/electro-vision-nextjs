@@ -1,6 +1,5 @@
 "use client";
 
-import { FooterSmall } from "@/components/templates/FooterSmall";
 import NavbarTemplate from "@/components/templates/NavbarTemplate";
 import useUserContext from "@/ev-contexts/userContextProvider";
 import { useEffect, useState } from "react";
@@ -20,16 +19,30 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { DashboardData, DashboardRequest } from "@/ev-types/dashboard";
+import { DashboardData } from "@/ev-types/dashboard";
 import OLF from "@/ev-lib/ElectroVisionFetch";
 import ApiLinks from "@/ev-const/api-links";
-import UnauthorizedTemplate from "@/components/templates/UnauthorizedTemplate";
 import { useRouter } from "next/navigation";
+import {
+  Building2,
+  CheckCircle2,
+  Clock,
+  AlertTriangle,
+  Users,
+  Loader2,
+} from "lucide-react";
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+const PIE_COLORS = ["#F6AA1C", "#3b82f6", "#22c55e", "#a855f7", "#ef4444", "#06b6d4"];
+
+const CHART_TOOLTIP_STYLE = {
+  backgroundColor: "#1e293b",
+  border: "1px solid #334155",
+  borderRadius: "12px",
+  color: "#f1f5f9",
+};
 
 export default function Dashboard() {
-  const { User, UserDispatch } = useUserContext();
+  const { User } = useUserContext();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -41,37 +54,25 @@ export default function Dashboard() {
         setLoading(true);
         const response = await OLF.post(
           ApiLinks.dashboard,
-          {
-            owner_email: User?.authUser?.email,
-          },
+          { owner_email: User?.authUser?.email },
           undefined,
-          User.authUser?.token ?? "",
-        ).catch((error) => {
-          console.log(error);
-          if (error.response?.status == 401) {
-            return <UnauthorizedTemplate />;
-          }
-          throw error;
-        });
+          User.authUser?.token ?? ""
+        );
 
-        // Transform snake_case to camelCase
-        const transformedData = {
+        setData({
           workspaceStats: response.workspace_stats,
           taskStats: response.task_stats,
           workerStats: response.worker_stats,
           nationalityData: response.nationality_data,
-        };
-        console.log(response);
-
-        setData(transformedData as DashboardData);
+        } as DashboardData);
       } catch (err: any) {
         if (
           err.message?.includes("401") ||
           err.message?.includes("Unauthorized") ||
           err.message?.includes("Authorization header")
         ) {
-          console.log("unauthorized, redirect");
           router.push("/unauthorized");
+          return;
         }
         console.error("Failed to fetch dashboard data:", err);
         setError("Failed to load dashboard data");
@@ -80,161 +81,196 @@ export default function Dashboard() {
       }
     };
 
-    if (User?.authUser?.email) {
-      fetchData();
-    }
+    if (User?.authUser?.email) fetchData();
   }, [User?.authUser?.email]);
 
-  if (loading)
-    return (
-      <div className="flex justify-center items-center h-64">Loading...</div>
-    );
-  if (error) return <div className="text-red-500 text-center p-4">{error}</div>;
-  if (!data) return <div>No data available</div>;
-
   return (
-    <PageTemplate bgClass="#F1F2F6">
-      <NavbarTemplate />
-      <section className="flex flex-row items-center h-full gap-8 w-[90vw]">
-        <SidebarTemplate activeIcon="category" />
-        <ContentBlock>
-          <div className="w-full space-y-8">
-            {/* Workspace Stats */}
-            <div className="bg-ev-primary-bg p-6 rounded-3xl shadow-sm">
-              <h2 className="text-xl font-semibold mb-4">Workspaces</h2>
-              <div className="grid grid-cols-3 gap-4 items-center justify-center">
-                <StatCard
-                  title="Total"
-                  value={data.workspaceStats.total}
-                  color="bg-ev-primary"
-                  fontColor="text-ev-text"
-                />
-                <StatCard
-                  title="Active"
-                  value={data.workspaceStats.active}
-                  color="bg-green-500"
-                />
-                <StatCard
-                  title="Done"
-                  value={data.workspaceStats.completed}
-                  color="bg-blue-500"
-                />
+    <PageTemplate>
+      <div className="flex h-screen overflow-hidden">
+        <SidebarTemplate />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <NavbarTemplate />
+          <ContentBlock blockClassName="p-6 gap-6">
+            {loading && (
+              <div className="flex-1 flex items-center justify-center">
+                <Loader2 className="w-8 h-8 text-ev-yellow animate-spin" />
               </div>
-            </div>
+            )}
 
-            {/* Task Stats */}
-            <div className="bg-ev-primary-bg p-6 rounded-3xl shadow-sm">
-              <h2 className="text-xl font-semibold mb-4">Tasks</h2>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={[
-                      { name: "Total", value: data.taskStats.total },
-                      { name: "Completed", value: data.taskStats.completed },
-                      { name: "In Progress", value: data.taskStats.inProgress },
-                      { name: "Overdue", value: data.taskStats.overdue },
-                    ]}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="value" fill="#8884d8" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            {/* Worker Stats */}
-            <div className="sm:grid sm:grid-cols-2  flex flex-col gap-6 ">
-              <div className="bg-ev-primary-bg p-6 rounded-3xl shadow-sm">
-                <h2 className="text-xl font-semibold mb-4">
-                  Workers by Position
-                </h2>
-                <div className="h-64">
-                  {data.workerStats.by_position &&
-                  data.workerStats.by_position.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={data.workerStats.by_position}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="count"
-                          nameKey="position"
-                          label={({ name, percent }) =>
-                            `${name}: ${(percent * 100).toFixed(0)}%`
-                          }
-                        >
-                          {data.workerStats.by_position.map((entry, index) => (
-                            <Cell
-                              key={`cell-${index}`}
-                              fill={COLORS[index % COLORS.length]}
-                            />
-                          ))}
-                        </Pie>
-                        <Tooltip
-                          formatter={(
-                            value: number,
-                            name: string,
-                            props: any,
-                          ) => [value, props.payload.position]}
-                        />
-                        <Legend />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <div className="flex items-center justify-center h-full">
-                      <p className="text-ev-text-secondary">
-                        No position data available
-                      </p>
-                    </div>
-                  )}
+            {error && (
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-center">
+                  <AlertTriangle className="w-10 h-10 text-red-400 mx-auto mb-3" />
+                  <p className="text-slate-400">{error}</p>
                 </div>
               </div>
+            )}
 
-              <div className="bg-ev-primary-bg p-6 rounded-3xl shadow-sm">
-                <h2 className="text-xl font-semibold mb-4">
-                  Nationality Distribution
-                </h2>
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart layout="vertical" data={data.nationalityData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis type="number" />
-                      <YAxis dataKey="country" type="category" />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="count" fill="#8884d8" />
+            {!loading && !error && !data && (
+              <div className="flex-1 flex items-center justify-center">
+                <p className="text-slate-400">No data available</p>
+              </div>
+            )}
+
+            {data && (
+              <div className="flex flex-col gap-6">
+                {/* ── stat cards ── */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <StatCard
+                    icon={<Building2 className="w-5 h-5" />}
+                    title="Total Workspaces"
+                    value={data.workspaceStats.total}
+                    color="text-blue-400"
+                    bg="bg-blue-500/10"
+                  />
+                  <StatCard
+                    icon={<CheckCircle2 className="w-5 h-5" />}
+                    title="Active Workspaces"
+                    value={data.workspaceStats.active}
+                    color="text-green-400"
+                    bg="bg-green-500/10"
+                  />
+                  <StatCard
+                    icon={<Users className="w-5 h-5" />}
+                    title="Total Workers"
+                    value={data.workerStats.total}
+                    color="text-ev-yellow"
+                    bg="bg-ev-yellow/10"
+                  />
+                  <StatCard
+                    icon={<AlertTriangle className="w-5 h-5" />}
+                    title="Overdue Tasks"
+                    value={data.taskStats.overdue}
+                    color="text-red-400"
+                    bg="bg-red-500/10"
+                  />
+                </div>
+
+                {/* ── task bar chart ── */}
+                <ChartCard title="Task Overview">
+                  <ResponsiveContainer width="100%" height={220}>
+                    <BarChart
+                      data={[
+                        { name: "Total", value: data.taskStats.total },
+                        { name: "Completed", value: data.taskStats.completed },
+                        { name: "In Progress", value: data.taskStats.inProgress },
+                        { name: "Overdue", value: data.taskStats.overdue },
+                      ]}
+                      barSize={36}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+                      <XAxis dataKey="name" tick={{ fill: "#94a3b8", fontSize: 12 }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fill: "#94a3b8", fontSize: 12 }} axisLine={false} tickLine={false} />
+                      <Tooltip contentStyle={CHART_TOOLTIP_STYLE} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
+                      <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                        <Cell fill="#3b82f6" />
+                        <Cell fill="#22c55e" />
+                        <Cell fill="#F6AA1C" />
+                        <Cell fill="#ef4444" />
+                      </Bar>
                     </BarChart>
                   </ResponsiveContainer>
+                </ChartCard>
+
+                {/* ── bottom row ── */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {/* workers by position */}
+                  <ChartCard title="Workers by Position">
+                    {data.workerStats.by_position && data.workerStats.by_position.length > 0 ? (
+                      <ResponsiveContainer width="100%" height={220}>
+                        <PieChart>
+                          <Pie
+                            data={data.workerStats.by_position}
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={80}
+                            dataKey="count"
+                            nameKey="position"
+                            labelLine={false}
+                            label={({ name, percent }) =>
+                              `${name}: ${(percent * 100).toFixed(0)}%`
+                            }
+                          >
+                            {data.workerStats.by_position.map((_, i) => (
+                              <Cell key={`cell-${i}`} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip
+                            contentStyle={CHART_TOOLTIP_STYLE}
+                            formatter={(value: number, _name: string, props: any) => [
+                              value,
+                              props.payload.position,
+                            ]}
+                          />
+                          <Legend wrapperStyle={{ color: "#94a3b8", fontSize: 12 }} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="h-[220px] flex items-center justify-center text-slate-500 text-sm">
+                        No position data available
+                      </div>
+                    )}
+                  </ChartCard>
+
+                  {/* nationality distribution */}
+                  <ChartCard title="Nationality Distribution">
+                    {data.nationalityData && data.nationalityData.length > 0 ? (
+                      <ResponsiveContainer width="100%" height={220}>
+                        <BarChart layout="vertical" data={data.nationalityData} barSize={18}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#334155" horizontal={false} />
+                          <XAxis type="number" tick={{ fill: "#94a3b8", fontSize: 12 }} axisLine={false} tickLine={false} />
+                          <YAxis dataKey="country" type="category" tick={{ fill: "#94a3b8", fontSize: 12 }} axisLine={false} tickLine={false} width={80} />
+                          <Tooltip contentStyle={CHART_TOOLTIP_STYLE} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
+                          <Bar dataKey="count" fill="#3b82f6" radius={[0, 6, 6, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="h-[220px] flex items-center justify-center text-slate-500 text-sm">
+                        No nationality data available
+                      </div>
+                    )}
+                  </ChartCard>
                 </div>
               </div>
-            </div>
-          </div>
-        </ContentBlock>
-      </section>
-      <FooterSmall />
+            )}
+          </ContentBlock>
+        </div>
+      </div>
     </PageTemplate>
   );
 }
 
-const StatCard = ({
+function StatCard({
+  icon,
   title,
   value,
   color,
-  fontColor = undefined,
+  bg,
 }: {
+  icon: React.ReactNode;
   title: string;
   value: number;
   color: string;
-  fontColor?: string;
-}) => (
-  <div className={`${color} p-4 rounded-xl ${fontColor ?? "text-white"}`}>
-    <h3 className="text-sm font-medium">{title}</h3>
-    <p className="text-2xl font-bold">{value}</p>
-  </div>
-);
+  bg: string;
+}) {
+  return (
+    <div className="bg-[#1e293b] border border-[#334155] rounded-2xl p-5 flex flex-col gap-3">
+      <div className={`w-10 h-10 rounded-xl ${bg} ${color} flex items-center justify-center`}>
+        {icon}
+      </div>
+      <div>
+        <p className="text-slate-400 text-xs font-medium">{title}</p>
+        <p className="text-2xl font-bold text-slate-100 mt-0.5">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-[#1e293b] border border-[#334155] rounded-2xl p-5">
+      <h3 className="text-slate-100 font-semibold text-sm mb-4">{title}</h3>
+      {children}
+    </div>
+  );
+}

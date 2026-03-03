@@ -3,85 +3,108 @@
 @tailwind utilities;
 
 @layer base {
-    html {
-        font-family:
-            "Lexend",
-            system-ui,
-            -apple-system;
-    }
-}
-
-:root {
-    --foreground-rgb: 0, 0, 0;
-    --background-start-rgb: 214, 219, 220;
-    --background-end-rgb: 255, 255, 255;
-}
-
-@media (prefers-color-scheme: dark) {
-    :root {
-        --foreground-rgb: 255, 255, 255;
-        --background-start-rgb: 0, 0, 0;
-        --background-end-rgb: 0, 0, 0;
-    }
+  html {
+    font-family: "Lexend", system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 }
 
 body {
-    color: rgb(var(--foreground-rgb));
-    background: rgb(var(--background-start-rgb));
-    font-family: "Lexend";
-    scroll-behavior: smooth;
+  color: var(--color-text);
+  background: var(--color-main-bg);
+  font-family: "Lexend", sans-serif;
+  scroll-behavior: smooth;
+  margin: 0;
+  padding: 0;
 }
 
-body,
-p {
-    margin: 0;
-    padding: 0;
-}
+body, p { margin: 0; padding: 0; }
+
+/* scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-stroke); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(246,170,28,0.4); }
 
 @layer utilities {
-    .text-balance {
-        text-wrap: balance;
-    }
+  .text-balance { text-wrap: balance; }
+
+  .glass {
+    background: rgba(17, 24, 39, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .mc-blur {
+    backdrop-filter: blur(32px);
+    -webkit-backdrop-filter: blur(32px);
+  }
+
+  .icon-blue {
+    filter: invert(50%) sepia(90%) saturate(16400%) hue-rotate(190deg)
+      brightness(140%) contrast(110%);
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, #F6AA1C 0%, #3b82f6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .scrollable {
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+  }
 }
 
+/* ─── DARK THEME (default) ─── */
 @layer base {
-    :root {
-        --color-primary: #f1f1f1;
-        --color-secondary: #242424;
-        --color-text: #f5f5f5;
-        --color-secondary-text: #f9f9f9;
-        --color-primary-bg: #282828;
-        --color-main-bg: #d6dbdc;
-        --color-accent-text: #0c44ff; /* Original blue for light mode */
-    }
-
-    .mc-blur {
-        backdrop-filter: blur(32px);
-        -webkit-backdrop-filter: blur(32px);
-    }
+  :root {
+    --color-primary: #1e293b;
+    --color-secondary: #0f172a;
+    --color-text: #f1f5f9;
+    --color-secondary-text: #cbd5e1;
+    --color-primary-bg: #1e293b;
+    --color-main-bg: #0a0f1e;
+    --color-accent-text: #F6AA1C;
+    /* new tokens */
+    --color-surface: #1e293b;
+    --color-surface-2: #253047;
+    --color-sidebar: #0f172a;
+    --color-stroke: #334155;
+    --color-muted: #94a3b8;
+  }
 }
 
 .theme-dark {
-    --color-primary: #0c0c0c;
-    --color-secondary: #242424;
-    --color-text: #f5f5f5;
-    --color-secondary-text: #f9f9f9;
-    --color-primary-bg: #282828;
-    --color-main-bg: #292423;
-    --color-accent-text: #0c44ff; /* Original blue for light mode */
+  --color-primary: #1e293b;
+  --color-secondary: #0f172a;
+  --color-text: #f1f5f9;
+  --color-secondary-text: #cbd5e1;
+  --color-primary-bg: #1e293b;
+  --color-main-bg: #0a0f1e;
+  --color-accent-text: #F6AA1C;
+  --color-surface: #1e293b;
+  --color-surface-2: #253047;
+  --color-sidebar: #0f172a;
+  --color-stroke: #334155;
+  --color-muted: #94a3b8;
 }
 
 .theme-light {
-    --color-primary: #f5f5f5;
-    --color-secondary: #fbfbfb;
-    --color-text: #1f1f1f;
-    --color-secondary-text: #272727;
-    --color-primary-bg: #fefefe;
-    --color-main-bg: #d6dbdc;
-    --color-accent-text: #0c44ff; /* Original blue for light mode */
-}
-
-.icon-blue {
-    filter: invert(50%) sepia(90%) saturate(16400%) hue-rotate(190deg)
-        brightness(140%) contrast(110%);
+  --color-primary: #ffffff;
+  --color-secondary: #f8fafc;
+  --color-text: #0f172a;
+  --color-secondary-text: #334155;
+  --color-primary-bg: #ffffff;
+  --color-main-bg: #f1f5f9;
+  --color-accent-text: #3b82f6;
+  --color-surface: #ffffff;
+  --color-surface-2: #f8fafc;
+  --color-sidebar: #1e293b;
+  --color-stroke: #e2e8f0;
+  --color-muted: #64748b;
 }

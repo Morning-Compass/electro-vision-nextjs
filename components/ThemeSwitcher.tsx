@@ -2,35 +2,24 @@
 
 import Themes from "@/ev-const/themes";
 import useUserContext from "@/ev-contexts/userContextProvider";
-import Image from "next/image";
+import { Sun, Moon } from "lucide-react";
 
 const ThemeSwitcher = () => {
   const { User, UserDispatch } = useUserContext();
+  const isDark = User.theme === Themes.dark;
 
   const changeTheme = () => {
-    if (User.theme === Themes.dark)
-      UserDispatch({ type: "setTheme", value: "light" });
-    else if (User.theme === Themes.light)
-      UserDispatch({ type: "setTheme", value: "dark" });
+    UserDispatch({ type: "setTheme", value: isDark ? "light" : "dark" });
   };
 
   return (
-    <div
-      className={`rounded-[4rem] w-20 h-10 cursor-pointer transition-colors duration-500 bg-ev-primary flex items-center relative`}
+    <button
       onClick={changeTheme}
+      title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      className="w-8 h-8 rounded-xl flex items-center justify-center text-ev-muted hover:text-ev-text hover:bg-ev-surface transition-colors"
     >
-      <div
-        className={`absolute transform transition-transform duration-500 ${User.theme === Themes.dark ? "translate-x-1" : "translate-x-[2.5rem]"}`}
-      >
-        <Image
-          src={User.theme === Themes.dark ? "/moon.png" : "/sun.png"}
-          alt="theme"
-          width={32}
-          height={32}
-          className="mr-1 ml-1"
-        />
-      </div>
-    </div>
+      {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+    </button>
   );
 };
 

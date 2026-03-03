@@ -1202,18 +1202,11 @@ function MapEditor() {
   console.log(tasks);
   return (
     <PageTemplate>
-      <NavbarTemplate />
-      <Link
-        href="/workspaces/"
-        className="text-ev-accent-text hover:text-ev-accent-text/80 text-lg font-medium flex items-center transition-colors duration-200"
-      >
-        ← Back
-      </Link>
       <AddTaskOverlay
         isOpen={isOverlayOpen}
         onClose={handleCloseOverlay}
         onSubmitSuccess={handleAddTaskSuccess}
-        currentUserEmail={User.authUser?.email}
+        currentUserEmail={User.authUser?.email ?? undefined}
         currentWorkspaceId={User.workspaceData?.currentWorkspace?.id?.toString()}
         workspaceUsers={workspaceUsers}
       />
@@ -1227,17 +1220,19 @@ function MapEditor() {
         onSubmitSuccess={handleNewTaskFormSubmitSuccess}
         initialPosition={droppedTaskDetails?.position || null}
         initialNodeType={droppedTaskDetails?.nodeType || null}
-        currentUserEmail={User.authUser?.email}
+        currentUserEmail={User.authUser?.email ?? undefined}
         currentWorkspaceId={User.workspaceData?.currentWorkspace?.id?.toString()}
         workspaceUsers={workspaceUsers}
       />
 
-      <section className="flex flex-row items-center justify-start h-full gap-8 w-[90vw]">
-        <SidebarTemplate activeIcon="map" />
-        <section className="flex flex-row w-full justify-center h-full gap-4 max-lg:text-sm max-lg:flex-col">
+      <div className="flex h-screen overflow-hidden">
+        <SidebarTemplate />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <NavbarTemplate />
+          <div className="flex-1 flex flex-row overflow-hidden">
           <section className="flex flex-row gap-8">
             {User.workspaceData?.currentWorkspace?.role === "CREATOR" ? (
-              <aside className="flex flex-col gap-4 h-full bg-ev-primary p-4 rounded-xl shadow-lg max-h-[calc(100vh-var(--navbar-height,64px)-var(--footer-height,50px)-3rem)] overflow-y-auto w-60 sticky top-4">
+              <aside className="flex flex-col gap-4 bg-ev-primary p-4 overflow-y-auto w-60 border-r border-[#334155]">
                 <h3 className="text-xl font-semibold mb-2 text-ev-text">
                   Task Types
                 </h3>
@@ -1276,7 +1271,7 @@ function MapEditor() {
             ) : null}
           </section>
 
-          <main className="flex flex-col h-full flex-grow">
+          <main className="flex-1 flex flex-col overflow-hidden p-4 gap-3">
             {User.workspaceData?.currentWorkspace?.role === "CREATOR" ? (
               <section className="flex flex-wrap items-center w-full bg-ev-primary p-3 rounded-xl gap-3 mb-4 shadow-md">
                 <Input
@@ -1329,7 +1324,7 @@ function MapEditor() {
             ) : null}
 
             <section
-              className="flex-grow h-full rounded-2xl overflow-hidden shadow-lg relative"
+              className="flex-1 rounded-2xl overflow-hidden shadow-lg relative"
               ref={mapContainerRef}
             >
               <div className="absolute top-2 left-0 right-0 flex justify-center z-[1] pointer-events-none">
@@ -1368,7 +1363,7 @@ function MapEditor() {
           </main>
 
           {User.workspaceData?.currentWorkspace?.role === "CREATOR" ? (
-            <aside className="flex flex-col gap-4 h-full bg-ev-primary p-4 rounded-xl shadow-lg max-h-[calc(100vh-var(--navbar-height,64px)-var(--footer-height,50px)-3rem)] overflow-y-auto w-72 sticky top-4 max-lg:hidden">
+            <aside className="flex flex-col gap-4 bg-ev-primary p-4 overflow-y-auto w-72 border-l border-[#334155] max-lg:hidden">
               <section>
                 <h3 className="text-xl font-semibold mb-2 text-ev-text">
                   Available Tasks
@@ -1464,9 +1459,9 @@ function MapEditor() {
               )}
             </aside>
           ) : null}
-        </section>
-      </section>
-      <FooterSmall />
+          </div>
+        </div>
+      </div>
     </PageTemplate>
   );
 }

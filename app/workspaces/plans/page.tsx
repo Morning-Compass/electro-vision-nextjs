@@ -3,66 +3,49 @@
 import { useEffect, useState } from "react";
 import PageTemplate from "@/components/templates/PageTemplate";
 import NavbarTemplate from "@/components/templates/NavbarTemplate";
-import { FooterSmall } from "@/components/templates/FooterSmall";
 import SidebarTemplate from "@/components/templates/SidebarTemplate";
 import ContentBlock from "@/components/ContentBlock";
 import Image from "next/image";
-import SearchButton from "@/components/SearchButton";
 import Input from "@/components/Input";
 import Overlay from "@/components/Overlay";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation"; // Changed from useRouter
 import useUserContext from "@/ev-contexts/userContextProvider";
 import WorkerEntry from "@/components/WorkerEntry";
 import OLF from "@/ev-lib/ElectroVisionFetch";
 import ApiLinks from "@/ev-const/api-links";
 import { WorkspaceUser } from "@/ev-types/user-types";
-import { FormProps, SubmitHandler, useForm } from "react-hook-form";
+import { SubmitHandler, useForm } from "react-hook-form";
 import FormErrorWrap from "@/components/templates/FormErrorWrap";
 import Regex from "@/ev-const/regex";
 import toast from "react-hot-toast";
-import { error } from "console";
 import { Task } from "@/ev-types/workspace-types";
 import TaskEntry from "@/components/TaskEntry";
 import { DateTimePicker } from "@/components/datepicker/Datepicker";
+import {
+  ArrowLeft,
+  Plus,
+  Trash2,
+  Users,
+  ClipboardList,
+  LayoutGrid,
+  List,
+} from "lucide-react";
 
 export default function WorkspaceDetails() {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isTaskOpen, setIsTaskOpen] = useState(false);
   const [taskRemoval, setTaskRemoval] = useState(false);
   const [workerRemoval, setWorkerRemoval] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [selectedTasksIds, setSelectedTasksIds] = useState<number[]>([]);
   const [selectedWorkersIds, setSelectedWokrersIds] = useState<number[]>([]);
   const { User } = useUserContext();
-  const [workspaceUsers, setWorkspaceUsers] = useState<WorkspaceUser[] | null>(
-    null,
-  );
+  const [workspaceUsers, setWorkspaceUsers] = useState<WorkspaceUser[] | null>(null);
   const [tasks, setTasks] = useState<Task[] | null>(null);
-  // Changed from useRouter to useSearchParams
-  const searchParams = useSearchParams();
-  const coverImage =
-    User.workspaceData?.currentWorkspace?.coverPhoto || "/problem.png";
-  const [receivedCoverImage, setReceivedCoverImage] = useState<string | null>(
-    null,
-  );
+  const coverImage = User.workspaceData?.currentWorkspace?.coverPhoto || "/problem.png";
+  const [receivedCoverImage, setReceivedCoverImage] = useState<string | null>(null);
   const [showMapView, setShowMapView] = useState(true);
 
-  type addWorkerFormProps = {
-    invited_email: string | null;
-  };
-
-  console.log("Selected tasks ids:");
-  console.log(selectedTasksIds);
-
-  console.log("Selected workers ids:");
-  console.log(selectedWorkersIds);
-
-  console.log("tasks removal:");
-  console.log(taskRemoval);
-
-  console.log("workers removal:");
-  console.log(workerRemoval);
+  type addWorkerFormProps = { invited_email: string | null };
 
   type TaskFormProps = {
     title: string;
@@ -87,219 +70,143 @@ export default function WorkspaceDetails() {
     } = useForm<TaskFormProps>({
       mode: "onTouched",
       reValidateMode: "onChange",
-      defaultValues: {
-        importance: "LOW",
-        assignee_email: "",
-      },
+      defaultValues: { importance: "LOW", assignee_email: "" },
     });
 
     const onSubmit: SubmitHandler<TaskFormProps> = async (data) => {
-      console.log(data);
-
       try {
-        const taskPayload = {
-          assigner_email: User.authUser?.email,
-          assignee_email: data.assignee_email,
-          title: data.title,
-          description: data.description,
-          importance: data.importance,
-          category: data.category,
-          status: "TODO",
-          due_date: data.due_date || null,
-          description_multimedia: data.multimedia || null,
-        };
-
-        const res = await OLF.post(
+        await OLF.post(
           ApiLinks.createTasks(
             User.workspaceData?.currentWorkspace?.id.toString() ?? "-1",
           ),
-          taskPayload,
+          {
+            assigner_email: User.authUser?.email,
+            assignee_email: data.assignee_email,
+            title: data.title,
+            description: data.description,
+            importance: data.importance,
+            category: data.category,
+            status: "TODO",
+            due_date: data.due_date || null,
+            description_multimedia: data.multimedia || null,
+          },
         );
-
         toast.success("Task created successfully!");
-        console.log(res);
         setIsTaskOpen(false);
         reset();
-        getTasks(); // Refresh the tasks list
-      } catch (error) {
-        // console.error("Error creating task:", error);
-        // toast.error(
-        //   error instanceof Error ? error.message : "Failed to create task",
-        // );
+        getTasks();
+      } catch {
         toast.error("File too large");
       }
     };
 
+    const inputCls =
+      "w-full bg-[#0f172a] border border-[#334155] rounded-xl text-slate-100 placeholder:text-slate-600 text-sm px-4 py-3 focus:outline-none focus:border-ev-yellow focus:ring-2 focus:ring-ev-yellow/20 transition-all";
+
     return (
-      <>
-        <Overlay isOpen={isTaskOpen} onClose={() => setIsTaskOpen(false)}>
-          <form
-            className="flex flex-col gap-2 sm:gap-6 w-full"
-            onSubmit={handleSubmit(onSubmit)}
-            noValidate
-          >
-            <p className="text-2xl sm:text-4xl mb-10">Create New Task</p>
+      <Overlay isOpen={isTaskOpen} onClose={() => setIsTaskOpen(false)}>
+        <form
+          className="flex flex-col gap-5 w-full"
+          onSubmit={handleSubmit(onSubmit)}
+          noValidate
+        >
+          <p className="text-2xl font-bold text-slate-100 mb-2">Create Task</p>
 
-            <FormErrorWrap>
-              <div className="flex flex-col gap-4">
-                <p className="sm:text-xl">Title*</p>
-                <Input
-                  type="text"
-                  placeholder="Task title..."
-                  className="px-3 py-2 bg-ev-primary-bg text-ev-dark-gray rounded-lg w-full"
-                  error={errors.title?.message}
-                  register={register("title", {
-                    required: "Title is required",
-                    minLength: {
-                      value: 3,
-                      message: "Title must be at least 3 characters",
-                    },
-                  })}
-                />
-              </div>
-            </FormErrorWrap>
+          <FormErrorWrap>
+            <label className="text-sm font-medium text-slate-400">Title *</label>
+            <input
+              type="text"
+              placeholder="Task title..."
+              className={inputCls}
+              {...register("title", {
+                required: "Title is required",
+                minLength: { value: 3, message: "Min 3 characters" },
+              })}
+            />
+            {errors.title && <p className="text-xs text-red-400">{errors.title.message}</p>}
+          </FormErrorWrap>
 
-            <FormErrorWrap>
-              <div className="flex flex-col gap-4">
-                <p className="sm:text-xl">Description</p>
-                <Input
-                  type="text"
-                  placeholder="Task description..."
-                  className="px-3 py-2 bg-ev-primary-bg text-ev-dark-gray rounded-lg w-full"
-                  error={errors.description?.message}
-                  register={register("description")}
-                />
-              </div>
-            </FormErrorWrap>
+          <FormErrorWrap>
+            <label className="text-sm font-medium text-slate-400">Description</label>
+            <input type="text" placeholder="Task description..." className={inputCls} {...register("description")} />
+          </FormErrorWrap>
 
-            <FormErrorWrap>
-              <div className="flex flex-col gap-4">
-                <p className="sm:text-xl">Photo</p>
+          <FormErrorWrap>
+            <label className="text-sm font-medium text-slate-400">Photo</label>
+            <label
+              htmlFor="multimedia-file"
+              className="flex items-center gap-2 w-full cursor-pointer bg-[#0f172a] border border-[#334155] rounded-xl px-4 py-3 text-sm text-slate-400 hover:border-ev-yellow/40 hover:text-slate-100 transition-all"
+            >
+              <Plus className="w-4 h-4" /> Upload Photo
+            </label>
+            <input
+              id="multimedia-file"
+              type="file"
+              accept="image/png, image/jpeg"
+              capture="environment"
+              className="hidden"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onloadend = () => setValue("multimedia", reader.result as string, { shouldValidate: true });
+                reader.readAsDataURL(file);
+              }}
+            />
+            <input type="hidden" {...register("multimedia")} />
+          </FormErrorWrap>
 
-                <label
-                  htmlFor="multimedia-file"
-                  className="px-3 py-2 bg-ev-primary-bg text-ev-dark-gray rounded-lg cursor-pointer w-full hover:scale-105 transition text-left"
-                >
-                  Upload Photo
-                </label>
-
-                <input
-                  id="multimedia-file"
-                  type="file"
-                  accept="image/png, image/jpeg"
-                  capture="environment"
-                  className="hidden"
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                      const base64 = reader.result as string;
-                      setValue("multimedia", base64, { shouldValidate: true });
-                    };
-                    reader.readAsDataURL(file);
-                  }}
-                />
-
-                <input type="hidden" {...register("multimedia")} />
-              </div>
-            </FormErrorWrap>
-
-            <FormErrorWrap>
-              <div className="flex flex-col gap-4">
-                <p className="sm:text-xl">Assignee Email*</p>
-                <div className="flex gap-2">
-                  <select
-                    value={watch("assignee_email") || ""}
-                    className="px-3 py-2 bg-ev-primary-bg text-ev-dark-gray rounded-lg w-full hover:scale-105 transition appearance-none"
-                    {...register("assignee_email", {
-                      required: "Assignee is required",
-                    })}
-                  >
-                    <option value="" disabled>
-                      Select assignee...
-                    </option>
-                    {workspaceUsers &&
-                      workspaceUsers.map((u, i) => {
-                        return (
-                          <option key={i} value={u.email}>
-                            {u.email}
-                          </option>
-                        );
-                      })}
-                  </select>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (User.authUser?.email) {
-                        setValue("assignee_email", User.authUser.email, { shouldValidate: true });
-                      }
-                    }}
-                    className="px-3 py-2 bg-ev-blue text-white rounded-lg hover:scale-105 transition whitespace-nowrap text-sm"
-                  >
-                    Assign to me
-                  </button>
-                </div>
-              </div>
-            </FormErrorWrap>
-
-            <FormErrorWrap>
-              <div className="flex flex-col gap-4">
-                <p className="sm:text-xl">Importance*</p>
-                <select
-                  className="px-3 py-2 bg-ev-primary-bg text-ev-dark-gray rounded-lg w-full hover:scale-105 transition appearance-none"
-                  {...register("importance", {
-                    required: "Importance is required",
-                  })}
-                >
-                  <option value="LOW">Low</option>
-                  <option value="MEDIUM">Medium</option>
-                  <option value="HIGH">High</option>
-                </select>
-                {errors.importance && (
-                  <p className="text-ev-red text-sm">
-                    {errors.importance.message}
-                  </p>
-                )}
-              </div>
-            </FormErrorWrap>
-
-            <FormErrorWrap>
-              <div className="flex flex-col gap-4">
-                <p className="sm:text-xl">Category</p>
-                <Input
-                  type="text"
-                  placeholder="e.g., Lamps, Sockets"
-                  className="px-3 py-2 bg-ev-primary-bg text-ev-dark-gray rounded-lg w-full"
-                  error={errors.category?.message}
-                  register={register("category")}
-                />
-              </div>
-            </FormErrorWrap>
-
-            <FormErrorWrap>
-              <div className="flex flex-col gap-4">
-                <p className="sm:text-xl">Due Date</p>
-                <DateTimePicker
-                  name="due_date"
-                  control={control}
-                  className="px-3 py-2 bg-ev-primary-bg text-ev-dark-gray rounded-lg w-full"
-                />
-              </div>
-            </FormErrorWrap>
-
-            <div className="flex items-center justify-center gap-4 mt-4 w-full">
-              <Input
-                type="submit"
-                disabled={isSubmitting}
-                className="px-4 py-2 bg-ev-blue text-white rounded-lg hover:scale-105 duration-300 disabled:opacity-50 w-full"
-                value={isSubmitting ? "Creating..." : "Create Task"}
-              />
+          <FormErrorWrap>
+            <label className="text-sm font-medium text-slate-400">Assignee *</label>
+            <div className="flex gap-2">
+              <select
+                className={`${inputCls} appearance-none flex-1`}
+                {...register("assignee_email", { required: "Assignee is required" })}
+              >
+                <option value="" disabled>Select assignee...</option>
+                {workspaceUsers?.map((u, i) => (
+                  <option key={i} value={u.email}>{u.email}</option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={() => { if (User.authUser?.email) setValue("assignee_email", User.authUser.email, { shouldValidate: true }); }}
+                className="px-3 py-2 bg-[#1e293b] border border-[#334155] text-slate-300 rounded-xl text-sm hover:border-ev-yellow/40 transition-all whitespace-nowrap"
+              >
+                Assign me
+              </button>
             </div>
-          </form>
-        </Overlay>
-      </>
+            {errors.assignee_email && <p className="text-xs text-red-400">{errors.assignee_email.message}</p>}
+          </FormErrorWrap>
+
+          <FormErrorWrap>
+            <label className="text-sm font-medium text-slate-400">Importance *</label>
+            <select className={`${inputCls} appearance-none`} {...register("importance", { required: "Required" })}>
+              <option value="LOW">Low</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="HIGH">High</option>
+            </select>
+          </FormErrorWrap>
+
+          <FormErrorWrap>
+            <label className="text-sm font-medium text-slate-400">Category</label>
+            <input type="text" placeholder="e.g. Lamps, Sockets" className={inputCls} {...register("category")} />
+          </FormErrorWrap>
+
+          <FormErrorWrap>
+            <label className="text-sm font-medium text-slate-400">Due Date</label>
+            <DateTimePicker name="due_date" control={control} className={inputCls} />
+          </FormErrorWrap>
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full flex items-center justify-center gap-2 bg-ev-yellow text-[#0a0f1e] font-semibold py-3 rounded-xl hover:brightness-110 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+          >
+            {isSubmitting ? "Creating..." : "Create Task"}
+          </button>
+        </form>
+      </Overlay>
     );
   };
 
@@ -308,72 +215,49 @@ export default function WorkspaceDetails() {
       handleSubmit,
       formState: { errors, isSubmitting },
       register,
-    } = useForm<addWorkerFormProps>({
-      mode: "onTouched",
-      reValidateMode: "onChange",
-    });
+    } = useForm<addWorkerFormProps>({ mode: "onTouched", reValidateMode: "onChange" });
 
     const onSubmit: SubmitHandler<addWorkerFormProps> = async (data) => {
       try {
-        const res = await OLF.post(ApiLinks.inviteWorker, {
+        await OLF.post(ApiLinks.inviteWorker, {
           workspace_id: User.workspaceData?.currentWorkspace?.id,
           inviter_email: User.authUser?.email,
           invited_email: data.invited_email,
         });
-        console.log(res);
         toast.success("Worker invited successfully");
         setIsAddOpen(false);
       } catch (e) {
-        console.error(e);
-        toast.error(e instanceof Error ? e.message : "Adding worker failed", {
-          duration: 5000,
-        });
+        toast.error(e instanceof Error ? e.message : "Adding worker failed", { duration: 5000 });
       }
     };
 
+    const inputCls =
+      "w-full bg-[#0f172a] border border-[#334155] rounded-xl text-slate-100 placeholder:text-slate-600 text-sm px-4 py-3 focus:outline-none focus:border-ev-yellow focus:ring-2 focus:ring-ev-yellow/20 transition-all";
+
     return (
       <Overlay isOpen={isAddOpen} onClose={() => setIsAddOpen(false)}>
-        <form
-          className="flex flex-col gap-3 sm:gap-6 w-full"
-          onSubmit={handleSubmit(onSubmit)}
-          noValidate
-        >
-          <p className="text-2xl sm:text-4xl mb-10">Add Worker</p>
-
+        <form className="flex flex-col gap-5 w-full" onSubmit={handleSubmit(onSubmit)} noValidate>
+          <p className="text-2xl font-bold text-slate-100 mb-2">Invite Worker</p>
           <FormErrorWrap>
-            <div className="flex flex-col gap-4">
-              <p className="sm:text-xl">Invited Email</p>
-              <Input
-                type="text"
-                placeholder="email..."
-                className="px-3 py-2 bg-ev-gray text-ev-dark-gray rounded-lg w-full"
-                error={errors.invited_email?.message}
-                register={register("invited_email", {
-                  validate: (cred) => {
-                    const regexResult = Regex.emailRegistration.test(
-                      cred ?? "",
-                    );
-                    if (!regexResult) return "Email must be correct";
-                    return true;
-                  },
-                  required: {
-                    value: true,
-                    message: "Email is required",
-                  },
-                })}
-              />
-            </div>
-          </FormErrorWrap>
-
-          <div className="flex items-center justify-center  gap-4 mt-4 w-full">
-            <Input
-              customWidth="w-1/2"
-              type="submit"
-              disabled={isSubmitting}
-              className="px-4 py-2 bg-ev-blue text-ev-white rounded-lg hover:scale-105 duration-300 disabled:opacity-50 w-full text-center flex items-center justify-center"
-              value={isSubmitting ? "Adding..." : "Add Worker"}
+            <label className="text-sm font-medium text-slate-400">Email</label>
+            <input
+              type="text"
+              placeholder="worker@example.com"
+              className={inputCls}
+              {...register("invited_email", {
+                validate: (v) => Regex.emailRegistration.test(v ?? "") || "Enter a valid email",
+                required: "Email is required",
+              })}
             />
-          </div>
+            {errors.invited_email && <p className="text-xs text-red-400">{errors.invited_email.message}</p>}
+          </FormErrorWrap>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full flex items-center justify-center gap-2 bg-ev-yellow text-[#0a0f1e] font-semibold py-3 rounded-xl hover:brightness-110 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? "Inviting..." : "Send Invite"}
+          </button>
         </form>
       </Overlay>
     );
@@ -382,503 +266,350 @@ export default function WorkspaceDetails() {
   const removeTasks = async () => {
     if (selectedTasksIds.length <= 0) return;
     try {
-      selectedTasksIds.forEach(async (id) => {
-        const res = await OLF.delete(
-          ApiLinks.removeTask(
-            User.workspaceData?.currentWorkspace?.id.toString() ?? "-1",
-            id.toString(),
+      await Promise.all(
+        selectedTasksIds.map((id) =>
+          OLF.delete(
+            ApiLinks.removeTask(
+              User.workspaceData?.currentWorkspace?.id.toString() ?? "-1",
+              id.toString(),
+            ),
           ),
-        );
-        console.log(res);
-      });
-      toast.success("All Tasks removed successfully");
+        ),
+      );
+      toast.success("Tasks removed successfully");
     } catch (e) {
-      console.error(e);
-      toast.error(e instanceof Error ? e.message : "Adding worker failed", {
-        duration: 5000,
-      });
+      toast.error(e instanceof Error ? e.message : "Remove failed", { duration: 5000 });
     }
-
     setTaskRemoval(false);
     setSelectedTasksIds([]);
+    getTasks();
   };
 
   const removeWorkers = async () => {
-    try {
-    } catch (e) {
-      console.error(e);
-      toast.error(e instanceof Error ? e.message : "Adding worker failed", {
-        duration: 5000,
-      });
-    }
-
     setWorkerRemoval(false);
     setSelectedWokrersIds([]);
   };
 
   const getWorkers = async () => {
-    if (User.workspaceData?.currentWorkspace?.role === "CREATOR") {
+    if (User.workspaceData?.currentWorkspace?.role !== "CREATOR") return;
+    try {
       const res = await OLF.post(
         ApiLinks.listWorkspaceUsersByWorkspaceIdAndEmail(
           User.workspaceData?.currentWorkspace?.id.toString() ?? "-1",
         ),
-        {
-          email: User.authUser?.email,
-        },
+        { email: User.authUser?.email },
       );
-      console.log(res);
-      const workers: WorkspaceUser[] = res;
-      setWorkspaceUsers(workers);
+      setWorkspaceUsers(res as WorkspaceUser[]);
+    } catch (e) {
+      console.error(e);
     }
   };
 
   const getTasks = async () => {
-    console.log("getting tasks...");
     try {
       const res = await fetch(
-        ApiLinks.listTasks(
-          User.workspaceData?.currentWorkspace?.id.toString() ?? "-1",
-        ),
+        ApiLinks.listTasks(User.workspaceData?.currentWorkspace?.id.toString() ?? "-1"),
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            owner_email: User.authUser?.email,
-          }),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ owner_email: User.authUser?.email }),
         },
       );
-
-      console.log("response of taskssss");
-      console.log(res);
-
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const resj = await res.json();
-      const tasks: Task[] = resj["response"];
-      const nonMappedTasks = tasks.filter(
-        (task) => task.task_type === "DEFAULT",
-      );
-      setTasks(nonMappedTasks);
+      const allTasks: Task[] = resj["response"];
+      setTasks(allTasks.filter((t) => t.task_type === "DEFAULT"));
     } catch (error) {
       console.error("Failed to fetch tasks:", error);
     }
   };
 
   useEffect(() => {
-    if (coverImage) {
-      setReceivedCoverImage(typeof coverImage === "string" ? coverImage : null);
-    }
+    if (coverImage) setReceivedCoverImage(typeof coverImage === "string" ? coverImage : null);
   }, [coverImage]);
 
-  useEffect(() => {
-    getTasks();
-  }, [selectedTasksIds]);
+  useEffect(() => { getWorkers(); getTasks(); }, []);
 
-  useEffect(() => {
-    getWorkers();
-  }, [selectedWorkersIds]);
+  const isCreator = User.workspaceData?.currentWorkspace?.role === "CREATOR";
 
-  useEffect(() => {
-    // const interval = setInterval(() => {
-    //   getWorkers();
-    // }, 10000);
-    // return () => clearInterval(interval);
-    getWorkers();
-    getTasks();
-  }, []);
-
-  // console.log("users");
-  // console.log(workspaceUsers);
+  const panelCls = "bg-[#1e293b] border border-[#334155] rounded-2xl p-5 flex flex-col gap-4";
+  const panelHeaderCls = "flex items-center justify-between pb-3 border-b border-[#334155]";
 
   return (
     <PageTemplate>
-      <NavbarTemplate />
       <AddWorkerLogic />
       <AddTaskLogic />
 
-      <section className="flex flex-row items-center justify-start h-full gap-8 w-[90vw]">
-        <div className="hidden sm:flex">
-          <SidebarTemplate activeIcon="map" />
-        </div>
-        <ContentBlock>
-          <div className="flex flex-row items-center justify-between mb-8 ml-8 mr-8 max-[1700px]:ml-0 max-[1700px]:mr-0">
-            <Link
-              href="/workspaces/"
-              className="text-ev-accent-text hover:text-ev-accent-text/80 text-lg font-medium flex items-center transition-colors duration-200"
-            >
-              ← Back
-            </Link>
-            <Input
-              name="toggle_view"
-              type="button"
-              className="text-white bg-ev-blue rounded-lg px-4 py-2 hover:scale-105 active:scale-95 duration-200 whitespace-nowrap w-[6vw] min-w-36"
-              value="Toggle View"
-              onClick={() => {
-                setShowMapView((prev) => !prev);
-                setTaskRemoval(false);
-                setWorkerRemoval(false);
-                setSelectedTasksIds([]);
-                setSelectedWokrersIds([]);
-              }}
-            />
-          </div>
-          {showMapView ? (
-            <div className="flex w-full max-[1700px]:flex-col max-[1700px]:items-center">
-              <div className="flex flex-col w-3/4 mr-8 gap-8 mb-8 max-[1700px]:w-full max-[1700px]:mr-0">
-                <Link href={"./plans/editor"}>
-                  <Image
-                    src={receivedCoverImage || "/problem.png"}
-                    alt="problem"
-                    width={1200}
-                    height={600}
-                    className="rounded-3xl w-full h-auto object-cover shadow-lg p-6 bg-ev-white"
-                  />
-                </Link>
+      <div className="flex h-screen overflow-hidden">
+        <SidebarTemplate />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <NavbarTemplate />
+          <ContentBlock blockClassName="p-6">
 
-                {User.workspaceData?.currentWorkspace?.role === "CREATOR" ? (
-                  <div className="flex flex-col gap-2 p-6 bg-ev-primary-bg rounded-xl">
-                    <p className="text-3xl font-semibold mb-2">
-                      Workspace Details
-                    </p>
-                    <p>
-                      Start Date:{" "}
-                      {User.workspaceData?.currentWorkspace?.start_date?.toString()}
-                    </p>
-                    <p>
-                      Due Date:{" "}
-                      {User.workspaceData?.currentWorkspace?.finish_date?.toString() ||
-                        "Not yet established"}
-                    </p>
-                    <p>
-                      Subscription Tier:{" "}
-                      {User.workspaceData?.currentWorkspace?.ev_subscription}
-                    </p>
-                    <p>
-                      Geolocation:{" "}
-                      {User.workspaceData?.currentWorkspace?.geolocation ||
-                        "Not yet established"}
-                    </p>
-                    <p>
-                      Filename:{" "}
-                      {User.workspaceData?.currentWorkspace?.plan_file_name}
-                    </p>
-                    {/* <Input
-                      name="settings"
-                      type="button"
-                      value="Settings"
-                      onClick={() => setIsSettingsOpen(true)}
-                      className="px-4 py-2 bg-ev-blue text-white rounded-lg hover:scale-105 duration-300 w-[80%] p-2 m-4"
-                    /> */}
-                  </div>
-                ) : null}
-              </div>
-              <div className="flex flex-col gap-8 w-1/4 max-[1700px]:w-full">
-                {User.workspaceData?.currentWorkspace?.role === "CREATOR" ? (
-                  <div className=" p-6 bg-ev-primary-bg overflow-y-scroll rounded-xl h-1/2">
-                    <div className="flex justify-between items-center mb-10 border-b-4 gap-4 pb-4">
-                      <p className="text-2xl">Workers</p>
-                      <SearchButton customWidth="w-full" />
+            {/* ── toolbar ── */}
+            <div className="flex items-center justify-between mb-6">
+              <Link
+                href="/workspaces"
+                className="flex items-center gap-2 text-slate-400 hover:text-slate-100 text-sm transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back to Workspaces
+              </Link>
+              <button
+                onClick={() => {
+                  setShowMapView((p) => !p);
+                  setTaskRemoval(false);
+                  setWorkerRemoval(false);
+                  setSelectedTasksIds([]);
+                  setSelectedWokrersIds([]);
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-[#1e293b] border border-[#334155] text-slate-300 text-sm rounded-xl hover:border-[#475569] transition-all"
+              >
+                {showMapView ? <List className="w-4 h-4" /> : <LayoutGrid className="w-4 h-4" />}
+                {showMapView ? "List View" : "Plan View"}
+              </button>
+            </div>
+
+            {showMapView ? (
+              /* ── plan view: image left, panels right ── */
+              <div className="flex gap-6 items-start">
+                {/* left — plan image + workspace info */}
+                <div className="flex-1 flex flex-col gap-5 min-w-0">
+                  <Link href="./plans/editor" className="block">
+                    <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-white border border-[#334155]">
+                      <Image
+                        src={receivedCoverImage || "/problem.png"}
+                        alt={User.workspaceData?.currentWorkspace?.name ?? "plan"}
+                        fill
+                        className="object-contain"
+                        sizes="(max-width: 1200px) 100vw, 60vw"
+                        unoptimized={
+                          typeof receivedCoverImage === "string" &&
+                          (receivedCoverImage.startsWith("data:image/svg") || receivedCoverImage.includes(".svg"))
+                        }
+                      />
                     </div>
-                    <div className="flex justify-around mb-10 items-center">
-                      {User.workspaceData?.currentWorkspace?.role ===
-                        "CREATOR" ? (
-                        <>
-                          <Input
-                            name="add"
-                            type="button"
-                            value="Add"
+                    <p className="text-xs text-slate-500 mt-1.5 text-center">Click to open editor</p>
+                  </Link>
+
+                  {isCreator && (
+                    <div className={panelCls}>
+                      <p className="text-base font-semibold text-slate-100">Workspace Details</p>
+                      <div className="flex flex-col gap-2 text-sm text-slate-400">
+                        <p><span className="text-slate-500">Name:</span> {User.workspaceData?.currentWorkspace?.name}</p>
+                        <p><span className="text-slate-500">Start:</span> {User.workspaceData?.currentWorkspace?.start_date?.toString()}</p>
+                        <p><span className="text-slate-500">Due:</span> {User.workspaceData?.currentWorkspace?.finish_date?.toString() || "Not set"}</p>
+                        <p><span className="text-slate-500">Subscription:</span> {User.workspaceData?.currentWorkspace?.ev_subscription}</p>
+                        <p><span className="text-slate-500">Geolocation:</span> {User.workspaceData?.currentWorkspace?.geolocation || "Not set"}</p>
+                        <p><span className="text-slate-500">File:</span> {User.workspaceData?.currentWorkspace?.plan_file_name}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* right — workers + tasks */}
+                <div className="w-80 flex-shrink-0 flex flex-col gap-5">
+                  {/* workers */}
+                  {isCreator && (
+                    <div className={panelCls}>
+                      <div className={panelHeaderCls}>
+                        <div className="flex items-center gap-2 text-slate-100 font-medium text-sm">
+                          <Users className="w-4 h-4 text-ev-yellow" />
+                          Workers
+                        </div>
+                        <div className="flex gap-2">
+                          <button
                             onClick={() => setIsAddOpen(true)}
-                            customWidth="w-3/4"
-                            className="px-4 py-2 bg-ev-green text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                          />
+                            className="flex items-center gap-1 px-3 py-1.5 bg-ev-yellow/10 text-ev-yellow text-xs rounded-lg hover:bg-ev-yellow/20 transition-all"
+                          >
+                            <Plus className="w-3 h-3" /> Add
+                          </button>
                           {!workerRemoval ? (
-                            <Input
-                              name="remove"
-                              type="button"
-                              value="Remove"
-                              onClick={() => setWorkerRemoval((p) => !p)}
-                              customWidth="w-3/4"
-                              className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                            />
+                            <button
+                              onClick={() => setWorkerRemoval(true)}
+                              className="flex items-center gap-1 px-3 py-1.5 bg-red-500/10 text-red-400 text-xs rounded-lg hover:bg-red-500/20 transition-all"
+                            >
+                              <Trash2 className="w-3 h-3" /> Remove
+                            </button>
                           ) : (
                             <>
-                              <Input
-                                name="cancel"
-                                type="button"
-                                value="Cancel"
-                                onClick={() => setWorkerRemoval(false)}
-                                customWidth="w-3/4"
-                                className="px-4 py-2 bg-ev-blue text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                              />
-                              <Input
-                                name="delete"
-                                type="button"
-                                value="Delete"
-                                onClick={() => removeWorkers()}
-                                customWidth="w-3/4"
-                                className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                              />
+                              <button onClick={() => setWorkerRemoval(false)} className="px-3 py-1.5 bg-[#0f172a] border border-[#334155] text-slate-400 text-xs rounded-lg hover:text-slate-100 transition-all">Cancel</button>
+                              <button onClick={removeWorkers} className="px-3 py-1.5 bg-red-500 text-white text-xs rounded-lg hover:brightness-110 transition-all">Delete</button>
                             </>
                           )}
-                        </>
-                      ) : null}
-                    </div>
-                    <div className="flex flex-col gap-4 mb-10 w-full">
-                      {workspaceUsers !== null ? (
-                        <>
-                          {workspaceUsers.map((workspaceUser, i) => (
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-3">
+                        {workspaceUsers && workspaceUsers.length > 0 ? (
+                          workspaceUsers.map((u, i) => (
                             <WorkerEntry
-                              id={workspaceUser.id}
-                              username={workspaceUser.username}
                               key={i}
+                              id={u.id}
+                              username={u.username}
                               selectable={workerRemoval}
                               setSelectedWorkersIds={setSelectedWokrersIds}
                               selectedWorkersIds={selectedWorkersIds}
                               workspaceUsers={workspaceUsers}
-                              role={workspaceUser.workspace_role}
-                            // photo={workspaceUser.p}
+                              role={u.workspace_role}
                             />
-                          ))}
-                        </>
-                      ) : (
-                        <p>Workspace doesn't have any users</p>
+                          ))
+                        ) : (
+                          <p className="text-slate-500 text-sm">No workers yet</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* tasks */}
+                  <div className={panelCls}>
+                    <div className={panelHeaderCls}>
+                      <div className="flex items-center gap-2 text-slate-100 font-medium text-sm">
+                        <ClipboardList className="w-4 h-4 text-ev-yellow" />
+                        Tasks
+                        {tasks && tasks.length > 0 && (
+                          <span className="ml-1 px-1.5 py-0.5 bg-ev-yellow/10 text-ev-yellow text-xs rounded-md">
+                            {tasks.length}
+                          </span>
+                        )}
+                      </div>
+                      {isCreator && (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => setIsTaskOpen(true)}
+                            className="flex items-center gap-1 px-3 py-1.5 bg-ev-yellow/10 text-ev-yellow text-xs rounded-lg hover:bg-ev-yellow/20 transition-all"
+                          >
+                            <Plus className="w-3 h-3" /> Add
+                          </button>
+                          {!taskRemoval ? (
+                            <button
+                              onClick={() => setTaskRemoval(true)}
+                              className="flex items-center gap-1 px-3 py-1.5 bg-red-500/10 text-red-400 text-xs rounded-lg hover:bg-red-500/20 transition-all"
+                            >
+                              <Trash2 className="w-3 h-3" /> Remove
+                            </button>
+                          ) : (
+                            <>
+                              <button onClick={() => setTaskRemoval(false)} className="px-3 py-1.5 bg-[#0f172a] border border-[#334155] text-slate-400 text-xs rounded-lg hover:text-slate-100 transition-all">Cancel</button>
+                              <button onClick={removeTasks} className="px-3 py-1.5 bg-red-500 text-white text-xs rounded-lg hover:brightness-110 transition-all">Delete ({selectedTasksIds.length})</button>
+                            </>
+                          )}
+                        </div>
                       )}
                     </div>
-                  </div>
-                ) : null}
-
-                <div
-                  className={` p-6 bg-ev-primary-bg overflow-y-scroll rounded-xl ${User.workspaceData?.currentWorkspace?.role === "CREATOR"
-                      ? "h-1/2"
-                      : "h-full"
-                    } `}
-                >
-                  <div className="flex justify-between items-center mb-10 border-b-4 gap-4 pb-4">
-                    <p className="text-2xl">Tasks</p>
-                    <SearchButton customWidth="w-full" />
-                  </div>
-                  <div className="flex justify-around mb-10 items-center">
-                    {User.workspaceData?.currentWorkspace?.role ===
-                      "CREATOR" ? (
-                      <>
-                        <Input
-                          name="add_task"
-                          type="button"
-                          value="Add"
-                          onClick={() => setIsTaskOpen(true)}
-                          customWidth="w-3/4"
-                          className="px-4 py-2 bg-ev-green text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                        />
-                        {!taskRemoval ? (
-                          <Input
-                            name="remove"
-                            type="button"
-                            value="Remove"
-                            onClick={() => setTaskRemoval((p) => !p)}
-                            customWidth="w-3/4"
-                            className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                          />
-                        ) : (
-                          <>
-                            <Input
-                              name="cancel"
-                              type="button"
-                              value="Cancel"
-                              onClick={() => setTaskRemoval(false)}
-                              customWidth="w-3/4"
-                              className="px-4 py-2 bg-ev-blue text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                            />
-                            <Input
-                              name="delete"
-                              type="button"
-                              value="Delete"
-                              onClick={() => removeTasks()}
-                              customWidth="w-3/4"
-                              className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                            />
-                          </>
-                        )}
-                      </>
-                    ) : null}
-                  </div>
-                  <div className="flex flex-col gap-4 mb-10 w-full">
-                    {tasks === null ||
-                      tasks === undefined ||
-                      tasks.length === 0 ? (
-                      <p>Workspace doesn't have any tasks</p>
-                    ) : (
-                      <>
-                        {tasks.map((task, i) => (
+                    <div className="flex flex-col gap-3">
+                      {tasks === null || tasks.length === 0 ? (
+                        <p className="text-slate-500 text-sm">No tasks yet</p>
+                      ) : (
+                        tasks.map((task, i) => (
                           <TaskEntry
-                            task={task}
                             key={i}
+                            task={task}
                             workspaceUsers={workspaceUsers}
                             selectable={taskRemoval}
                             setSelectedTasksIds={setSelectedTasksIds}
                             selectedTasksIds={selectedTasksIds}
                           />
-                        ))}
-                      </>
-                    )}
+                        ))
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ) : (
-            // seond case
-            <div className="flex flex-row gap-8 w-full overflow-y-hidden h-full max-[950px]:flex-col">
-              {User.workspaceData?.currentWorkspace?.role === "CREATOR" ? (
-                <div className=" p-6 bg-ev-primary-bg overflow-y-scroll rounded-xl h-full w-full">
-                  <div className="flex justify-between items-center mb-10 border-b-4 gap-4 pb-4">
-                    <p className="text-2xl">Workers</p>
-                    <SearchButton customWidth="w-full" />
-                  </div>
-                  <div className="flex justify-around mb-10 items-center">
-                    {User.workspaceData?.currentWorkspace?.role ===
-                      "CREATOR" ? (
-                      <>
-                        <Input
-                          name="add"
-                          type="button"
-                          value="Add"
-                          onClick={() => setIsAddOpen(true)}
-                          customWidth="w-3/4"
-                          className="px-4 py-2 bg-ev-green text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                        />
+            ) : (
+              /* ── list view: workers + tasks side by side ── */
+              <div className="flex gap-6">
+                {isCreator && (
+                  <div className={`${panelCls} flex-1`}>
+                    <div className={panelHeaderCls}>
+                      <div className="flex items-center gap-2 text-slate-100 font-medium text-sm">
+                        <Users className="w-4 h-4 text-ev-yellow" /> Workers
+                      </div>
+                      <div className="flex gap-2">
+                        <button onClick={() => setIsAddOpen(true)} className="flex items-center gap-1 px-3 py-1.5 bg-ev-yellow/10 text-ev-yellow text-xs rounded-lg hover:bg-ev-yellow/20 transition-all">
+                          <Plus className="w-3 h-3" /> Add
+                        </button>
                         {!workerRemoval ? (
-                          <Input
-                            name="remove"
-                            type="button"
-                            value="Remove"
-                            onClick={() => setWorkerRemoval((p) => !p)}
-                            customWidth="w-3/4"
-                            className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                          />
+                          <button onClick={() => setWorkerRemoval(true)} className="flex items-center gap-1 px-3 py-1.5 bg-red-500/10 text-red-400 text-xs rounded-lg hover:bg-red-500/20 transition-all">
+                            <Trash2 className="w-3 h-3" /> Remove
+                          </button>
                         ) : (
                           <>
-                            <Input
-                              name="cancel"
-                              type="button"
-                              value="Cancel"
-                              onClick={() => setWorkerRemoval(false)}
-                              customWidth="w-3/4"
-                              className="px-4 py-2 bg-ev-blue text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                            />
-                            <Input
-                              name="delete"
-                              type="button"
-                              value="Delete"
-                              onClick={() => removeWorkers()}
-                              customWidth="w-3/4"
-                              className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                            />
+                            <button onClick={() => setWorkerRemoval(false)} className="px-3 py-1.5 bg-[#0f172a] border border-[#334155] text-slate-400 text-xs rounded-lg hover:text-slate-100 transition-all">Cancel</button>
+                            <button onClick={removeWorkers} className="px-3 py-1.5 bg-red-500 text-white text-xs rounded-lg hover:brightness-110 transition-all">Delete</button>
                           </>
                         )}
-                      </>
-                    ) : null}
-                  </div>
-                  <div className="flex flex-col gap-4 mb-10 w-full">
-                    {workspaceUsers !== null ? (
-                      <>
-                        {workspaceUsers.map((workspaceUser, i) => (
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-3">
+                      {workspaceUsers && workspaceUsers.length > 0 ? (
+                        workspaceUsers.map((u, i) => (
                           <WorkerEntry
-                            id={workspaceUser.id}
-                            username={workspaceUser.username}
                             key={i}
+                            id={u.id}
+                            username={u.username}
                             selectable={workerRemoval}
                             setSelectedWorkersIds={setSelectedWokrersIds}
                             selectedWorkersIds={selectedWorkersIds}
                             workspaceUsers={workspaceUsers}
-                            role={workspaceUser.workspace_role}
+                            role={u.workspace_role}
                           />
-                        ))}
-                      </>
-                    ) : (
-                      <p>Workspace doesn't have any users</p>
+                        ))
+                      ) : (
+                        <p className="text-slate-500 text-sm">No workers yet</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <div className={`${panelCls} flex-1`}>
+                  <div className={panelHeaderCls}>
+                    <div className="flex items-center gap-2 text-slate-100 font-medium text-sm">
+                      <ClipboardList className="w-4 h-4 text-ev-yellow" />
+                      Tasks
+                      {tasks && tasks.length > 0 && (
+                        <span className="ml-1 px-1.5 py-0.5 bg-ev-yellow/10 text-ev-yellow text-xs rounded-md">{tasks.length}</span>
+                      )}
+                    </div>
+                    {isCreator && (
+                      <div className="flex gap-2">
+                        <button onClick={() => setIsTaskOpen(true)} className="flex items-center gap-1 px-3 py-1.5 bg-ev-yellow/10 text-ev-yellow text-xs rounded-lg hover:bg-ev-yellow/20 transition-all">
+                          <Plus className="w-3 h-3" /> Add
+                        </button>
+                        {!taskRemoval ? (
+                          <button onClick={() => setTaskRemoval(true)} className="flex items-center gap-1 px-3 py-1.5 bg-red-500/10 text-red-400 text-xs rounded-lg hover:bg-red-500/20 transition-all">
+                            <Trash2 className="w-3 h-3" /> Remove
+                          </button>
+                        ) : (
+                          <>
+                            <button onClick={() => setTaskRemoval(false)} className="px-3 py-1.5 bg-[#0f172a] border border-[#334155] text-slate-400 text-xs rounded-lg hover:text-slate-100 transition-all">Cancel</button>
+                            <button onClick={removeTasks} className="px-3 py-1.5 bg-red-500 text-white text-xs rounded-lg hover:brightness-110 transition-all">Delete ({selectedTasksIds.length})</button>
+                          </>
+                        )}
+                      </div>
                     )}
                   </div>
-                </div>
-              ) : null}
-
-              <div className=" p-6 bg-ev-primary-bg overflow-y-scroll rounded-xl h-full w-full">
-                <div className="flex justify-between items-center mb-10 border-b-4 gap-4 pb-4">
-                  <p className="text-2xl">Tasks</p>
-                  <SearchButton customWidth="w-full" />
-                </div>
-                <div className="flex justify-around mb-10 items-center">
-                  {User.workspaceData?.currentWorkspace?.role === "CREATOR" ? (
-                    <>
-                      <Input
-                        name="add_task"
-                        type="button"
-                        value="Add"
-                        onClick={() => setIsTaskOpen(true)}
-                        customWidth="w-3/4"
-                        className="px-4 py-2 bg-ev-green text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                      />
-                      {!taskRemoval ? (
-                        <Input
-                          name="remove"
-                          type="button"
-                          value="Remove"
-                          onClick={() => setTaskRemoval((p) => !p)}
-                          customWidth="w-3/4"
-                          className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                        />
-                      ) : (
-                        <>
-                          <Input
-                            name="cancel"
-                            type="button"
-                            value="Cancel"
-                            onClick={() => setTaskRemoval(false)}
-                            customWidth="w-3/4"
-                            className="px-4 py-2 bg-ev-blue text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                          />
-                          <Input
-                            name="delete"
-                            type="button"
-                            value="Delete"
-                            onClick={() => removeTasks()}
-                            customWidth="w-3/4"
-                            className="px-4 py-2 bg-ev-red text-white rounded-lg hover:scale-110 duration-300 w-3/4"
-                          />
-                        </>
-                      )}
-                    </>
-                  ) : null}
-                </div>
-                <div className="flex flex-col gap-4 mb-10 w-full">
-                  {tasks === null ||
-                    tasks === undefined ||
-                    tasks.length === 0 ? (
-                    <p>Workspace doesn't have any tasks</p>
-                  ) : (
-                    <>
-                      {tasks.map((task, i) => (
+                  <div className="flex flex-col gap-3">
+                    {tasks === null || tasks.length === 0 ? (
+                      <p className="text-slate-500 text-sm">No tasks yet</p>
+                    ) : (
+                      tasks.map((task, i) => (
                         <TaskEntry
-                          task={task}
                           key={i}
+                          task={task}
                           workspaceUsers={workspaceUsers}
                           selectable={taskRemoval}
                           setSelectedTasksIds={setSelectedTasksIds}
                           selectedTasksIds={selectedTasksIds}
                         />
-                      ))}
-                    </>
-                  )}
+                      ))
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-        </ContentBlock>
-      </section>
-
-      <FooterSmall />
+            )}
+          </ContentBlock>
+        </div>
+      </div>
     </PageTemplate>
   );
 }

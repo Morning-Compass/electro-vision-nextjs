@@ -1,75 +1,55 @@
 "use client";
 
-import { useState, ChangeEvent, FormEvent } from "react";
-import { redirect } from "next/navigation";
+import { useState } from "react";
 import Link from "next/link";
 import PageTemplate from "@/components/templates/PageTemplate";
 import OLF from "@/ev-lib/ElectroVisionFetch";
 import ApiLinks from "@/ev-const/api-links";
-import NavbarTemplate from "@/components/templates/NavbarTemplate";
-import Input from "@/components/Input";
-import Button from "@/components/Button";
-import { FooterSmall } from "@/components/templates/FooterSmall";
-import { FullUser, User, User as UserEntityType } from "@/ev-types/user-types";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { LogOptions } from "vite";
-import FormErrorWrap from "@/components/templates/FormErrorWrap";
-import FormErrorParahraph from "@/components/templates/FormErrorParagraph";
 import Regex from "@/ev-const/regex";
 import AuthConst from "@/ev-const/authconst";
-import Image from "next/image";
 import Themes from "@/ev-const/themes";
 import useUserContext from "@/ev-contexts/userContextProvider";
-import toast from "react-hot-toast";
+import { User } from "@/ev-types/user-types";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Zap, CheckCircle } from "lucide-react";
+import toast from "react-hot-toast";
 import LoadingModal from "@/components/LoadingModal";
 
-export default function Login() {
-  type FormProps = {
-    credential: string;
-    password: string;
-  };
+type FormProps = { credential: string; password: string };
 
-  const loginOptions = {
-    email: "email",
-    username: "username",
-  } as const;
+const highlights = [
+  "Manage jobs & teams in one place",
+  "Real-time workspace visualization",
+  "Smart scheduling & reporting",
+];
+
+export default function Login() {
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loginOption, setLoginOption] = useState<"email" | "username">("email");
+
+  const { UserDispatch } = useUserContext();
+  const router = useRouter();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-    getValues,
-  } = useForm<FormProps>({
-    mode: "onTouched",
-    reValidateMode: "onChange",
-  });
-
-  const [loginOption, setLoginOption] = useState<"email" | "username">("email");
-
-  const { User, UserDispatch } = useUserContext();
-  const [isLoading, setIsLoading] = useState(false);
-
-  const router = useRouter();
+  } = useForm<FormProps>({ mode: "onTouched", reValidateMode: "onChange" });
 
   const onSubmit: SubmitHandler<FormProps> = async (data) => {
     setIsLoading(true);
     const loginLink =
-      loginOption === loginOptions.email
-        ? ApiLinks.loginEmail
-        : ApiLinks.loginUsername;
-
-    console.log(loginLink);
+      loginOption === "email" ? ApiLinks.loginEmail : ApiLinks.loginUsername;
 
     try {
       const response = await OLF.post(loginLink, {
-        [loginOption === loginOptions.email
-          ? loginOptions.email
-          : loginOptions.username]: data.credential,
+        [loginOption === "email" ? "email" : "username"]: data.credential,
         password: data.password,
       });
-      console.log(response);
-      let user: User = {
+
+      const user: User = {
         authUser: {
           id: response.id,
           username: response.username,
@@ -80,28 +60,19 @@ export default function Login() {
           roles: response.roles,
         },
         fullUser: null,
-        theme: Themes.light,
+        theme: Themes.dark,
         workspaceData: null,
       };
 
-      // const responseFullUser = await OLF.post(ApiLinks.listUserProfile, {
-      //   email: user.authUser?.email,
-      //   id: user.authUser?.id,
-      // });
-
-      // const fullUser: FullUser = responseFullUser;
-      // user = { ...user, fullUser: fullUser };
-
       UserDispatch({ type: "setUser", value: user });
       localStorage.setItem("jwt_token", user.authUser?.token ?? "");
-      toast.success("Login Successfull");
+      toast.success("Welcome back!");
       router.push("/hub");
       router.refresh();
     } catch (error) {
-      console.error("Login error:", error);
       toast.error(
-        error instanceof Error ? `${error.message}` : "Login failed",
-        { duration: 5000 },
+        error instanceof Error ? error.message : "Login failed",
+        { duration: 5000 }
       );
     } finally {
       setIsLoading(false);
@@ -109,96 +80,142 @@ export default function Login() {
   };
 
   return (
-    <PageTemplate allowUnauthenticated={true}>
+    <PageTemplate allowUnauthenticated>
       {isLoading && <LoadingModal />}
-      <NavbarTemplate />
-      <section className="flex flex-row justify-around text-ev-text bg-ev-primary-bg w-[55vw] min-w-72 opacity-95 rounded-[1.5rem] mt-auto mb-auto ev-blur transition-colors duration-500 p-6 max-h-[75vh]">
-        <Image
-          src={"/login_register_image.svg"}
-          className={
-            "flex-1 w-[calc(50%-10em)] h-auto object-contain max-lg:hidden"
-          }
-          alt={"Login"}
-          width={10}
-          height={10}
-        />
-        <article className="flex flex-col items-center justify-between h-auto w-[50%] mt-28 mb-12 max-lg:w-full">
-          <header className="text-3xl font-bold mt-8 mb-8 mr-6 ml-6 text-center max-sm:text-xl">
-            Good to see you again!
-          </header>
-          <form
-            className="flex flex-col items-stretch justify-between gap-4"
-            onSubmit={handleSubmit(onSubmit)}
-          >
-            <FormErrorWrap>
-              <h1 className="font-bold text-lg pl-4">Email or Username</h1>
-              <Input
-                type="text"
-                name="credential"
-                placeholder="Email or Username"
-                className="border-4 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
-                error={errors.credential?.message}
-                register={register("credential", {
-                  validate: (cred) => {
-                    if (cred && cred.includes("@")) {
-                      setLoginOption("email");
-                      const regexResult = Regex.emailRegistration.test(cred);
-                      if (!regexResult) {
-                        return "Email must be correct";
-                      }
-                      console.log("optin email");
-                      return true;
-                    }
-                    setLoginOption("username");
-                    console.log("optin username");
-                  },
-                  required: {
-                    value: true,
-                    message: "Credential is required",
-                  },
-                })}
-              />
-            </FormErrorWrap>
-            <FormErrorWrap>
-              <h1 className="font-bold text-lg pl-4">Password</h1>
-              <Input
-                type="password"
-                name="password"
-                placeholder="Password"
-                className="border-4 bg-white text-black border-solid rounded-[0.9rem] max-w-[40rem] min-w-56 w-[25vw] max-h-12 min-h-8 h-[10vh] pl-4 pr-4 duration-300 focus:scale-110 focus:outline-none focus:bg-slate-800 focus:text-emerald-500 focus:border-slate-800"
-                error={errors.password?.message}
-                register={register("password", {
-                  minLength: {
-                    value: AuthConst.minPasswordLength,
-                    message: `Password must have at least ${AuthConst.minPasswordLength} characters`,
-                  },
-                  required: {
-                    value: true,
-                    message: "Password is required",
-                  },
-                })}
-              />
-            </FormErrorWrap>
-            <Button
-              type="submit"
-              value="Login"
-              customWidth="max-w-[40rem] min-w-56 w-[25vw]"
-            />
-          </form>
-          <figure className="flex items-center justify-evenly p-6 max-sm:text-[0.8rem] max-sm:p-4">
-            <p className="select-none mr-4 ml-4 text-center">
-              Don't have account?
-            </p>
-            <Link
-              href={"/auth/register"}
-              className="text-ev-text hover:scale-110 duration-300 ml-4 mr-4 font-bold"
-            >
-              Register here
-            </Link>
-          </figure>
-        </article>
-      </section>
-      <FooterSmall />
+
+      <div className="min-h-screen flex theme-dark bg-[#0a0f1e]">
+        {/* ── left branding ── */}
+        <div className="hidden lg:flex lg:w-1/2 relative flex-col items-center justify-center p-14 bg-[#0f172a] overflow-hidden border-r border-[#334155]">
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-96 h-96 bg-ev-yellow/5 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 flex flex-col items-center text-center gap-8 max-w-md">
+            <div className="w-16 h-16 rounded-2xl bg-ev-yellow/20 flex items-center justify-center">
+              <Zap className="w-8 h-8 text-ev-yellow" />
+            </div>
+
+            <div>
+              <h1 className="text-4xl font-bold text-slate-100 mb-3 leading-tight">
+                Welcome back to{" "}
+                <span className="text-ev-yellow">Electro Vision</span>
+              </h1>
+              <p className="text-slate-400 leading-relaxed">
+                Your all-in-one platform for managing electrical projects, teams,
+                and workspaces.
+              </p>
+            </div>
+
+            <ul className="flex flex-col gap-3 w-full text-left">
+              {highlights.map((h) => (
+                <li key={h} className="flex items-center gap-3 text-slate-400 text-sm">
+                  <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
+                  {h}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* ── right form ── */}
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="w-full max-w-md">
+            {/* mobile logo */}
+            <div className="lg:hidden flex items-center gap-3 justify-center mb-10">
+              <div className="w-10 h-10 rounded-xl bg-ev-yellow/20 flex items-center justify-center">
+                <Zap className="w-5 h-5 text-ev-yellow" />
+              </div>
+              <span className="text-slate-100 font-bold text-xl">Electro Vision</span>
+            </div>
+
+            <div className="bg-[#1e293b] border border-[#334155] rounded-3xl p-8 shadow-[0_8px_40px_rgba(0,0,0,0.5)]">
+              <div className="mb-7">
+                <h2 className="text-2xl font-bold text-slate-100 mb-1">Sign In</h2>
+                <p className="text-slate-400 text-sm">Access your Electro Vision account</p>
+              </div>
+
+              <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+                {/* credential */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium text-slate-400">Email or Username</label>
+                  <div className="relative">
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                    <input
+                      {...register("credential", {
+                        required: "Email or username is required",
+                        validate: (val) => {
+                          if (val.includes("@")) {
+                            setLoginOption("email");
+                            return Regex.emailRegistration.test(val) || "Enter a valid email";
+                          }
+                          setLoginOption("username");
+                          return true;
+                        },
+                      })}
+                      type="text"
+                      placeholder="you@example.com"
+                      className="w-full bg-[#0f172a] border border-[#334155] rounded-xl text-slate-100 placeholder:text-slate-600 text-sm px-4 py-3 pl-10 focus:outline-none focus:border-ev-yellow focus:ring-2 focus:ring-ev-yellow/20 transition-all"
+                    />
+                  </div>
+                  {errors.credential && (
+                    <p className="text-xs text-red-400">{errors.credential.message}</p>
+                  )}
+                </div>
+
+                {/* password */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium text-slate-400">Password</label>
+                  <div className="relative">
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                    <input
+                      {...register("password", {
+                        required: "Password is required",
+                        minLength: {
+                          value: AuthConst.minPasswordLength,
+                          message: `Minimum ${AuthConst.minPasswordLength} characters`,
+                        },
+                      })}
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Enter your password"
+                      className="w-full bg-[#0f172a] border border-[#334155] rounded-xl text-slate-100 placeholder:text-slate-600 text-sm px-4 py-3 pl-10 pr-10 focus:outline-none focus:border-ev-yellow focus:ring-2 focus:ring-ev-yellow/20 transition-all"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((p) => !p)}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  {errors.password && (
+                    <p className="text-xs text-red-400">{errors.password.message}</p>
+                  )}
+                </div>
+
+                <div className="flex justify-end -mt-2">
+                  <Link href="/auth/reset-password" className="text-ev-yellow text-sm hover:underline">
+                    Forgot password?
+                  </Link>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full flex items-center justify-center gap-2 bg-ev-yellow text-[#0a0f1e] font-semibold py-3 rounded-xl hover:brightness-110 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Sign In
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </form>
+
+              <p className="text-center text-slate-400 text-sm mt-6">
+                Don&apos;t have an account?{" "}
+                <Link href="/auth/register" className="text-ev-yellow hover:underline font-medium">
+                  Create one free
+                </Link>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </PageTemplate>
   );
 }
