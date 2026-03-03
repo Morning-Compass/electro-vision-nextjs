@@ -1,10 +1,11 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Bell, Search } from "lucide-react";
+import { Bell, Search, Menu } from "lucide-react";
 import Avatar from "@/components/ui/Avatar";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import useUserContext from "@/ev-contexts/userContextProvider";
+import { useMobileSidebar } from "@/ev-contexts/mobileSidebarContext";
 import Link from "next/link";
 
 const pageTitles: Record<string, string> = {
@@ -27,6 +28,7 @@ const pageTitles: Record<string, string> = {
 export default function NavbarTemplate() {
   const pathname = usePathname();
   const { User } = useUserContext();
+  const { setOpen } = useMobileSidebar();
 
   const title = Object.entries(pageTitles).find(([key]) =>
     pathname.startsWith(key)
@@ -35,21 +37,30 @@ export default function NavbarTemplate() {
   const username = User.authUser?.username ?? "";
 
   return (
-    <header className="h-14 flex items-center gap-4 px-6 border-b border-ev-stroke bg-ev-sidebar flex-shrink-0">
-      {/* page title / breadcrumb */}
+    <header className="h-14 flex items-center gap-3 px-4 md:px-6 border-b border-ev-stroke bg-ev-sidebar flex-shrink-0">
+      {/* hamburger — mobile only */}
+      <button
+        onClick={() => setOpen(true)}
+        className="md:hidden w-8 h-8 rounded-xl flex items-center justify-center text-ev-muted hover:text-ev-text hover:bg-ev-surface transition-colors flex-shrink-0"
+        aria-label="Open menu"
+      >
+        <Menu className="w-5 h-5" />
+      </button>
+
+      {/* page title */}
       <h1 className="text-ev-text font-semibold text-base flex-1 min-w-0 truncate">
         {title}
       </h1>
 
-      {/* search */}
+      {/* search — tablet+ */}
       <div className="hidden md:flex items-center gap-2 bg-ev-surface border border-ev-stroke rounded-xl px-3 py-1.5 text-ev-muted text-sm min-w-40">
         <Search className="w-3.5 h-3.5 flex-shrink-0" />
         <span className="text-xs">Search...</span>
       </div>
 
       {/* actions */}
-      <div className="flex items-center gap-2 ml-auto">
-        <button className="w-8 h-8 rounded-xl flex items-center justify-center text-ev-muted hover:text-ev-text hover:bg-ev-surface transition-colors relative">
+      <div className="flex items-center gap-2">
+        <button className="w-8 h-8 rounded-xl flex items-center justify-center text-ev-muted hover:text-ev-text hover:bg-ev-surface transition-colors">
           <Bell className="w-4 h-4" />
         </button>
 

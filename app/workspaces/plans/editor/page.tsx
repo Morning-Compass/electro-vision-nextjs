@@ -4,24 +4,31 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import dynamic from "next/dynamic";
 import PageTemplate from "@/components/templates/PageTemplate";
 import NavbarTemplate from "@/components/templates/NavbarTemplate";
-import { FooterSmall } from "@/components/templates/FooterSmall";
 import SidebarTemplate from "@/components/templates/SidebarTemplate";
 import Image from "next/image";
-import SearchButton from "@/components/SearchButton";
-import Input from "@/components/Input";
 import Overlay from "@/components/Overlay";
 import useUserContext from "@/ev-contexts/userContextProvider";
-import "leaflet/dist/leaflet.css";
 import { useForm, SubmitHandler, Control } from "react-hook-form";
-import FormErrorWrap from "@/components/templates/FormErrorWrap";
 import toast from "react-hot-toast";
 import OLF from "@/ev-lib/ElectroVisionFetch";
 import ApiLinks from "@/ev-const/api-links";
 import { DateTimePicker } from "@/components/datepicker/Datepicker";
 import { WorkspaceUser } from "@/ev-types/user-types";
 import Link from "next/link";
+import {
+  ArrowLeft,
+  Plus,
+  Trash2,
+  GitBranch,
+  Pencil,
+  Layers,
+  ClipboardList,
+  X,
+  Upload,
+} from "lucide-react";
 
-// Define types
+// ── Types ──────────────────────────────────────────────────────────────────
+
 interface TaskNodeData {
   id: string;
   label: string;
@@ -61,24 +68,30 @@ interface TaskApiResponse {
   assignee_email: string;
 }
 
+// ── Dynamic imports ────────────────────────────────────────────────────────
+
 const LeafletMap = dynamic(() => import("./LeafletMap"), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full flex items-center justify-center bg-gray-100 rounded-xl">
-      Loading map editor...
+    <div className="w-full h-full flex items-center justify-center bg-[#0f172a] text-slate-500 text-sm">
+      Loading map editor…
     </div>
   ),
 });
 
 const DrawCanvas = dynamic(() => import("./DrawCanvas"), { ssr: false });
 
+// ── Shared styles ──────────────────────────────────────────────────────────
+
+const inputCls =
+  "w-full bg-[#0f172a] border border-[#334155] rounded-xl text-slate-100 placeholder:text-slate-600 text-sm px-4 py-3 focus:outline-none focus:border-ev-yellow focus:ring-2 focus:ring-ev-yellow/20 transition-all";
+const labelCls = "text-xs font-medium text-slate-400 block mb-1.5";
+
+// ── Drop handler ───────────────────────────────────────────────────────────
+
 function handleDirectDrop(
   event: DragEvent,
-  onDrop: (
-    nodeType: string,
-    position: [number, number],
-    taskId?: string,
-  ) => void,
+  onDrop: (nodeType: string, position: [number, number], taskId?: string) => void,
   map: any,
 ) {
   event.preventDefault();
@@ -89,7 +102,6 @@ function handleDirectDrop(
   const y = event.clientY - rect.top;
 
   let position: [number, number] = [51.5, -0.1];
-
   if (map && map.containerPointToLatLng) {
     const point = map.containerPointToLatLng([x, y]);
     position = [point.lat, point.lng];
@@ -103,8 +115,7 @@ function handleDirectDrop(
 
   if (taskId) {
     const feedback = document.createElement("div");
-    feedback.className =
-      "absolute z-[2000] bg-green-500 text-white px-2 py-1 rounded";
+    feedback.className = "absolute z-[2000] bg-green-500 text-white px-2 py-1 rounded text-xs";
     feedback.style.left = `${x}px`;
     feedback.style.top = `${y}px`;
     feedback.textContent = "Moved!";
@@ -113,11 +124,10 @@ function handleDirectDrop(
     onDrop("customTask", position, taskId);
   } else if (nodeType) {
     const feedback = document.createElement("div");
-    feedback.className =
-      "absolute z-[2000] bg-blue-500 text-white px-2 py-1 rounded";
+    feedback.className = "absolute z-[2000] bg-blue-500 text-white px-2 py-1 rounded text-xs";
     feedback.style.left = `${x}px`;
     feedback.style.top = `${y}px`;
-    feedback.textContent = "Define Task...";
+    feedback.textContent = "Define Task…";
     (event.target as HTMLElement).appendChild(feedback);
     setTimeout(() => feedback.remove(), 1200);
     onDrop(nodeType, position);
@@ -126,6 +136,8 @@ function handleDirectDrop(
 
 const initialTasks: TaskNodeData[] = [];
 const initialConnections: TaskConnection[] = [];
+
+// ── AddTaskFormForMap ──────────────────────────────────────────────────────
 
 interface AddTaskFormForMapProps {
   isOpen: boolean;
@@ -158,7 +170,6 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
     register,
     reset,
     setValue,
-    watch,
     control,
   } = useForm<TaskFormProps>({
     mode: "onTouched",
@@ -175,23 +186,20 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
   });
 
   useEffect(() => {
-    if (!isOpen) {
-      reset();
-    }
+    if (!isOpen) reset();
   }, [isOpen, reset]);
 
   const handleFormSubmit: SubmitHandler<TaskFormProps> = async (data) => {
     if (!initialPosition || !initialNodeType) {
-      toast.error("Cannot add task: critical map information is missing.");
+      toast.error("Cannot add task: map information is missing.");
       return;
     }
     if (!currentUserEmail || !currentWorkspaceId) {
       toast.error("Cannot add task: user or workspace context is missing.");
       return;
     }
-
     try {
-      const taskPayload = {
+      const res = await OLF.post(ApiLinks.createTasks(currentWorkspaceId), {
         assigner_email: currentUserEmail,
         assignee_email: data.assignee_email,
         image: data.multimedia,
@@ -202,13 +210,7 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
         status: "TODO",
         due_date: data.due_date || null,
         description_multimedia: data.multimedia || null,
-      };
-
-      const res = await OLF.post(
-        ApiLinks.createTasks(currentWorkspaceId),
-        taskPayload,
-      );
-
+      });
       try {
         await OLF.post(ApiLinks.addPythonTask, {
           task_id: res.id,
@@ -225,233 +227,100 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
           ApiLinks.removeTask(currentWorkspaceId.toString(), res.id.toString()),
           {},
         );
-        console.error("Error creating task:", error);
-        toast.error(
-          error instanceof Error ? error.message : "Failed to create task",
-        );
+        toast.error(error instanceof Error ? error.message : "Failed to create task");
       }
     } catch (error) {
-      console.error("Error creating task:", error);
-      toast.error(
-        error instanceof Error ? error.message : "Failed to create task",
-      );
+      toast.error(error instanceof Error ? error.message : "Failed to create task");
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <Overlay
-      isOpen={isOpen}
-      onClose={onClose}
-      blockClassName="max-w-lg bg-ev-primary rounded-xl shadow-2xl p-6 z-[1001]"
-    >
-      <form
-        className="flex flex-col gap-6 w-full text-ev-text"
-        onSubmit={handleSubmit(handleFormSubmit)}
-        noValidate
-      >
-        <h2 className="text-3xl font-semibold mb-4">
-          Create New Task ({initialNodeType})
-        </h2>
+    <Overlay isOpen={isOpen} onClose={onClose}>
+      <form className="flex flex-col gap-4 w-full" onSubmit={handleSubmit(handleFormSubmit)} noValidate>
+        <p className="text-xl font-bold text-slate-100">Create Task ({initialNodeType})</p>
 
-        <FormErrorWrap>
-          <div className="flex flex-col gap-2">
-            <label htmlFor="taskTitleMap" className="text-lg">
-              Title*
-            </label>
-            <Input
-              id="taskTitleMap"
-              type="text"
-              placeholder="Task title..."
-              className="w-full p-3 bg-ev-main-bg text-ev-dark-gray rounded-lg focus:ring-2 focus:ring-ev-blue focus:border-transparent outline-none"
-              error={errors.title?.message}
-              register={register("title", {
-                required: "Title is required",
-                minLength: {
-                  value: 3,
-                  message: "Title must be at least 3 characters",
-                },
-              })}
-            />
-          </div>
-        </FormErrorWrap>
+        <div>
+          <label className={labelCls}>Title *</label>
+          <input type="text" placeholder="Task title…" className={inputCls}
+            {...register("title", { required: "Required", minLength: { value: 3, message: "Min 3 chars" } })} />
+          {errors.title && <p className="text-xs text-red-400 mt-1">{errors.title.message}</p>}
+        </div>
 
-        <FormErrorWrap>
-          <div className="flex flex-col gap-2">
-            <label htmlFor="taskDescriptionMap" className="text-lg">
-              Description
-            </label>
-            <Input
-              id="taskDescriptionMap"
-              type="text"
-              placeholder="Task description..."
-              className="w-full p-3 bg-ev-main-bg text-ev-dark-gray rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
-              error={errors.description?.message}
-              register={register("description")}
-            />
-          </div>
-        </FormErrorWrap>
+        <div>
+          <label className={labelCls}>Description</label>
+          <input type="text" placeholder="Description…" className={inputCls} {...register("description")} />
+        </div>
 
-        <FormErrorWrap>
-          <div className="flex flex-col gap-2">
-            <label htmlFor="multimedia-file" className="text-lg">
-              Photo
-            </label>
-            <label
-              htmlFor="multimedia-file"
-              className="px-3 py-2 bg-ev-main-bg text-ev-dark-gray rounded-lg cursor-pointer w-full hover:scale-105 transition text-left"
-            >
-              Upload Photo
-            </label>
-            <input
-              id="multimedia-file"
-              type="file"
-              accept="image/png, image/jpeg"
-              capture="environment"
-              className="hidden"
-              onChange={async (e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                  const base64 = reader.result as string;
-                  setValue("multimedia", base64, { shouldValidate: true });
-                };
-                reader.readAsDataURL(file);
-              }}
-            />
-            <input type="hidden" {...register("multimedia")} />
-          </div>
-        </FormErrorWrap>
+        <div>
+          <label className={labelCls}>Photo</label>
+          <label htmlFor="map-task-photo" className="flex items-center gap-2 w-full cursor-pointer bg-[#0f172a] border border-[#334155] rounded-xl px-4 py-3 text-sm text-slate-400 hover:border-ev-yellow/40 transition-all">
+            <Upload className="w-4 h-4" /> Upload Photo
+          </label>
+          <input id="map-task-photo" type="file" accept="image/png,image/jpeg" capture="environment" className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              const reader = new FileReader();
+              reader.onloadend = () => setValue("multimedia", reader.result as string, { shouldValidate: true });
+              reader.readAsDataURL(file);
+            }} />
+          <input type="hidden" {...register("multimedia")} />
+        </div>
 
-        <FormErrorWrap>
-          <div className="flex flex-col gap-2">
-            <label htmlFor="taskAssigneeMap" className="text-lg">
-              Assignee Email*
-            </label>
-            <div className="flex gap-2">
-              <select
-                id="taskAssigneeMap"
-                value={watch("assignee_email") || ""}
-                className="w-full p-3 bg-ev-main-bg text-ev-dark-gray rounded-lg hover:scale-105 transition appearance-none focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
-                {...register("assignee_email", {
-                  required: "Assignee is required",
-                })}
-              >
-                <option value="" disabled>
-                  Select assignee...
-                </option>
-                {workspaceUsers && workspaceUsers.length > 0 ? (
-                  workspaceUsers.map((u, i) => (
-                    <option key={i} value={u.email}>
-                      {u.email}
-                    </option>
-                  ))
-                ) : (
-                  <option value="" disabled>
-                    No users available
-                  </option>
-                )}
-              </select>
-              <button
-                type="button"
-                onClick={() => {
-                  if (currentUserEmail) {
-                    setValue("assignee_email", currentUserEmail, { shouldValidate: true });
-                  }
-                }}
-                className="px-3 py-2 bg-ev-blue text-white rounded-lg hover:scale-105 transition whitespace-nowrap text-sm"
-              >
-                Assign to me
-              </button>
-            </div>
-            {errors.assignee_email && (
-              <p className="text-ev-red text-sm mt-1">
-                {errors.assignee_email.message}
-              </p>
-            )}
-          </div>
-        </FormErrorWrap>
-
-        <FormErrorWrap>
-          <div className="flex flex-col gap-2">
-            <label htmlFor="taskImportanceMap" className="text-lg">
-              Importance*
-            </label>
-            <select
-              id="taskImportanceMap"
-              className="w-full p-3 bg-ev-main-bg text-ev-dark-gray rounded-lg hover:scale-105 transition appearance-none focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
-              {...register("importance", {
-                required: "Importance is required",
-              })}
-              defaultValue="LOW"
-            >
-              <option value="LOW">Low</option>
-              <option value="MEDIUM">Medium</option>
-              <option value="HIGH">High</option>
+        <div>
+          <label className={labelCls}>Assignee *</label>
+          <div className="flex gap-2">
+            <select className={`${inputCls} appearance-none flex-1`}
+              {...register("assignee_email", { required: "Required" })}>
+              <option value="" disabled>Select…</option>
+              {workspaceUsers?.map((u, i) => <option key={i} value={u.email}>{u.email}</option>)}
             </select>
-            {errors.importance && (
-              <p className="text-ev-red text-sm mt-1">
-                {errors.importance.message}
-              </p>
-            )}
+            <button type="button"
+              onClick={() => { if (currentUserEmail) setValue("assignee_email", currentUserEmail, { shouldValidate: true }); }}
+              className="px-3 py-2 bg-[#1e293b] border border-[#334155] text-slate-300 rounded-xl text-xs hover:border-ev-yellow/40 transition-all whitespace-nowrap">
+              Me
+            </button>
           </div>
-        </FormErrorWrap>
+          {errors.assignee_email && <p className="text-xs text-red-400 mt-1">{errors.assignee_email.message}</p>}
+        </div>
 
-        <FormErrorWrap>
-          <div className="flex flex-col gap-2">
-            <label htmlFor="taskCategoryMap" className="text-lg">
-              Category
-            </label>
-            <Input
-              id="taskCategoryMap"
-              type="text"
-              placeholder="e.g., Lamps, Sockets"
-              className="w-full p-3 bg-ev-main-bg text-ev-dark-gray rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
-              error={errors.category?.message}
-              register={register("category")}
-            />
-          </div>
-        </FormErrorWrap>
+        <div>
+          <label className={labelCls}>Importance *</label>
+          <select className={`${inputCls} appearance-none`} {...register("importance", { required: "Required" })}>
+            <option value="LOW">Low</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="HIGH">High</option>
+          </select>
+        </div>
 
-        <FormErrorWrap>
-          <div className="flex flex-col gap-2">
-            <label htmlFor="due_date" className="text-lg">
-              Due Date
-            </label>
-            <DateTimePicker
-              name="due_date"
-              control={control as Control<TaskFormProps>}
-              className="px-3 py-2 bg-ev-main-bg text-ev-dark-gray rounded-lg w-full"
-            />
-            {errors.due_date && (
-              <p className="text-ev-red text-sm mt-1">
-                {errors.due_date.message}
-              </p>
-            )}
-          </div>
-        </FormErrorWrap>
+        <div>
+          <label className={labelCls}>Category</label>
+          <input type="text" placeholder="e.g. Lamps" className={inputCls} {...register("category")} />
+        </div>
 
-        <div className="flex items-center justify-end gap-4 mt-6">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white hover:bg-gray-100 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-200"
-          >
+        <div>
+          <label className={labelCls}>Due Date</label>
+          <DateTimePicker name="due_date" control={control as Control<TaskFormProps>} className={inputCls} />
+        </div>
+
+        <div className="flex gap-3 pt-2">
+          <button type="button" onClick={onClose}
+            className="flex-1 px-4 py-3 bg-[#0f172a] border border-[#334155] text-slate-300 rounded-xl text-sm hover:text-slate-100 hover:border-[#475569] transition-all">
             Cancel
           </button>
-          <Input
-            type="submit"
-            value={isSubmitting ? "Creating..." : "Create Task & Add"}
-            disabled={isSubmitting}
-            className="text-ev-white bg-ev-blue hover:bg-ev-darkblue font-semibold rounded-lg px-6 py-3 hover:scale-105 duration-300 transition-all focus:outline-none focus:ring-2 focus:ring-mc-blue focus:ring-opacity-50"
-          />
+          <button type="submit" disabled={isSubmitting}
+            className="flex-1 flex items-center justify-center gap-2 bg-ev-yellow text-[#0a0f1e] font-semibold py-3 rounded-xl hover:brightness-110 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+            {isSubmitting ? "Creating…" : "Create & Place"}
+          </button>
         </div>
       </form>
     </Overlay>
   );
 };
+
+// ── AddTaskOverlay ─────────────────────────────────────────────────────────
 
 interface AddTaskOverlayProps {
   isOpen: boolean;
@@ -476,7 +345,6 @@ const AddTaskOverlay: React.FC<AddTaskOverlayProps> = ({
     register,
     reset,
     setValue,
-    watch,
     control,
   } = useForm<TaskFormProps>({
     mode: "onTouched",
@@ -501,9 +369,8 @@ const AddTaskOverlay: React.FC<AddTaskOverlayProps> = ({
       toast.error("Cannot add task: user or workspace context is missing.");
       return;
     }
-
     try {
-      const taskPayload = {
+      const res = await OLF.post(ApiLinks.createTasks(currentWorkspaceId), {
         assigner_email: currentUserEmail,
         assignee_email: data.assignee_email,
         title: data.title,
@@ -515,13 +382,7 @@ const AddTaskOverlay: React.FC<AddTaskOverlayProps> = ({
         due_date: data.due_date || null,
         description_multimedia: data.multimedia || null,
         task_type: "MAP",
-      };
-
-      const res = await OLF.post(
-        ApiLinks.createTasks(currentWorkspaceId),
-        taskPayload,
-      );
-
+      });
       try {
         await OLF.post(ApiLinks.addPythonTask, {
           task_id: res.id.toString(),
@@ -533,12 +394,9 @@ const AddTaskOverlay: React.FC<AddTaskOverlayProps> = ({
         await OLF.delete(
           ApiLinks.removeTask(currentWorkspaceId.toString(), res.id.toString()),
         );
-        console.error("Error adding Python task:", error);
-        toast.error(
-          error instanceof Error ? error.message : "Failed to add Python task",
-        );
+        toast.error(error instanceof Error ? error.message : "Failed to add Python task");
+        return;
       }
-
       const newTask: TaskNodeData = {
         id: res.id.toString(),
         label: res.title,
@@ -550,231 +408,102 @@ const AddTaskOverlay: React.FC<AddTaskOverlayProps> = ({
         category: res.category,
         assignee_email: res.assignee_email,
       };
-
       onSubmitSuccess(newTask);
       reset();
       onClose();
       toast.success("Task created successfully!");
     } catch (error) {
-      console.error("Error creating task:", error);
-      toast.error(
-        error instanceof Error ? error.message : "Failed to create task",
-      );
+      toast.error(error instanceof Error ? error.message : "Failed to create task");
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <Overlay
-      isOpen={isOpen}
-      onClose={onClose}
-      blockClassName="max-w-lg bg-ev-primary rounded-xl shadow-2xl p-6 z-[1001]"
-    >
-      <form
-        className="flex flex-col gap-6 w-full text-ev-text"
-        onSubmit={handleSubmit(handleFormSubmit)}
-        noValidate
-      >
-        <h2 className="text-3xl font-semibold mb-4">Create New Task</h2>
+    <Overlay isOpen={isOpen} onClose={onClose}>
+      <form className="flex flex-col gap-4 w-full" onSubmit={handleSubmit(handleFormSubmit)} noValidate>
+        <p className="text-xl font-bold text-slate-100">Add Task to Workspace List</p>
 
-        <FormErrorWrap>
-          <div className="flex flex-col gap-2">
-            <label htmlFor="taskTitle" className="text-lg">
-              Title*
-            </label>
-            <Input
-              id="taskTitle"
-              type="text"
-              placeholder="Task title..."
-              className="w-full p-3 bg-ev-main-bg text-ev-dark-gray rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
-              error={errors.title?.message}
-              register={register("title", {
-                required: "Title is required",
-                minLength: {
-                  value: 3,
-                  message: "Title must be at least 3 characters",
-                },
-              })}
-            />
-          </div>
-        </FormErrorWrap>
+        <div>
+          <label className={labelCls}>Title *</label>
+          <input type="text" placeholder="Task title…" className={inputCls}
+            {...register("title", { required: "Required", minLength: { value: 3, message: "Min 3 chars" } })} />
+          {errors.title && <p className="text-xs text-red-400 mt-1">{errors.title.message}</p>}
+        </div>
 
-        <FormErrorWrap>
-          <div className="flex flex-col gap-2">
-            <label htmlFor="taskDescription" className="text-lg">
-              Description
-            </label>
-            <Input
-              id="taskDescription"
-              type="text"
-              placeholder="Task description..."
-              className="w-full p-3 bg-ev-main-bg text-ev-dark-gray rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
-              error={errors.description?.message}
-              register={register("description")}
-            />
-          </div>
-        </FormErrorWrap>
+        <div>
+          <label className={labelCls}>Description</label>
+          <input type="text" placeholder="Description…" className={inputCls} {...register("description")} />
+        </div>
 
-        <FormErrorWrap>
-          <div className="flex flex-col gap-2">
-            <label htmlFor="multimedia-file-overlay" className="text-lg">
-              Photo
-            </label>
-            <label
-              htmlFor="multimedia-file-overlay"
-              className="px-3 py-2 bg-ev-main-bg text-ev-dark-gray rounded-lg cursor-pointer w-full hover:scale-105 transition text-left"
-            >
-              Upload Photo
-            </label>
-            <input
-              id="multimedia-file-overlay"
-              type="file"
-              accept="image/png, image/jpeg"
-              capture="environment"
-              className="hidden"
-              onChange={async (e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                  const base64 = reader.result as string;
-                  setValue("multimedia", base64, { shouldValidate: true });
-                };
-                reader.readAsDataURL(file);
-              }}
-            />
-            <input type="hidden" {...register("multimedia")} />
-          </div>
-        </FormErrorWrap>
+        <div>
+          <label className={labelCls}>Photo</label>
+          <label htmlFor="overlay-task-photo" className="flex items-center gap-2 w-full cursor-pointer bg-[#0f172a] border border-[#334155] rounded-xl px-4 py-3 text-sm text-slate-400 hover:border-ev-yellow/40 transition-all">
+            <Upload className="w-4 h-4" /> Upload Photo
+          </label>
+          <input id="overlay-task-photo" type="file" accept="image/png,image/jpeg" capture="environment" className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              const reader = new FileReader();
+              reader.onloadend = () => setValue("multimedia", reader.result as string, { shouldValidate: true });
+              reader.readAsDataURL(file);
+            }} />
+          <input type="hidden" {...register("multimedia")} />
+        </div>
 
-        <FormErrorWrap>
-          <div className="flex flex-col gap-2">
-            <label htmlFor="taskAssignee" className="text-lg">
-              Assignee Email*
-            </label>
-            <div className="flex gap-2">
-              <select
-                id="taskAssignee"
-                value={watch("assignee_email") || ""}
-                className="w-full p-3 bg-ev-main-bg text-ev-dark-gray rounded-lg hover:scale-105 transition appearance-none focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
-                {...register("assignee_email", {
-                  required: "Assignee is required",
-                })}
-              >
-                <option value="" disabled>
-                  Select assignee...
-                </option>
-                {workspaceUsers && workspaceUsers.length > 0 ? (
-                  workspaceUsers.map((u, i) => (
-                    <option key={i} value={u.email}>
-                      {u.email}
-                    </option>
-                  ))
-                ) : (
-                  <option value="" disabled>
-                    No users available
-                  </option>
-                )}
-              </select>
-              <button
-                type="button"
-                onClick={() => {
-                  if (currentUserEmail) {
-                    setValue("assignee_email", currentUserEmail, { shouldValidate: true });
-                  }
-                }}
-                className="px-3 py-2 bg-ev-blue text-white rounded-lg hover:scale-105 transition whitespace-nowrap text-sm"
-              >
-                Assign to me
-              </button>
-            </div>
-            {errors.assignee_email && (
-              <p className="text-ev-red text-sm mt-1">
-                {errors.assignee_email.message}
-              </p>
-            )}
-          </div>
-        </FormErrorWrap>
-
-        <FormErrorWrap>
-          <div className="flex flex-col gap-2">
-            <label htmlFor="taskImportance" className="text-lg">
-              Importance*
-            </label>
-            <select
-              id="taskImportance"
-              className="w-full p-3 bg-ev-main-bg text-ev-dark-gray rounded-lg hover:scale-105 transition appearance-none focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
-              {...register("importance", {
-                required: "Importance is required",
-              })}
-              defaultValue="LOW"
-            >
-              <option value="LOW">Low</option>
-              <option value="MEDIUM">Medium</option>
-              <option value="HIGH">High</option>
+        <div>
+          <label className={labelCls}>Assignee *</label>
+          <div className="flex gap-2">
+            <select className={`${inputCls} appearance-none flex-1`}
+              {...register("assignee_email", { required: "Required" })}>
+              <option value="" disabled>Select…</option>
+              {workspaceUsers?.map((u, i) => <option key={i} value={u.email}>{u.email}</option>)}
             </select>
-            {errors.importance && (
-              <p className="text-ev-red text-sm mt-1">
-                {errors.importance.message}
-              </p>
-            )}
+            <button type="button"
+              onClick={() => { if (currentUserEmail) setValue("assignee_email", currentUserEmail, { shouldValidate: true }); }}
+              className="px-3 py-2 bg-[#1e293b] border border-[#334155] text-slate-300 rounded-xl text-xs hover:border-ev-yellow/40 transition-all whitespace-nowrap">
+              Me
+            </button>
           </div>
-        </FormErrorWrap>
+          {errors.assignee_email && <p className="text-xs text-red-400 mt-1">{errors.assignee_email.message}</p>}
+        </div>
 
-        <FormErrorWrap>
-          <div className="flex flex-col gap-2">
-            <label htmlFor="taskCategory" className="text-lg">
-              Category
-            </label>
-            <Input
-              id="taskCategory"
-              type="text"
-              placeholder="e.g., Lamps, Sockets"
-              className="w-full p-3 bg-ev-main-bg text-ev-dark-gray rounded-lg focus:ring-2 focus:ring-mc-blue focus:border-transparent outline-none"
-              error={errors.category?.message}
-              register={register("category")}
-            />
-          </div>
-        </FormErrorWrap>
+        <div>
+          <label className={labelCls}>Importance *</label>
+          <select className={`${inputCls} appearance-none`} {...register("importance", { required: "Required" })}>
+            <option value="LOW">Low</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="HIGH">High</option>
+          </select>
+        </div>
 
-        <FormErrorWrap>
-          <div className="flex flex-col gap-2">
-            <label htmlFor="due_date_overlay" className="text-lg">
-              Due Date
-            </label>
-            <DateTimePicker
-              name="due_date"
-              control={control as Control<TaskFormProps>}
-              className="px-3 py-2 bg-ev-main-bg text-ev-dark-gray rounded-lg w-full"
-            />
-            {errors.due_date && (
-              <p className="text-ev-red text-sm mt-1">
-                {errors.due_date.message}
-              </p>
-            )}
-          </div>
-        </FormErrorWrap>
+        <div>
+          <label className={labelCls}>Category</label>
+          <input type="text" placeholder="e.g. Lamps" className={inputCls} {...register("category")} />
+        </div>
 
-        <div className="flex items-center justify-end gap-4 mt-6">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white hover:bg-gray-100 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-200"
-          >
+        <div>
+          <label className={labelCls}>Due Date</label>
+          <DateTimePicker name="due_date" control={control as Control<TaskFormProps>} className={inputCls} />
+        </div>
+
+        <div className="flex gap-3 pt-2">
+          <button type="button" onClick={onClose}
+            className="flex-1 px-4 py-3 bg-[#0f172a] border border-[#334155] text-slate-300 rounded-xl text-sm hover:text-slate-100 hover:border-[#475569] transition-all">
             Cancel
           </button>
-          <Input
-            type="submit"
-            value={isSubmitting ? "Creating..." : "Create Task"}
-            disabled={isSubmitting}
-            className="text-ev-white bg-ev-blue hover:bg-ev-darkblue font-semibold rounded-lg px-6 py-3 hover:scale-105 duration-300 transition-all focus:outline-none focus:ring-2 focus:ring-mc-blue focus:ring-opacity-50"
-          />
+          <button type="submit" disabled={isSubmitting}
+            className="flex-1 flex items-center justify-center gap-2 bg-ev-yellow text-[#0a0f1e] font-semibold py-3 rounded-xl hover:brightness-110 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+            {isSubmitting ? "Creating…" : "Create Task"}
+          </button>
         </div>
       </form>
     </Overlay>
   );
 };
+
+// ── MapEditor ──────────────────────────────────────────────────────────────
 
 function MapEditor() {
   const { User } = useUserContext();
@@ -784,73 +513,55 @@ function MapEditor() {
   const [drawMode, setDrawMode] = useState(false);
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [tasks, setTasks] = useState<TaskNodeData[]>(initialTasks);
-  const [connections, setConnections] =
-    useState<TaskConnection[]>(initialConnections);
+  const [connections, setConnections] = useState<TaskConnection[]>(initialConnections);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [connectionMode, setConnectionMode] = useState(false);
   const [connectionSource, setConnectionSource] = useState<string | null>(null);
   const [availableTasks, setAvailableTasks] = useState<TaskNodeData[]>([]);
-  const [workspaceUsers, setWorkspaceUsers] = useState<WorkspaceUser[] | null>(
-    null,
-  );
+  const [workspaceUsers, setWorkspaceUsers] = useState<WorkspaceUser[] | null>(null);
   const [isNewTaskFormOpen, setIsNewTaskFormOpen] = useState(false);
   const [droppedTaskDetails, setDroppedTaskDetails] = useState<{
     position: [number, number];
     nodeType: string;
   } | null>(null);
+  const [showLeftPanel, setShowLeftPanel] = useState(true);
+  const [showRightPanel, setShowRightPanel] = useState(true);
 
-  // Fetch workspace users
+  const isCreator = User.workspaceData?.currentWorkspace?.role === "CREATOR";
+
+  // ── Fetch workspace users ──
   const getWorkers = async () => {
     try {
       const res = await OLF.post(
         ApiLinks.listWorkspaceUsersByWorkspaceIdAndEmail(
           User.workspaceData?.currentWorkspace?.id.toString() ?? "-1",
         ),
-        {
-          email: User.authUser?.email,
-        },
+        { email: User.authUser?.email },
       );
-      const workers: WorkspaceUser[] = res;
-      setWorkspaceUsers(workers);
+      setWorkspaceUsers(res as WorkspaceUser[]);
     } catch (error) {
       console.error("Failed to fetch workspace users:", error);
-      // toast.error("Failed to load workspace users.");
     }
   };
 
-  // Fetch and match tasks from both backends
+  // ── Fetch tasks ──
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const workspaceId =
-          User.workspaceData?.currentWorkspace?.id?.toString();
-        if (!workspaceId) {
-          toast.error("Workspace ID not found.");
-          return;
-        }
+        const workspaceId = User.workspaceData?.currentWorkspace?.id?.toString();
+        if (!workspaceId) { toast.error("Workspace ID not found."); return; }
         const ownerEmail = User.authUser?.email;
-        if (!ownerEmail) {
-          toast.error("User email not found.");
-          return;
-        }
+        if (!ownerEmail) { toast.error("User email not found."); return; }
 
-        // Fetch tasks from Python backend
-        const pythonResponse = await OLF.get(
-          ApiLinks.listPythonTasks(workspaceId.toString()),
-        );
+        const pythonResponse = await OLF.get(ApiLinks.listPythonTasks(workspaceId.toString()));
         const pythonTasks = pythonResponse.data;
 
-        // Fetch tasks from Rust backend
-        const rustResponse = await OLF.post(ApiLinks.listTasks(workspaceId), {
-          owner_email: ownerEmail,
-        });
+        const rustResponse = await OLF.post(ApiLinks.listTasks(workspaceId), { owner_email: ownerEmail });
         const rustTasks = rustResponse;
 
         const matchedTasks = pythonTasks
           .map((pyTask: any) => {
-            const rustTask = rustTasks.find(
-              (rTask: any) => rTask.id === pyTask.task_id,
-            );
+            const rustTask = rustTasks.find((rTask: any) => rTask.id === pyTask.task_id);
             if (rustTask && rustTask.task_type === "DEFAULT") {
               return {
                 id: rustTask.id.toString(),
@@ -871,7 +582,7 @@ function MapEditor() {
         setTasks(matchedTasks);
 
         const mapTasks: TaskNodeData[] = rustResponse
-          .filter((task: any) => task.task_type === "MAP") // Add this filter
+          .filter((task: any) => task.task_type === "MAP")
           .map((task: any) => ({
             id: task.id.toString(),
             label: task.title,
@@ -882,12 +593,9 @@ function MapEditor() {
             assignee_email: task.assignee_email,
           }));
 
-        // Update available tasks list
-        console.log(mapTasks);
         setAvailableTasks(mapTasks);
       } catch (error) {
         console.error("Error fetching tasks:", error);
-        // toast.error("Failed to load tasks.");
       }
     };
 
@@ -896,25 +604,18 @@ function MapEditor() {
     }
   }, [User]);
 
-  useEffect(() => {
-    getWorkers();
-  }, []);
+  useEffect(() => { getWorkers(); }, []);
 
+  // ── Handlers ──
   const handleTaskSelect = useCallback(
     (id: string) => {
       if (connectionMode) {
         if (!connectionSource) {
           setConnectionSource(id);
         } else if (connectionSource !== id) {
-          const newConnectionId = `connection_${Date.now()}`;
           setConnections((prev) => [
             ...prev,
-            {
-              id: newConnectionId,
-              source: connectionSource,
-              target: id,
-              animated: true,
-            },
+            { id: `connection_${Date.now()}`, source: connectionSource, target: id, animated: true },
           ]);
           setConnectionMode(false);
           setConnectionSource(null);
@@ -929,27 +630,15 @@ function MapEditor() {
   const handleOpenOverlay = () => setIsOverlayOpen(true);
   const handleCloseOverlay = () => setIsOverlayOpen(false);
 
-  // ADDING THE DAMN TASK TO SIDEBAR
   const handleAddTaskSuccess = useCallback(async () => {
     try {
       const workspaceId = User.workspaceData?.currentWorkspace?.id?.toString();
-      if (!workspaceId) {
-        toast.error("Workspace ID not found.");
-        return;
-      }
+      if (!workspaceId) { toast.error("Workspace ID not found."); return; }
       const ownerEmail = User.authUser?.email;
-      if (!ownerEmail) {
-        toast.error("User email not found.");
-        return;
-      }
-
-      // Fetch tasks from Rust API filtered by task_type 'MAP'
-      const response = await OLF.post(ApiLinks.listTasks(workspaceId), {
-        owner_email: ownerEmail,
-      });
-
+      if (!ownerEmail) { toast.error("User email not found."); return; }
+      const response = await OLF.post(ApiLinks.listTasks(workspaceId), { owner_email: ownerEmail });
       const mapTasks: TaskNodeData[] = response
-        .filter((task: any) => task.task_type === "MAP") // Add this filter
+        .filter((task: any) => task.task_type === "MAP")
         .map((task: any) => ({
           id: task.id.toString(),
           label: task.title,
@@ -959,12 +648,8 @@ function MapEditor() {
           category: task.category,
           assignee_email: task.assignee_email,
         }));
-
-      // Update available tasks list
-      console.log(mapTasks);
       setAvailableTasks(mapTasks);
     } catch (error) {
-      console.error("Error loading MAP tasks:", error);
       toast.error("Failed to refresh task list");
     }
   }, [User.authUser?.email, User.workspaceData?.currentWorkspace?.id]);
@@ -985,31 +670,24 @@ function MapEditor() {
       category: apiResponse.category,
       assignee_email: apiResponse.assignee_email,
     };
-    setTasks((prevTasks) => [...prevTasks, newMapTask]);
+    setTasks((prev) => [...prev, newMapTask]);
     setIsNewTaskFormOpen(false);
     setDroppedTaskDetails(null);
-    toast.success(`Task "${newMapTask.label}" created and added to map!`);
+    toast.success(`Task "${newMapTask.label}" added to map!`);
   };
 
   const handleTaskDrop = useCallback(
     async (nodeType: string, position: [number, number], taskId?: string) => {
       try {
         const workspaceId = User.workspaceData?.currentWorkspace?.id;
-        if (!workspaceId) {
-          toast.error("Workspace context missing");
-          return;
-        }
+        if (!workspaceId) { toast.error("Workspace context missing"); return; }
 
         if (taskId) {
           const taskToMove = availableTasks.find((t) => t.id === taskId);
-          if (!taskToMove) {
-            toast.error("Task not found in available tasks");
-            return;
-          }
+          if (!taskToMove) { toast.error("Task not found in available tasks"); return; }
 
-          // 1. Create task in Rust (main/task backend)
-          const rustPayload = {
-            assigner_email: User.authUser?.email, // adjust if different
+          const rustRes = await OLF.post(ApiLinks.createTasks(workspaceId.toString()), {
+            assigner_email: User.authUser?.email,
             assignee_email: taskToMove.assignee_email,
             title: taskToMove.label,
             image: taskToMove.image,
@@ -1020,25 +698,13 @@ function MapEditor() {
             due_date: null,
             description_multimedia: taskToMove.image,
             task_type: "DEFAULT",
-          };
-
-          const rustRes = await OLF.post(
-            ApiLinks.createTasks(workspaceId.toString()),
-            rustPayload,
-          );
+          });
 
           const newTaskId = rustRes.id.toString();
-
-          // 2. Optimistic UI update
-          const newTaskOnMap: TaskNodeData = {
-            ...taskToMove,
-            id: newTaskId,
-            position,
-          };
+          const newTaskOnMap: TaskNodeData = { ...taskToMove, id: newTaskId, position };
           setTasks((prev) => [...prev, newTaskOnMap]);
           toast.success(`Task "${newTaskOnMap.label}" added to map.`);
 
-          // 3. Register task position in Python
           try {
             await OLF.post(ApiLinks.addPythonTask, {
               task_id: newTaskId,
@@ -1047,58 +713,35 @@ function MapEditor() {
               offset_y: position[1],
             });
           } catch (error: any) {
-            // Rollback Rust task if Python fails
-            await OLF.delete(
-              ApiLinks.removeTask(workspaceId.toString(), newTaskId),
-            );
+            await OLF.delete(ApiLinks.removeTask(workspaceId.toString(), newTaskId));
             setTasks((prev) => prev.filter((t) => t.id !== newTaskId));
-            toast.error(
-              error instanceof Error
-                ? error.message
-                : "Failed to register task with Python backend.",
-            );
+            toast.error(error instanceof Error ? error.message : "Failed to register task position.");
           }
         } else {
           setDroppedTaskDetails({ position, nodeType });
           setIsNewTaskFormOpen(true);
         }
       } catch (error: any) {
-        toast.error(
-          error instanceof Error
-            ? error.message
-            : "An unexpected error occurred.",
-        );
+        toast.error(error instanceof Error ? error.message : "An unexpected error occurred.");
       }
     },
-    [
-      availableTasks,
-      User.workspaceData?.currentWorkspace?.id,
-      User.authUser?.email,
-      handleAddTaskSuccess,
-    ],
+    [availableTasks, User.workspaceData?.currentWorkspace?.id, User.authUser?.email, handleAddTaskSuccess],
   );
 
   const handleTaskDragEnd = useCallback(
     async (id: string, position: [number, number]) => {
-      setTasks((prev) =>
-        prev.map((task) => (task.id === id ? { ...task, position } : task)),
-      );
-
+      setTasks((prev) => prev.map((task) => (task.id === id ? { ...task, position } : task)));
       const workspaceId = User.workspaceData?.currentWorkspace?.id;
       if (!workspaceId) return;
-
       const taskId = parseInt(id, 10);
       if (isNaN(taskId)) return;
-
-      const payload = {
-        task_id: taskId,
-        workspace_id: workspaceId,
-        offset_x: position[0],
-        offset_y: position[1],
-      };
-
       try {
-        await OLF.put(ApiLinks.updatePythonTask(), payload);
+        await OLF.put(ApiLinks.updatePythonTask(), {
+          task_id: taskId,
+          workspace_id: workspaceId,
+          offset_x: position[0],
+          offset_y: position[1],
+        });
       } catch (error) {
         console.error("Error updating task position:", error);
         toast.error("Failed to update task position.");
@@ -1109,11 +752,9 @@ function MapEditor() {
 
   const handleRemoveSelected = async () => {
     if (!selectedTaskId) return;
-
     const workspaceId = User.workspaceData?.currentWorkspace?.id;
     const taskId = parseInt(selectedTaskId, 10);
     if (!workspaceId || isNaN(taskId)) return;
-
     try {
       const task = await OLF.delete(
         ApiLinks.removeTask(workspaceId.toString(), taskId.toString()),
@@ -1121,14 +762,11 @@ function MapEditor() {
       );
       try {
         await OLF.delete(
-          ApiLinks.removePythonTask(
-            workspaceId.toString(),
-            selectedTaskId.toString(),
-          ),
+          ApiLinks.removePythonTask(workspaceId.toString(), selectedTaskId.toString()),
           {},
         );
       } catch (error) {
-        const taskPayload = {
+        await OLF.post(ApiLinks.createTasks(task.workspace_id), {
           assigner_email: User.authUser?.email,
           assignee_email: task.assignee_email,
           title: task.title,
@@ -1139,21 +777,15 @@ function MapEditor() {
           status: task.status,
           due_date: task.due_date,
           description_multimedia: task.description_multimedia,
-        };
-        await OLF.post(ApiLinks.createTasks(task.workspace_id), taskPayload);
+        });
       }
-
       setTasks((prev) => prev.filter((task) => task.id !== selectedTaskId));
       setConnections((prev) =>
-        prev.filter(
-          (conn) =>
-            conn.source !== selectedTaskId && conn.target !== selectedTaskId,
-        ),
+        prev.filter((conn) => conn.source !== selectedTaskId && conn.target !== selectedTaskId),
       );
       setSelectedTaskId(null);
-      toast.success(`Task removed from map.`);
+      toast.success("Task removed from map.");
     } catch (error) {
-      console.error("Error deleting task:", error);
       toast.error("Failed to delete task. Please try again.");
     }
   };
@@ -1174,32 +806,32 @@ function MapEditor() {
   useEffect(() => {
     const mapContainer = mapContainerRef.current;
     if (!mapContainer) return;
-
     const handleDragOver = (e: DragEvent) => {
       e.preventDefault();
-      if (e.dataTransfer) {
-        e.dataTransfer.dropEffect = "copy";
-      }
+      if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
     };
-
     const handleDrop = (e: DragEvent) => {
       handleDirectDrop(e, handleTaskDrop, leafletMapInstanceRef.current);
     };
-
     mapContainer.addEventListener("dragover", handleDragOver);
     mapContainer.addEventListener("drop", handleDrop);
-
     return () => {
       mapContainer.removeEventListener("dragover", handleDragOver);
       mapContainer.removeEventListener("drop", handleDrop);
     };
   }, [handleTaskDrop]);
 
-  const selectedTask = selectedTaskId
-    ? tasks.find((task) => task.id === selectedTaskId)
-    : null;
+  const selectedTask = selectedTaskId ? tasks.find((task) => task.id === selectedTaskId) : null;
 
-  console.log(tasks);
+  // ── Toolbar button class helpers ──
+  const toolbarBtnBase = "flex items-center gap-1.5 px-2.5 py-1.5 text-xs rounded-lg border transition-all";
+  const panelToggleBtn = (active: boolean) =>
+    `${toolbarBtnBase} ${active
+      ? "bg-ev-yellow/10 border-ev-yellow/30 text-ev-yellow"
+      : "bg-[#1e293b] border-[#334155] text-slate-400 hover:text-slate-100 hover:border-[#475569]"
+    }`;
+
+  // ── Render ──
   return (
     <PageTemplate>
       <AddTaskOverlay
@@ -1210,13 +842,9 @@ function MapEditor() {
         currentWorkspaceId={User.workspaceData?.currentWorkspace?.id?.toString()}
         workspaceUsers={workspaceUsers}
       />
-
       <AddTaskFormForMap
         isOpen={isNewTaskFormOpen}
-        onClose={() => {
-          setIsNewTaskFormOpen(false);
-          setDroppedTaskDetails(null);
-        }}
+        onClose={() => { setIsNewTaskFormOpen(false); setDroppedTaskDetails(null); }}
         onSubmitSuccess={handleNewTaskFormSubmitSuccess}
         initialPosition={droppedTaskDetails?.position || null}
         initialNodeType={droppedTaskDetails?.nodeType || null}
@@ -1229,236 +857,314 @@ function MapEditor() {
         <SidebarTemplate />
         <div className="flex-1 flex flex-col overflow-hidden">
           <NavbarTemplate />
-          <div className="flex-1 flex flex-row overflow-hidden">
-          <section className="flex flex-row gap-8">
-            {User.workspaceData?.currentWorkspace?.role === "CREATOR" ? (
-              <aside className="flex flex-col gap-4 bg-ev-primary p-4 overflow-y-auto w-60 border-r border-[#334155]">
-                <h3 className="text-xl font-semibold mb-2 text-ev-text">
-                  Task Types
-                </h3>
-                <p className="text-sm text-ev-text italic mb-2">
-                  Drag task types to the map to create & place them
-                </p>
-                <section
-                  draggable={true}
-                  onDragStart={(e) => handleDragStart(e, "defaultTask")}
-                  className="p-3 border border-gray-200 rounded-lg cursor-grab hover:bg-gray-100 flex items-center gap-2 transition-colors duration-150 group"
-                  title="Drag to place a new 'Default Task' on map"
-                >
-                  <Image
-                    src="/outlet.png"
-                    alt="Default Task Type"
-                    width={24}
-                    height={24}
-                  />
-                  <span className="text-ev-text flex-grow">Default Task</span>
-                </section>
-                <section
-                  draggable={true}
-                  onDragStart={(e) => handleDragStart(e, "customTask")}
-                  className="p-3 border border-gray-200 rounded-lg cursor-grab hover:bg-gray-100 flex items-center gap-2 transition-colors duration-150 group"
-                  title="Drag to place a new 'Custom Task' on map"
-                >
-                  <Image
-                    src="/problem.png"
-                    alt="Custom Task Type"
-                    width={24}
-                    height={24}
-                  />
-                  <span className="text-ev-text flex-grow">Custom Task</span>
-                </section>
-              </aside>
-            ) : null}
-          </section>
 
-          <main className="flex-1 flex flex-col overflow-hidden p-4 gap-3">
-            {User.workspaceData?.currentWorkspace?.role === "CREATOR" ? (
-              <section className="flex flex-wrap items-center w-full bg-ev-primary p-3 rounded-xl gap-3 mb-4 shadow-md">
-                <Input
-                  type="button"
-                  className="text-ev-white bg-ev-green hover:bg-ev-darkgreen font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none focus:ring-2 focus:ring-ev-green-darker duration-300"
-                  value="Add Task to Workspace List"
+          {/* ── Editor body ── */}
+          <div className="flex-1 flex flex-col overflow-hidden bg-[#0a0f1e]">
+
+            {/* ── Toolbar ── */}
+            {isCreator && (
+              <div className="flex-shrink-0 flex flex-wrap items-center gap-2 px-3 py-2 bg-[#0f172a] border-b border-[#334155]">
+                {/* Back */}
+                <Link
+                  href="../plans"
+                  className={`${toolbarBtnBase} bg-[#1e293b] border-[#334155] text-slate-300 hover:text-slate-100 hover:border-[#475569]`}
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Back</span>
+                </Link>
+
+                <div className="w-px h-5 bg-[#334155]" />
+
+                {/* Panel toggles */}
+                <button
+                  onClick={() => setShowLeftPanel((p) => !p)}
+                  className={panelToggleBtn(showLeftPanel)}
+                  title="Toggle task types panel"
+                >
+                  <Layers className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Types</span>
+                </button>
+                <button
+                  onClick={() => setShowRightPanel((p) => !p)}
+                  className={panelToggleBtn(showRightPanel)}
+                  title="Toggle tasks panel"
+                >
+                  <ClipboardList className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Tasks</span>
+                </button>
+
+                <div className="w-px h-5 bg-[#334155]" />
+
+                {/* Actions */}
+                <button
                   onClick={handleOpenOverlay}
-                  title="Create new task and add to 'Available Tasks' sidebar"
-                />
-                <Input
-                  type="button"
-                  className="text-ev-white bg-ev-red hover:bg-ev-darkred font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none focus:ring-2 focus:ring-ev-red-darker duration-300"
-                  value="Remove Selected from Map"
+                  className={`${toolbarBtnBase} bg-ev-yellow/10 border-ev-yellow/20 text-ev-yellow hover:bg-ev-yellow/20`}
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Add Task</span>
+                </button>
+                <button
                   onClick={handleRemoveSelected}
-                  title="Remove selected task from map"
-                />
-                <Input
-                  type="button"
-                  className={`text-ev-white ${connectionMode
-                    ? "bg-ev-orange"
-                    : "bg-ev-blue hover:bg-ev-darkblue"
-                    } font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none focus:ring-2 focus:ring-mc-blue-darker duration-300`}
-                  value={connectionMode ? "Cancel Connection" : "Connect Tasks"}
-                  onClick={() => {
-                    setConnectionMode(!connectionMode);
-                    setConnectionSource(null);
-                  }}
-                  title={
-                    connectionMode
-                      ? "Cancel creating connection"
-                      : "Create connection between two tasks on map"
-                  }
-                />
-                <Input
-                  type="button"
-                  className={`text-ev-white ${drawMode
-                    ? "bg-ev-orange"
-                    : "bg-purple-600 hover:bg-purple-700"
-                    } font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none focus:ring-2 focus:ring-purple-400 duration-300`}
-                  value={drawMode ? "Exit Draw Mode" : "Draw on Plan"}
+                  disabled={!selectedTaskId}
+                  className={`${toolbarBtnBase} bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20 disabled:opacity-40 disabled:cursor-not-allowed`}
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Remove</span>
+                </button>
+                <button
+                  onClick={() => { setConnectionMode(!connectionMode); setConnectionSource(null); }}
+                  className={`${toolbarBtnBase} ${connectionMode
+                    ? "bg-orange-500/20 border-orange-500/30 text-orange-400"
+                    : "bg-blue-500/10 border-blue-500/20 text-blue-400 hover:bg-blue-500/20"
+                  }`}
+                >
+                  <GitBranch className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">{connectionMode ? "Cancel" : "Connect"}</span>
+                </button>
+                <button
                   onClick={() => setDrawMode(!drawMode)}
-                  title={
-                    drawMode
-                      ? "Disable drawing tools"
-                      : "Enable drawing tools to annotate the plan"
-                  }
-                />
-                <SearchButton />
-              </section>
-            ) : null}
+                  className={`${toolbarBtnBase} ${drawMode
+                    ? "bg-purple-500/20 border-purple-500/30 text-purple-400"
+                    : "bg-purple-500/10 border-purple-500/20 text-purple-400 hover:bg-purple-500/20"
+                  }`}
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">{drawMode ? "Exit Draw" : "Draw"}</span>
+                </button>
 
-            <section
-              className="flex-1 rounded-2xl overflow-hidden shadow-lg relative"
-              ref={mapContainerRef}
-            >
-              <div className="absolute top-2 left-0 right-0 flex justify-center z-[1] pointer-events-none">
-                <div className="bg-ev-primary bg-opacity-80 text-ev-text px-4 py-2 rounded-lg shadow-md text-sm">
-                  Drag tasks from sidebars and drop them on the map
+                {/* stats */}
+                <div className="ml-auto text-[10px] text-slate-600 hidden md:block">
+                  Sidebar: {availableTasks.length} · Map: {tasks.length}
                 </div>
               </div>
-              <div className="absolute bottom-2 left-2 z-[999] bg-white bg-opacity-70 p-2 rounded text-xs">
-                Available in Sidebar: {availableTasks.length} | On Map:{" "}
-                {tasks.length}
-              </div>
-              <LeafletMap
-                tasks={tasks}
-                connections={connections}
-                selectedTaskId={selectedTaskId}
-                onTaskSelect={handleTaskSelect}
-                onTaskDrop={handleTaskDrop}
-                onTaskDragEnd={handleTaskDragEnd}
-                drawEnabled={drawMode}
-                setMapInstance={(map) => {
-                  leafletMapInstanceRef.current = map;
-                }}
-              />
-              <DrawCanvas
-                visible={drawMode}
-                workspaceId={User.workspaceData?.currentWorkspace?.id ?? 0}
-                token={User.authUser?.token ?? ""}
-                userId={User.workspaceData?.currentWorkspace?.owner_id ?? 0}
-              />
-              {connectionMode && connectionSource && (
-                <div className="absolute top-0 left-0 right-0 bg-ev-orange text-white p-2 text-center z-[1000]">
-                  Select a second task to complete the connection
-                </div>
-              )}
-            </section>
-          </main>
+            )}
 
-          {User.workspaceData?.currentWorkspace?.role === "CREATOR" ? (
-            <aside className="flex flex-col gap-4 bg-ev-primary p-4 overflow-y-auto w-72 border-l border-[#334155] max-lg:hidden">
-              <section>
-                <h3 className="text-xl font-semibold mb-2 text-ev-text">
-                  Available Tasks
-                </h3>
-                {availableTasks.length > 0 && (
-                  <p className="text-sm text-ev-text italic mb-2">
-                    Drag tasks from here to the map to place them
-                  </p>
-                )}
-                <div className="space-y-2 mb-4">
-                  {availableTasks.map((task) => (
-                    <div
-                      key={task.id}
-                      draggable={true}
-                      onDragStart={(e) => handleDragStart(e, task.id, true)}
-                      className="p-3 border border-gray-200 rounded-lg cursor-grab hover:bg-gray-100 flex items-center gap-2 transition-colors duration-150 group"
-                    >
-                      <Image
-                        src={
-                          task.image ||
-                          (task.type === "defaultTask"
-                            ? "/outlet.png"
-                            : "/problem.png")
-                        }
-                        alt={task.label}
-                        width={24}
-                        height={24}
-                        className="rounded object-cover"
-                      />
-                      <span className="text-ev-text truncate flex-grow">
-                        {task.label}
-                      </span>
+            {/* Connection mode banner */}
+            {connectionMode && connectionSource && (
+              <div className="flex-shrink-0 bg-orange-500/15 border-b border-orange-500/30 text-orange-300 text-xs text-center py-2">
+                Select a second task on the map to complete the connection
+              </div>
+            )}
+
+            {/* ── 3-column layout ── */}
+            <div className="flex-1 flex overflow-hidden">
+
+              {/* Left panel — Task Types */}
+              {isCreator && (
+                <>
+                  {/* Mobile backdrop */}
+                  <div
+                    className={`md:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${showLeftPanel ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+                    onClick={() => setShowLeftPanel(false)}
+                  />
+                  {/* Panel */}
+                  <aside
+                    className={`
+                      flex flex-col bg-[#0f172a] border-r border-[#334155] overflow-y-auto flex-shrink-0
+                      transition-all duration-300
+                      fixed top-0 left-0 h-full z-50 w-64
+                      ${showLeftPanel ? "translate-x-0" : "-translate-x-full"}
+                      md:relative md:top-auto md:bottom-auto md:h-auto md:z-auto md:translate-x-0
+                      ${showLeftPanel ? "md:w-56" : "md:w-0 md:overflow-hidden"}
+                    `}
+                  >
+                    <div className="p-4 min-w-[14rem]">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Task Types</p>
+                        <button
+                          onClick={() => setShowLeftPanel(false)}
+                          className="md:hidden w-6 h-6 flex items-center justify-center text-slate-500 hover:text-slate-100 transition-colors"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <p className="text-xs text-slate-600 mb-4">Drag onto the map to place</p>
+
+                      <div className="flex flex-col gap-2">
+                        <div
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, "defaultTask")}
+                          className="flex items-center gap-3 p-3 bg-[#1e293b] border border-[#334155] rounded-xl cursor-grab hover:border-ev-yellow/40 hover:bg-[#1e293b]/60 transition-all group active:scale-95"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                            <Image src="/outlet.png" alt="Default Task" width={18} height={18} />
+                          </div>
+                          <span className="text-sm text-slate-300 group-hover:text-slate-100 transition-colors">Default Task</span>
+                        </div>
+                        <div
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, "customTask")}
+                          className="flex items-center gap-3 p-3 bg-[#1e293b] border border-[#334155] rounded-xl cursor-grab hover:border-ev-yellow/40 hover:bg-[#1e293b]/60 transition-all group active:scale-95"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                            <Image src="/problem.png" alt="Custom Task" width={18} height={18} />
+                          </div>
+                          <span className="text-sm text-slate-300 group-hover:text-slate-100 transition-colors">Custom Task</span>
+                        </div>
+                      </div>
                     </div>
-                  ))}
-                  {availableTasks.length === 0 && (
-                    <p className="text-sm text-ev-text italic p-2">
-                      No tasks in the workspace list. Add some using the button
-                      above.
-                    </p>
-                  )}
-                </div>
-              </section>
-              <hr className="border-gray-200 my-2" />
-              <h3 className="text-xl font-semibold mb-2 text-ev-text">
-                Task Details
-              </h3>
-              {selectedTask ? (
-                <section className="p-3 border border-gray-200 rounded-lg text-sm text-ev-text space-y-2">
-                  <p>
-                    <strong>ID:</strong> {selectedTask.id}
-                  </p>
-                  <p>
-                    <strong>Label:</strong> {selectedTask.label}
-                  </p>
-                  {selectedTask.description && (
-                    <p>
-                      <strong>Description:</strong> {selectedTask.description}
-                    </p>
-                  )}
-                  {selectedTask.assignee_email && (
-                    <p>
-                      <strong>Assignee:</strong> {selectedTask.assignee_email}
-                    </p>
-                  )}
-                  {selectedTask.importance && (
-                    <p>
-                      <strong>Importance:</strong> {selectedTask.importance}
-                    </p>
-                  )}
-                  {selectedTask.category && (
-                    <p>
-                      <strong>Category:</strong> {selectedTask.category}
-                    </p>
-                  )}
-                  {selectedTask.image && (
-                    <Image
-                      src={selectedTask.image}
-                      alt="Task image"
-                      width={64}
-                      height={64}
-                      className="rounded mt-2 object-cover"
-                    />
-                  )}
-                  <p>
-                    <strong>Position:</strong>{" "}
-                    {selectedTask.position.join(", ")}
-                  </p>
-                </section>
-              ) : (
-                <section className="p-3 border border-gray-200 rounded-md text-sm text-ev-text">
-                  Select a task on the map to see its details.
-                </section>
+                  </aside>
+                </>
               )}
-            </aside>
-          ) : null}
+
+              {/* Center — Map */}
+              <main
+                className="flex-1 relative overflow-hidden"
+                ref={mapContainerRef}
+              >
+                {/* Hint banner */}
+                <div className="absolute top-3 left-0 right-0 flex justify-center z-[1] pointer-events-none">
+                  <div className="bg-[#0f172a]/90 border border-[#334155] text-slate-400 px-3 py-1.5 rounded-xl text-xs shadow-lg">
+                    Drag tasks from the panels onto the map
+                  </div>
+                </div>
+
+                <LeafletMap
+                  tasks={tasks}
+                  connections={connections}
+                  selectedTaskId={selectedTaskId}
+                  onTaskSelect={handleTaskSelect}
+                  onTaskDrop={handleTaskDrop}
+                  onTaskDragEnd={handleTaskDragEnd}
+                  drawEnabled={drawMode}
+                  setMapInstance={(map) => { leafletMapInstanceRef.current = map; }}
+                />
+                <DrawCanvas
+                  visible={drawMode}
+                  workspaceId={User.workspaceData?.currentWorkspace?.id ?? 0}
+                  token={User.authUser?.token ?? ""}
+                  userId={User.workspaceData?.currentWorkspace?.owner_id ?? 0}
+                />
+              </main>
+
+              {/* Right panel — Available Tasks + Task Details */}
+              {isCreator && (
+                <>
+                  {/* Mobile backdrop */}
+                  <div
+                    className={`md:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${showRightPanel ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+                    onClick={() => setShowRightPanel(false)}
+                  />
+                  {/* Panel */}
+                  <aside
+                    className={`
+                      flex flex-col bg-[#0f172a] border-l border-[#334155] overflow-hidden flex-shrink-0
+                      transition-all duration-300
+                      fixed top-0 right-0 h-full z-50 w-72
+                      ${showRightPanel ? "translate-x-0" : "translate-x-full"}
+                      md:relative md:top-auto md:bottom-auto md:h-auto md:z-auto md:translate-x-0
+                      ${showRightPanel ? "md:w-72" : "md:w-0 md:overflow-hidden"}
+                    `}
+                  >
+                    {/* Available Tasks */}
+                    <div className="flex-1 min-h-0 flex flex-col overflow-hidden border-b border-[#334155]">
+                      <div className="flex items-center justify-between px-4 py-3 border-b border-[#334155] flex-shrink-0">
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Available Tasks</p>
+                          {availableTasks.length > 0 && (
+                            <span className="px-1.5 py-0.5 bg-ev-yellow/10 text-ev-yellow text-[10px] rounded-md">{availableTasks.length}</span>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => setShowRightPanel(false)}
+                          className="md:hidden w-6 h-6 flex items-center justify-center text-slate-500 hover:text-slate-100 transition-colors"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-2">
+                        {availableTasks.length > 0 ? (
+                          availableTasks.map((task) => (
+                            <div
+                              key={task.id}
+                              draggable
+                              onDragStart={(e) => handleDragStart(e, task.id, true)}
+                              className="flex items-center gap-3 p-2.5 bg-[#1e293b] border border-[#334155] rounded-xl cursor-grab hover:border-ev-yellow/40 transition-all group active:scale-95"
+                            >
+                              <div className="w-8 h-8 rounded-lg overflow-hidden bg-[#334155] flex-shrink-0 flex items-center justify-center">
+                                <Image
+                                  src={task.image || (task.type === "defaultTask" ? "/outlet.png" : "/problem.png")}
+                                  alt={task.label}
+                                  width={32}
+                                  height={32}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                              <span className="text-xs text-slate-300 group-hover:text-slate-100 truncate flex-1">{task.label}</span>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="flex flex-col items-center justify-center py-8 gap-2">
+                            <ClipboardList className="w-8 h-8 text-slate-700" />
+                            <p className="text-xs text-slate-500 text-center">
+                              No tasks yet.<br />Use &quot;Add Task&quot; to create some.
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Task Details */}
+                    <div className="flex-[0_0_40%] min-h-0 flex flex-col overflow-hidden">
+                      <div className="flex items-center px-4 py-3 border-b border-[#334155] flex-shrink-0">
+                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Task Details</p>
+                      </div>
+                      <div className="flex-1 overflow-y-auto p-3">
+                        {selectedTask ? (
+                          <div className="flex flex-col gap-2">
+                            <p className="text-sm font-medium text-slate-100">{selectedTask.label}</p>
+                            {selectedTask.description && (
+                              <p className="text-xs text-slate-400">{selectedTask.description}</p>
+                            )}
+                            <div className="flex flex-wrap gap-1.5">
+                              {selectedTask.importance && (
+                                <span className={`px-2 py-0.5 text-[10px] rounded-md border font-medium ${
+                                  selectedTask.importance === "HIGH"
+                                    ? "bg-red-500/15 text-red-400 border-red-500/30"
+                                    : selectedTask.importance === "MEDIUM"
+                                    ? "bg-yellow-500/15 text-yellow-400 border-yellow-500/30"
+                                    : "bg-green-500/15 text-green-400 border-green-500/30"
+                                }`}>
+                                  {selectedTask.importance}
+                                </span>
+                              )}
+                              {selectedTask.category && (
+                                <span className="px-2 py-0.5 text-[10px] rounded-md bg-blue-500/15 text-blue-400 border border-blue-500/30">
+                                  {selectedTask.category}
+                                </span>
+                              )}
+                            </div>
+                            {selectedTask.assignee_email && (
+                              <p className="text-xs text-slate-400">
+                                <span className="text-slate-500">Assignee: </span>
+                                {selectedTask.assignee_email}
+                              </p>
+                            )}
+                            {selectedTask.image && (
+                              <Image
+                                src={selectedTask.image}
+                                alt="Task image"
+                                width={200}
+                                height={120}
+                                className="rounded-lg mt-1 object-cover w-full"
+                              />
+                            )}
+                            <p className="text-[10px] text-slate-600">
+                              Position: {selectedTask.position.map((v) => Number(v).toFixed(4)).join(", ")}
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-slate-500 text-center py-6">
+                            Click a task on the map to see its details
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </aside>
+                </>
+              )}
+
+            </div>
           </div>
         </div>
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import ApiLinks from "@/ev-const/api-links";
+import { MobileSidebarProvider } from "@/ev-contexts/mobileSidebarContext";
 import Themes from "@/ev-const/themes";
 import useUserContext from "@/ev-contexts/userContextProvider";
 import OLF from "@/ev-lib/ElectroVisionFetch";
@@ -86,27 +87,37 @@ const PageTemplate = ({
 
   // Auth pages — full screen centered
   if (allowUnauthenticated) {
-    return <main className={baseClasses}>{children}</main>;
+    return (
+      <MobileSidebarProvider>
+        <main className={baseClasses}>{children}</main>
+      </MobileSidebarProvider>
+    );
   }
 
   // Require login
   if (requiredValidUser && !isUserValid() && !isLoading) {
     return (
-      <main className="bg-[#0a0f1e] theme-dark text-slate-100 text-center flex items-center justify-center flex-col w-screen h-screen gap-4">
-        <div className="text-4xl">⚡</div>
-        <p className="text-lg font-semibold">Authentication required</p>
-        <p className="text-slate-400 text-sm">Please sign in to access this page</p>
-        <Link
-          href="/auth/login"
-          className="mt-2 px-5 py-2.5 bg-ev-yellow text-[#0a0f1e] rounded-xl text-sm font-semibold hover:brightness-110 transition-all"
-        >
-          Sign In
-        </Link>
-      </main>
+      <MobileSidebarProvider>
+        <main className="bg-[#0a0f1e] theme-dark text-slate-100 text-center flex items-center justify-center flex-col w-screen h-screen gap-4">
+          <div className="text-4xl">⚡</div>
+          <p className="text-lg font-semibold">Authentication required</p>
+          <p className="text-slate-400 text-sm">Please sign in to access this page</p>
+          <Link
+            href="/auth/login"
+            className="mt-2 px-5 py-2.5 bg-ev-yellow text-[#0a0f1e] rounded-xl text-sm font-semibold hover:brightness-110 transition-all"
+          >
+            Sign In
+          </Link>
+        </main>
+      </MobileSidebarProvider>
     );
   }
 
-  return <main className={baseClasses}>{children}</main>;
+  return (
+    <MobileSidebarProvider>
+      <main className={baseClasses}>{children}</main>
+    </MobileSidebarProvider>
+  );
 };
 
 export default PageTemplate;

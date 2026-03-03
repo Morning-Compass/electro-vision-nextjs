@@ -1,5 +1,3 @@
-import Dashboard from "@/app/hub/page";
-
 const rustHost = "http://localhost:3501";
 const pythonHost = "http://localhost:8000";
 
