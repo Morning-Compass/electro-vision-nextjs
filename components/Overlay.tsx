@@ -1,15 +1,14 @@
 import { ReactNode } from "react";
-import Image from "next/image";
-import Input from "@/components/Input";
+import { X } from "lucide-react";
 
 export type OverlayProps = {
   children?: ReactNode;
   blockClassName?: string;
   isOpen: boolean;
   onClose: () => void;
-  buttons?: ReactNode; // Add this for custom buttons
-  closeButton?: ReactNode; // Add this for custom close button
-  hideDefaultCloseButton?: boolean; // Add this to hide default close button
+  buttons?: ReactNode;
+  closeButton?: ReactNode;
+  hideDefaultCloseButton?: boolean;
 };
 
 function Overlay({
@@ -24,24 +23,22 @@ function Overlay({
   if (!isOpen) return null;
 
   return (
-    <section className="fixed inset-0 bg-overlay z-20 flex justify-center items-center overflow-y-scroll">
+    <section className="fixed inset-0 bg-black/70 backdrop-blur-sm z-20 flex justify-center items-center overflow-y-auto p-4">
       <section
-        className={`relative w-auto h-auto p-10 flex flex-col items-center bg-ev-primary rounded-3xl ${blockClassName || ""}`}
+        className={`relative w-auto h-auto p-8 flex flex-col items-center bg-[#1e293b] border border-[#334155] rounded-2xl shadow-2xl ${blockClassName || ""}`}
       >
         {!hideDefaultCloseButton &&
           (closeButton || (
-            <Image
-              src="/cancel.png"
-              alt="Cancel"
-              width={48}
-              height={48}
-              className="absolute top-5 right-5 cursor-pointer hover:scale-110 active:scale-95 transition-transform duration-200"
+            <button
               onClick={onClose}
-            />
+              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-100 hover:bg-[#334155] transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
           ))}
-        <div className="mt-16">{children}</div>
+        <div className="mt-10">{children}</div>
         {buttons && (
-          <div className="mt-10 flex gap-4 w-full justify-center">
+          <div className="mt-8 flex gap-4 w-full justify-center">
             {buttons}
           </div>
         )}

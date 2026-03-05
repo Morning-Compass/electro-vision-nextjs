@@ -509,6 +509,7 @@ function MapEditor() {
   const { User } = useUserContext();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const leafletMapInstanceRef = useRef<any>(null);
+  const [leafletMap, setLeafletMap] = useState<any>(null);
 
   const [drawMode, setDrawMode] = useState(false);
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
@@ -1027,13 +1028,17 @@ function MapEditor() {
                   onTaskDrop={handleTaskDrop}
                   onTaskDragEnd={handleTaskDragEnd}
                   drawEnabled={drawMode}
-                  setMapInstance={(map) => { leafletMapInstanceRef.current = map; }}
+                  setMapInstance={(map) => {
+                    leafletMapInstanceRef.current = map;
+                    setLeafletMap(map);
+                  }}
                 />
                 <DrawCanvas
                   visible={drawMode}
                   workspaceId={User.workspaceData?.currentWorkspace?.id ?? 0}
                   token={User.authUser?.token ?? ""}
                   userId={User.workspaceData?.currentWorkspace?.owner_id ?? 0}
+                  leafletMap={leafletMap}
                 />
               </main>
 

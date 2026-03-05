@@ -36,3 +36,9 @@ export const revokeObjectUrl = (url: string | null) => {
 export function isBase64Image(data: string | null | undefined): boolean {
   return !!data && /^data:image\/(png|jpeg|jpg|gif|webp);base64,/.test(data);
 }
+
+export function isPdfFile(file: File | string | null | undefined): boolean {
+  if (!file) return false;
+  if (file instanceof File) return file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+  return file.toLowerCase().endsWith(".pdf");
+}

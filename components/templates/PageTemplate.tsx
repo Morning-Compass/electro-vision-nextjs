@@ -81,6 +81,44 @@ const PageTemplate = ({
     }
   }, []);
 
+  // Register the 401 refresh callback with OLF so every authenticated request
+  // automatically re-logs in and retries on session expiry.
+  useLayoutEffect(() => {
+    if (allowUnauthenticated) return;
+    OLF.setRefreshCallback(async () => {
+      try {
+        const response = await OLF.post(ApiLinks.loginToken, {
+          login_token: localStorage.getItem("jwt_token") ?? "",
+        });
+        const newToken: string = response.token;
+        localStorage.setItem("jwt_token", newToken);
+        UserDispatch({
+          type: "setUser",
+          value: {
+            authUser: {
+              id: response.id,
+              username: response.username,
+              account_verified: response.account_valid,
+              email: response.email,
+              token: newToken,
+              created_at: response.created_at,
+              roles: response.roles,
+            },
+            fullUser: null,
+            theme: Themes.dark,
+            workspaceData: null,
+          },
+        });
+        return newToken;
+      } catch {
+        localStorage.removeItem("jwt_token");
+        router.push("/auth/login");
+        return null;
+      }
+    });
+    return () => OLF.setRefreshCallback(async () => null);
+  }, [allowUnauthenticated]);
+
   const isUserValid = () => !!User.authUser?.id && !!User.authUser?.email;
 
   const baseClasses = `theme-${User.theme ?? "dark"} bg-ev-main-bg text-ev-text min-h-screen w-screen flex flex-col ${bgClass ?? ""}`;

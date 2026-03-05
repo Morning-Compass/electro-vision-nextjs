@@ -51,14 +51,13 @@ function MapInteractionToggle({ disabled }: { disabled: boolean }) {
       map.dragging.disable();
       map.touchZoom.disable();
       map.doubleClickZoom.disable();
-      map.scrollWheelZoom.disable();
       map.boxZoom.disable();
       map.keyboard.disable();
+      // Keep scrollWheelZoom enabled so zoom works in draw mode
     } else {
       map.dragging.enable();
       map.touchZoom.enable();
       map.doubleClickZoom.enable();
-      map.scrollWheelZoom.enable();
       map.boxZoom.enable();
       map.keyboard.enable();
     }
@@ -186,7 +185,7 @@ export default function LeafletMap({
   return (
     <MapContainer
       className="h-full w-full z-0"
-      style={{ backgroundColor: `var(--color-main-bg)` }}
+      style={{ backgroundColor: "#ffffff" }}
       center={[51.5, -0.1]}
       zoom={11}
       zoomControl={false}
@@ -201,7 +200,7 @@ export default function LeafletMap({
       <ImageOverlay
         url={(User.workspaceData?.currentWorkspace?.coverPhoto as string) || "/problem.png"}
         bounds={bounds}
-        opacity={0.8}
+        opacity={1}
       />
 
       <ZoomControl position="bottomleft" />

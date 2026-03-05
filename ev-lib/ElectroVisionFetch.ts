@@ -3,8 +3,23 @@ type TPutData = string | object | FormData | undefined;
 type THeaders = HeadersInit | undefined;
 type Method = "GET" | "POST" | "PUT" | "DELETE";
 
+export class FetchError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+  ) {
+    super(message);
+    this.name = "FetchError";
+  }
+}
+
 export class ElectroVisionFetch {
   private defaultHeaders = { "Content-Type": "application/json" };
+  private refreshCallback: (() => Promise<string | null>) | null = null;
+
+  setRefreshCallback(cb: () => Promise<string | null>) {
+    this.refreshCallback = cb;
+  }
 
   private async makeRequest(
     method: Method,
@@ -39,45 +54,66 @@ export class ElectroVisionFetch {
       try {
         const responseData = await response.json();
         errorMessage = responseData?.response || errorMessage;
-      } catch (e) {
-        console.error("Failed to parse json res");
+      } catch {
         // Failed to parse JSON error response
       }
-      throw new Error(errorMessage);
+      throw new FetchError(errorMessage, response.status);
     }
 
     try {
       const responseData = await response.json();
       return responseData.response ?? responseData;
-    } catch (e) {
-      throw new Error("Failed to parse JSON response");
+    } catch {
+      throw new FetchError("Failed to parse JSON response", 200);
     }
   }
 
-  validateHeadersAndMakeRequest(
+  private async validateHeadersAndMakeRequest(
     method: Method,
     authorization: string,
     endpointUrl: string,
     data: TData | undefined,
     headers?: THeaders,
-  ) {
-    authorization = !authorization.startsWith("Bearer")
+    retrying = false,
+  ): Promise<any> {
+    const auth = !authorization.startsWith("Bearer")
       ? "Bearer " + authorization
       : authorization;
 
     const combinedHeaders = new Headers(this.defaultHeaders);
 
-    if (headers !== null && headers !== undefined) {
+    if (headers != null) {
       const providedHeaders = new Headers(headers);
       providedHeaders.forEach((value, key) => {
         combinedHeaders.set(key, value);
       });
     }
 
-    if (authorization !== null && authorization !== undefined) {
-      combinedHeaders.set("Authorization", authorization);
+    combinedHeaders.set("Authorization", auth);
+
+    try {
+      return await this.makeRequest(method, endpointUrl, data, combinedHeaders);
+    } catch (err) {
+      if (
+        !retrying &&
+        err instanceof FetchError &&
+        err.status === 401 &&
+        this.refreshCallback
+      ) {
+        const newToken = await this.refreshCallback();
+        if (newToken) {
+          return this.validateHeadersAndMakeRequest(
+            method,
+            newToken,
+            endpointUrl,
+            data,
+            headers,
+            true,
+          );
+        }
+      }
+      throw err;
     }
-    return this.makeRequest(method, endpointUrl, data, combinedHeaders);
   }
 
   async get(
@@ -85,7 +121,7 @@ export class ElectroVisionFetch {
     headers?: THeaders,
     authorization?: string,
   ): Promise<any> {
-    if (authorization === null || authorization === undefined) {
+    if (authorization == null) {
       return this.makeRequest("GET", endpointUrl, undefined, headers);
     }
     return this.validateHeadersAndMakeRequest(
@@ -102,7 +138,7 @@ export class ElectroVisionFetch {
     headers?: THeaders,
     authorization?: string,
   ): Promise<any> {
-    if (authorization === null || authorization === undefined) {
+    if (authorization == null) {
       return this.makeRequest("POST", endpointUrl, data, headers);
     }
     return this.validateHeadersAndMakeRequest(
@@ -119,14 +155,14 @@ export class ElectroVisionFetch {
     headers?: THeaders,
     authorization?: string,
   ): Promise<any> {
-    if (authorization === null || authorization === undefined) {
+    if (authorization == null) {
       return this.makeRequest("PUT", endpointUrl, data, headers);
     }
     return this.validateHeadersAndMakeRequest(
       "PUT",
       authorization,
       endpointUrl,
-      data,
+      data as TData | undefined,
     );
   }
 
@@ -136,7 +172,7 @@ export class ElectroVisionFetch {
     headers?: THeaders,
     authorization?: string,
   ): Promise<any> {
-    if (authorization === null || authorization === undefined) {
+    if (authorization == null) {
       return this.makeRequest("DELETE", endpointUrl, data, headers);
     }
     return this.validateHeadersAndMakeRequest(

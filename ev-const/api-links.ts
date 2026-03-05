@@ -23,6 +23,7 @@ const ApiLinks = {
     rustHost + "/images/file/" + userId + "/" + fileName,
   removeFile: rustHost + "/images/remove-file",
   inviteWorker: rustHost + "/workspace/invitation/create",
+  convertPdf: pythonHost + "/pdf/convert",
   addPythonTask: pythonHost + "/tasks/add-task",
 
   listPythonTasks: (workspaceId: string) => {

@@ -46,6 +46,7 @@ interface DrawCanvasProps {
   workspaceId: number;
   token: string;
   userId: number;
+  leafletMap?: any;
 }
 
 const TOOLS: { id: Tool; label: string }[] = [
@@ -59,19 +60,30 @@ export default function DrawCanvas({
   workspaceId,
   token,
   userId,
+  leafletMap,
 }: DrawCanvasProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const drawingLayerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const historyRef = useRef<DrawElement[]>([]);
   const currentPointsRef = useRef<Point[]>([]);
   const isDrawingRef = useRef(false);
   const baseImageRef = useRef<HTMLImageElement | null>(null);
+
+  // Transform tracking — kept as refs so event handlers always see latest values
+  const transformRef = useRef({ scale: 1, ox: 0, oy: 0 });
+  const baseZoomRef = useRef<number>(0);
+  const basePixelOriginRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const textDrawPosRef = useRef<Point>({ x: 0, y: 0 });
+  const isPanningRef = useRef(false);
+  const [isPanning, setIsPanning] = useState(false);
 
   const [tool, setTool] = useState<Tool>("pen");
   const [color, setColor] = useState("#ef4444");
   const [strokeWidth, setStrokeWidth] = useState(3);
   const [fontSize, setFontSize] = useState(20);
   const [history, setHistory] = useState<DrawElement[]>([]);
+  const [drawTransform, setDrawTransform] = useState("");
 
   const [layers, setLayers] = useState<LayerData[]>([]);
   const [activeLayerId, setActiveLayerId] = useState<number | null>(null);
@@ -82,7 +94,7 @@ export default function DrawCanvas({
 
   const [textInput, setTextInput] = useState<{
     visible: boolean;
-    x: number;
+    x: number; // screen coords relative to container
     y: number;
     value: string;
   }>({ visible: false, x: 0, y: 0, value: "" });
@@ -151,7 +163,7 @@ export default function DrawCanvas({
     }
   }, []);
 
-  // ── canvas sizing ───────────────────────────────────────
+  // ── canvas sizing (observes the outer container, not the drawing layer) ──
 
   useEffect(() => {
     if (!visible) return;
@@ -182,6 +194,128 @@ export default function DrawCanvas({
     historyRef.current = history;
     redraw();
   }, [history, redraw]);
+
+  // ── zoom sync with Leaflet map ──────────────────────────
+
+  useEffect(() => {
+    if (!leafletMap || !visible) {
+      setDrawTransform("");
+      transformRef.current = { scale: 1, ox: 0, oy: 0 };
+      return;
+    }
+
+    // Capture base state when draw mode activates (or map becomes available)
+    baseZoomRef.current = leafletMap.getZoom();
+    const origin = leafletMap.getPixelOrigin();
+    basePixelOriginRef.current = { x: origin.x, y: origin.y };
+    setDrawTransform("");
+    transformRef.current = { scale: 1, ox: 0, oy: 0 };
+
+    const updateTransform = () => {
+      const zoom = leafletMap.getZoom();
+      // scale factor relative to when we started
+      const scale = leafletMap.getZoomScale(zoom, baseZoomRef.current);
+      const newOrigin = leafletMap.getPixelOrigin();
+      // Standard Leaflet overlay positioning formula (same as L.Renderer._update)
+      const ox = basePixelOriginRef.current.x * scale - newOrigin.x;
+      const oy = basePixelOriginRef.current.y * scale - newOrigin.y;
+      transformRef.current = { scale, ox, oy };
+      setDrawTransform(`translate(${ox}px,${oy}px) scale(${scale})`);
+    };
+
+    leafletMap.on("zoom move zoomend moveend", updateTransform);
+    return () => {
+      leafletMap.off("zoom move zoomend moveend", updateTransform);
+      setDrawTransform("");
+      transformRef.current = { scale: 1, ox: 0, oy: 0 };
+    };
+  }, [leafletMap, visible]);
+
+  // ── forward scroll wheel events to the Leaflet map ─────
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || !visible || !leafletMap) return;
+
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      if (e.deltaY < 0) {
+        leafletMap.zoomIn(1);
+      } else {
+        leafletMap.zoomOut(1);
+      }
+    };
+
+    container.addEventListener("wheel", onWheel, { passive: false });
+    return () => container.removeEventListener("wheel", onWheel);
+  }, [leafletMap, visible]);
+
+  // ── Space bar hold to pan ─────────────────────────────
+
+  useEffect(() => {
+    if (!visible || !leafletMap) return;
+
+    const startPan = () => {
+      isPanningRef.current = true;
+      setIsPanning(true);
+      leafletMap.dragging.enable();
+    };
+    const stopPan = () => {
+      isPanningRef.current = false;
+      setIsPanning(false);
+      leafletMap.dragging.disable();
+    };
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.code === "Space" && !e.repeat) {
+        e.preventDefault();
+        startPan();
+      }
+    };
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.code === "Space") {
+        stopPan();
+      }
+    };
+
+    (window as any).__evStartPan = startPan;
+    (window as any).__evStopPan = stopPan;
+
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+      isPanningRef.current = false;
+      setIsPanning(false);
+      delete (window as any).__evStartPan;
+      delete (window as any).__evStopPan;
+    };
+  }, [visible, leafletMap]);
+
+  // ── Middle mouse button to pan ────────────────────────
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || !visible || !leafletMap) return;
+
+    const onPointerDown = (e: PointerEvent) => {
+      if (e.button !== 1) return; // middle button only
+      e.preventDefault();
+      if ((window as any).__evStartPan) (window as any).__evStartPan();
+    };
+    const onPointerUp = (e: PointerEvent) => {
+      if (e.button !== 1) return;
+      if ((window as any).__evStopPan) (window as any).__evStopPan();
+    };
+
+    container.addEventListener("pointerdown", onPointerDown);
+    container.addEventListener("pointerup", onPointerUp);
+    return () => {
+      container.removeEventListener("pointerdown", onPointerDown);
+      container.removeEventListener("pointerup", onPointerUp);
+    };
+  }, [visible, leafletMap]);
 
   // ── API: fetch all layers ───────────────────────────────
 
@@ -448,20 +582,43 @@ export default function DrawCanvas({
     );
   };
 
-  // ── mouse handlers ──────────────────────────────────────
+  // ── coordinate helpers ──────────────────────────────────
 
+  /**
+   * Returns a point in CANVAS coordinate space (pre-transform),
+   * accounting for the current CSS scale of the drawing layer.
+   */
   const getCanvasPoint = (e: React.MouseEvent): Point => {
     const canvas = canvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
     const rect = canvas.getBoundingClientRect();
+    const scale = transformRef.current.scale;
+    return {
+      x: (e.clientX - rect.left) / scale,
+      y: (e.clientY - rect.top) / scale,
+    };
+  };
+
+  /**
+   * Returns a point in CONTAINER coordinate space (unaffected by transform),
+   * used to position absolutely-placed UI overlays (e.g. text input).
+   */
+  const getContainerPoint = (e: React.MouseEvent): Point => {
+    const container = containerRef.current;
+    if (!container) return { x: 0, y: 0 };
+    const rect = container.getBoundingClientRect();
     return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   };
 
+  // ── mouse handlers ──────────────────────────────────────
+
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (!activeLayerId) return;
+    if (!activeLayerId || isPanningRef.current || e.button === 1) return;
     if (tool === "text") {
-      const point = getCanvasPoint(e);
-      setTextInput({ visible: true, x: point.x, y: point.y, value: "" });
+      const screenPt = getContainerPoint(e);
+      const canvasPt = getCanvasPoint(e);
+      textDrawPosRef.current = canvasPt;
+      setTextInput({ visible: true, x: screenPt.x, y: screenPt.y, value: "" });
       return;
     }
     isDrawingRef.current = true;
@@ -469,7 +626,7 @@ export default function DrawCanvas({
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDrawingRef.current) return;
+    if (!isDrawingRef.current || isPanningRef.current) return;
     const point = getCanvasPoint(e);
     currentPointsRef.current.push(point);
 
@@ -527,7 +684,7 @@ export default function DrawCanvas({
         {
           type: "text",
           text: textInput.value,
-          position: { x: textInput.x, y: textInput.y },
+          position: textDrawPosRef.current, // canvas-space coords
           color,
           fontSize,
         },
@@ -546,72 +703,91 @@ export default function DrawCanvas({
 
   const activeLayer = layers.find((l) => l.id === activeLayerId);
   const activeLayerVisible = activeLayer?.visible ?? true;
+  const scale = transformRef.current.scale;
 
   return (
-    <div ref={containerRef} className="absolute inset-0 z-[500]">
-      {/* Background layers (visible, not active) */}
-      {layers
-        .filter((l) => l.visible && l.blobUrl && l.id !== activeLayerId)
-        .map((layer) => (
-          <img
-            key={layer.id}
-            src={layer.blobUrl}
-            alt={layer.layer_name}
-            className="absolute inset-0 w-full h-full object-contain pointer-events-none"
-            style={{ zIndex: 500 }}
-          />
-        ))}
+    <div
+      ref={containerRef}
+      className="absolute inset-0 z-[500] overflow-hidden"
+      style={{
+        pointerEvents: isPanning ? "none" : "auto",
+        cursor: isPanning ? "grab" : undefined,
+      }}
+    >
 
-      {/* Active drawing canvas */}
-      <canvas
-        ref={canvasRef}
-        className={`absolute inset-0 ${!activeLayerId || !activeLayerVisible
-          ? "cursor-not-allowed"
-          : tool === "text"
-            ? "cursor-text"
-            : "cursor-crosshair"
-          }`}
-        style={{
-          zIndex: 501,
-          opacity: activeLayerVisible ? 1 : 0,
-          pointerEvents: activeLayerVisible ? "auto" : "none",
-        }}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-      />
-
-      {/* ── Top toolbar ─────────────────────────────────── */}
+      {/* ── Drawing layer — zooms with the Leaflet map ──── */}
       <div
-        className="absolute top-3 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-white/95 backdrop-blur-sm rounded-xl shadow-lg px-4 py-2.5 border border-gray-200"
+        ref={drawingLayerRef}
+        className="absolute inset-0"
+        style={{
+          transform: drawTransform || undefined,
+          transformOrigin: "0 0",
+        }}
+      >
+        {/* Background layers (visible, not active) */}
+        {layers
+          .filter((l) => l.visible && l.blobUrl && l.id !== activeLayerId)
+          .map((layer) => (
+            <img
+              key={layer.id}
+              src={layer.blobUrl}
+              alt={layer.layer_name}
+              className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+            />
+          ))}
+
+        {/* Active drawing canvas */}
+        <canvas
+          ref={canvasRef}
+          className={`absolute inset-0 ${
+            !activeLayerId || !activeLayerVisible
+              ? "cursor-not-allowed"
+              : tool === "text"
+                ? "cursor-text"
+                : "cursor-crosshair"
+          }`}
+          style={{
+            opacity: activeLayerVisible ? 1 : 0,
+            pointerEvents: activeLayerVisible ? "auto" : "none",
+          }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+        />
+      </div>
+
+      {/* ── Top toolbar (stays fixed, outside drawing layer) ── */}
+      <div
+        className="absolute top-3 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-[#0f172a]/95 backdrop-blur-sm rounded-xl shadow-2xl px-4 py-2.5 border border-[#334155]"
         style={{ zIndex: 502 }}
       >
         {TOOLS.map((t) => (
           <button
             key={t.id}
             onClick={() => setTool(t.id)}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${tool === t.id
-              ? "bg-blue-500 text-white shadow-sm"
-              : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-              }`}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              tool === t.id
+                ? "bg-[#F6AA1C]/20 border border-[#F6AA1C]/40 text-[#F6AA1C]"
+                : "bg-[#1e293b] border border-[#334155] text-slate-400 hover:text-slate-100 hover:border-[#475569]"
+            }`}
           >
             {t.label}
           </button>
         ))}
 
-        <div className="w-px h-6 bg-gray-300 mx-1" />
+        <div className="w-px h-5 bg-[#334155] mx-0.5" />
 
         <input
           type="color"
           value={color}
           onChange={(e) => setColor(e.target.value)}
-          className="w-8 h-8 rounded cursor-pointer border border-gray-300"
+          className="w-7 h-7 rounded-lg cursor-pointer border border-[#334155] bg-[#1e293b] p-0.5"
           title="Pick color"
         />
 
-        <div className="flex items-center gap-1">
-          <span className="text-xs text-gray-500 whitespace-nowrap">
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs text-slate-500 whitespace-nowrap">
             {tool === "eraser" ? "Eraser" : "Brush"}
           </span>
           <input
@@ -620,36 +796,36 @@ export default function DrawCanvas({
             max={tool === "eraser" ? 40 : 20}
             value={strokeWidth}
             onChange={(e) => setStrokeWidth(Number(e.target.value))}
-            className="w-20 accent-blue-500"
+            className="w-20 accent-[#F6AA1C]"
           />
-          <span className="text-xs text-gray-500 w-5 text-right">
+          <span className="text-xs text-slate-500 w-4 text-right">
             {strokeWidth}
           </span>
         </div>
 
         {tool === "text" && (
-          <div className="flex items-center gap-1">
-            <span className="text-xs text-gray-500">Font</span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-slate-500">Font</span>
             <input
               type="range"
               min={12}
               max={48}
               value={fontSize}
               onChange={(e) => setFontSize(Number(e.target.value))}
-              className="w-16 accent-blue-500"
+              className="w-16 accent-[#F6AA1C]"
             />
-            <span className="text-xs text-gray-500 w-5 text-right">
+            <span className="text-xs text-slate-500 w-4 text-right">
               {fontSize}
             </span>
           </div>
         )}
 
-        <div className="w-px h-6 bg-gray-300 mx-1" />
+        <div className="w-px h-5 bg-[#334155] mx-0.5" />
 
         <button
           onClick={() => setHistory((prev) => prev.slice(0, -1))}
           disabled={history.length === 0}
-          className="px-3 py-1.5 rounded-lg text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
+          className="px-3 py-1.5 rounded-lg text-xs bg-[#1e293b] border border-[#334155] text-slate-400 hover:text-slate-100 hover:border-[#475569] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
         >
           Undo
         </button>
@@ -660,35 +836,66 @@ export default function DrawCanvas({
             redraw();
           }}
           disabled={history.length === 0 && !baseImageRef.current}
-          className="px-3 py-1.5 rounded-lg text-sm bg-gray-100 hover:bg-red-100 text-gray-700 hover:text-red-600 disabled:opacity-40 disabled:cursor-not-allowed"
+          className="px-3 py-1.5 rounded-lg text-xs bg-[#1e293b] border border-[#334155] text-slate-400 hover:text-red-400 hover:border-red-500/40 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
         >
           Clear
         </button>
         <button
           onClick={handleSave}
           disabled={!activeLayerId || saving}
-          className="px-3 py-1.5 rounded-lg text-sm bg-green-500 hover:bg-green-600 text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+          className="px-3 py-1.5 rounded-lg text-xs bg-[#F6AA1C] hover:bg-[#F6AA1C]/80 text-[#0a0f1e] font-semibold disabled:opacity-30 disabled:cursor-not-allowed transition-all"
         >
           {saving ? "Saving..." : "Save Layer"}
         </button>
       </div>
 
-      {/* ── Layer panel ─────────────────────────────────── */}
+      {/* ── Zoom controls (stays fixed, bottom-left) ────── */}
       <div
-        className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 w-60"
+        className="absolute bottom-4 left-4 flex flex-col gap-1"
         style={{ zIndex: 502 }}
       >
-        <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100">
+        <button
+          onClick={() => leafletMap?.zoomIn(1)}
+          className="w-9 h-9 flex items-center justify-center rounded-xl bg-[#0f172a]/95 backdrop-blur-sm border border-[#334155] text-slate-300 hover:text-white hover:border-[#475569] text-lg font-bold transition-all shadow-lg"
+          title="Zoom in"
+        >
+          +
+        </button>
+        <button
+          onClick={() => leafletMap?.zoomOut(1)}
+          className="w-9 h-9 flex items-center justify-center rounded-xl bg-[#0f172a]/95 backdrop-blur-sm border border-[#334155] text-slate-300 hover:text-white hover:border-[#475569] text-lg font-bold transition-all shadow-lg"
+          title="Zoom out"
+        >
+          −
+        </button>
+      </div>
+
+      {/* ── Pan hint (bottom center) ─────────────────────── */}
+      <div
+        className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-[#0f172a]/80 backdrop-blur-sm text-slate-500 px-3 py-1.5 rounded-lg text-[10px] border border-[#334155]"
+        style={{ zIndex: 502 }}
+      >
+        Hold <kbd className="px-1 py-0.5 bg-[#1e293b] rounded text-slate-400 text-[10px]">Space</kbd> to pan · Scroll to zoom
+      </div>
+
+      {/* ── Layer panel (stays fixed) ────────────────────── */}
+      <div
+        className="absolute top-3 right-3 bg-[#0f172a]/95 backdrop-blur-sm rounded-xl shadow-2xl border border-[#334155] w-60"
+        style={{ zIndex: 502 }}
+      >
+        <div className="flex items-center justify-between px-3 py-2.5 border-b border-[#334155]">
           <button
             onClick={() => setLayersPanelOpen((p) => !p)}
-            className="text-sm font-semibold text-gray-700 hover:text-gray-900 flex items-center gap-1"
+            className="text-xs font-semibold text-slate-300 hover:text-slate-100 flex items-center gap-1.5 transition-colors"
           >
             <span>Layers ({layers.length})</span>
-            <span className="text-xs">{layersPanelOpen ? "▼" : "▶"}</span>
+            <span className="text-[10px] text-slate-500">
+              {layersPanelOpen ? "▼" : "▶"}
+            </span>
           </button>
           <button
             onClick={handleCreateLayer}
-            className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 font-medium"
+            className="px-2 py-1 text-xs bg-[#F6AA1C]/20 text-[#F6AA1C] border border-[#F6AA1C]/30 rounded-lg hover:bg-[#F6AA1C]/30 font-medium transition-all"
           >
             + New
           </button>
@@ -697,7 +904,7 @@ export default function DrawCanvas({
         {layersPanelOpen && (
           <div className="px-2 py-2 max-h-64 overflow-y-auto flex flex-col gap-1">
             {layers.length === 0 && (
-              <div className="text-xs text-gray-400 italic px-2 py-3 text-center">
+              <div className="text-xs text-slate-500 italic px-2 py-4 text-center">
                 No layers yet. Click &quot;+ New&quot; to start.
               </div>
             )}
@@ -708,12 +915,13 @@ export default function DrawCanvas({
               return (
                 <div
                   key={layer.id}
-                  className={`flex items-center gap-1.5 px-2 py-1.5 rounded text-xs transition cursor-pointer ${isActive
-                    ? "bg-blue-100 border-2 border-blue-400"
-                    : layer.visible
-                      ? "bg-gray-50 border border-gray-200 hover:bg-gray-100"
-                      : "bg-gray-50 border border-gray-200 opacity-50"
-                    }`}
+                  className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs transition-all cursor-pointer ${
+                    isActive
+                      ? "bg-[#F6AA1C]/10 border-2 border-[#F6AA1C]/40"
+                      : layer.visible
+                        ? "bg-[#1e293b] border border-[#334155] hover:border-[#475569]"
+                        : "bg-[#1e293b] border border-[#334155] opacity-40"
+                  }`}
                   onClick={() => handleSelectLayer(layer.id)}
                 >
                   <button
@@ -721,7 +929,7 @@ export default function DrawCanvas({
                       e.stopPropagation();
                       toggleVisibility(layer.id);
                     }}
-                    className="w-5 h-5 flex items-center justify-center rounded hover:bg-gray-200 shrink-0"
+                    className="w-5 h-5 flex items-center justify-center rounded hover:bg-[#334155] shrink-0 text-slate-400 hover:text-slate-100 transition-colors"
                     title={layer.visible ? "Hide" : "Show"}
                   >
                     {layer.visible ? "👁" : "—"}
@@ -732,20 +940,22 @@ export default function DrawCanvas({
                       autoFocus
                       value={renameValue}
                       onChange={(e) => setRenameValue(e.target.value)}
-                      onBlur={() =>
-                        handleRenameSubmit(layer.id, renameValue)
-                      }
+                      onBlur={() => handleRenameSubmit(layer.id, renameValue)}
                       onKeyDown={(e) => {
                         if (e.key === "Enter")
                           handleRenameSubmit(layer.id, renameValue);
                         if (e.key === "Escape") setRenamingLayerId(null);
                       }}
                       onClick={(e) => e.stopPropagation()}
-                      className="flex-grow bg-white border border-blue-300 rounded px-1 py-0.5 text-xs outline-none min-w-0"
+                      className="flex-grow bg-[#0a0f1e] border border-[#F6AA1C]/40 rounded px-1 py-0.5 text-xs text-slate-100 outline-none min-w-0"
                     />
                   ) : (
                     <span
-                      className={`truncate flex-grow ${isActive ? "font-semibold text-blue-700" : ""}`}
+                      className={`truncate flex-grow ${
+                        isActive
+                          ? "font-semibold text-[#F6AA1C]"
+                          : "text-slate-300"
+                      }`}
                       onDoubleClick={(e) => {
                         e.stopPropagation();
                         setRenamingLayerId(layer.id);
@@ -764,7 +974,7 @@ export default function DrawCanvas({
                         handleMoveLayer(layer.id, "up");
                       }}
                       disabled={idx === 0}
-                      className="w-5 h-5 flex items-center justify-center rounded hover:bg-gray-200 disabled:opacity-30 text-[10px]"
+                      className="w-5 h-5 flex items-center justify-center rounded hover:bg-[#334155] text-slate-400 hover:text-slate-100 disabled:opacity-25 text-[10px] transition-colors"
                       title="Move up"
                     >
                       ↑
@@ -775,7 +985,7 @@ export default function DrawCanvas({
                         handleMoveLayer(layer.id, "down");
                       }}
                       disabled={idx === layers.length - 1}
-                      className="w-5 h-5 flex items-center justify-center rounded hover:bg-gray-200 disabled:opacity-30 text-[10px]"
+                      className="w-5 h-5 flex items-center justify-center rounded hover:bg-[#334155] text-slate-400 hover:text-slate-100 disabled:opacity-25 text-[10px] transition-colors"
                       title="Move down"
                     >
                       ↓
@@ -785,7 +995,7 @@ export default function DrawCanvas({
                         e.stopPropagation();
                         handleDeleteLayer(layer.id);
                       }}
-                      className="w-5 h-5 flex items-center justify-center rounded hover:bg-red-100 hover:text-red-600 text-[10px]"
+                      className="w-5 h-5 flex items-center justify-center rounded text-slate-400 hover:bg-red-500/10 hover:text-red-400 text-[10px] transition-colors"
                       title="Delete layer"
                     >
                       ✕
@@ -801,14 +1011,14 @@ export default function DrawCanvas({
       {/* No active layer hint */}
       {!activeLayerId && layers.length > 0 && (
         <div
-          className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-yellow-100 text-yellow-800 px-4 py-2 rounded-lg shadow-md text-sm font-medium border border-yellow-300"
+          className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-[#F6AA1C]/10 text-[#F6AA1C] px-4 py-2 rounded-xl shadow-lg text-xs font-medium border border-[#F6AA1C]/30"
           style={{ zIndex: 502 }}
         >
           Select a layer to start drawing
         </div>
       )}
 
-      {/* Text input overlay */}
+      {/* Text input overlay — positioned in container space, not drawing layer space */}
       {textInput.visible && (
         <input
           autoFocus
@@ -825,11 +1035,11 @@ export default function DrawCanvas({
           onBlur={handleTextSubmit}
           style={{
             left: textInput.x,
-            top: textInput.y - fontSize - 4,
-            fontSize,
+            top: textInput.y - fontSize * scale - 4,
+            fontSize: fontSize * scale,
             zIndex: 503,
           }}
-          className="absolute bg-white/90 border-2 border-blue-400 rounded px-2 py-0.5 outline-none min-w-[120px]"
+          className="absolute bg-[#0f172a]/95 border-2 border-[#F6AA1C]/60 rounded-lg px-2 py-0.5 text-slate-100 outline-none min-w-[120px] placeholder:text-slate-500"
           placeholder="Type and press Enter..."
         />
       )}
