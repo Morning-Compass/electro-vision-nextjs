@@ -72,8 +72,6 @@ export default function DrawCanvas({
 
   // Transform tracking — kept as refs so event handlers always see latest values
   const transformRef = useRef({ scale: 1, ox: 0, oy: 0 });
-  const baseZoomRef = useRef<number>(0);
-  const basePixelOriginRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const textDrawPosRef = useRef<Point>({ x: 0, y: 0 });
   const isPanningRef = useRef(false);
   const [isPanning, setIsPanning] = useState(false);
@@ -83,7 +81,6 @@ export default function DrawCanvas({
   const [strokeWidth, setStrokeWidth] = useState(3);
   const [fontSize, setFontSize] = useState(20);
   const [history, setHistory] = useState<DrawElement[]>([]);
-  const [drawTransform, setDrawTransform] = useState("");
 
   const [layers, setLayers] = useState<LayerData[]>([]);
   const [activeLayerId, setActiveLayerId] = useState<number | null>(null);
@@ -195,38 +192,67 @@ export default function DrawCanvas({
     redraw();
   }, [history, redraw]);
 
-  // ── zoom sync with Leaflet map ──────────────────────────
+  // ── zoom & pan sync with Leaflet map ───────────────────
+  //
+  // Uses requestAnimationFrame to continuously read the actual map-pane
+  // DOM position via `latLngToContainerPoint`.  This stays correct even
+  // mid-drag (unlike `getPixelOrigin()` which only updates on moveend).
+  // Direct DOM manipulation avoids React re-render latency.
 
   useEffect(() => {
     if (!leafletMap || !visible) {
-      setDrawTransform("");
+      if (drawingLayerRef.current) {
+        drawingLayerRef.current.style.transform = "";
+      }
       transformRef.current = { scale: 1, ox: 0, oy: 0 };
       return;
     }
 
-    // Capture base state when draw mode activates (or map becomes available)
-    baseZoomRef.current = leafletMap.getZoom();
-    const origin = leafletMap.getPixelOrigin();
-    basePixelOriginRef.current = { x: origin.x, y: origin.y };
-    setDrawTransform("");
+    // Capture the map state as our reference frame
+    const refLatLng = leafletMap.getCenter();
+    const refPx = leafletMap.latLngToContainerPoint(refLatLng);
+    const refPoint = { x: refPx.x, y: refPx.y };
+    const baseZoom = leafletMap.getZoom();
+
     transformRef.current = { scale: 1, ox: 0, oy: 0 };
 
-    const updateTransform = () => {
+    let lastOx = 0;
+    let lastOy = 0;
+    let lastScale = 1;
+    let rafId: number;
+
+    const syncTransform = () => {
+      const currentPx = leafletMap.latLngToContainerPoint(refLatLng);
       const zoom = leafletMap.getZoom();
-      // scale factor relative to when we started
-      const scale = leafletMap.getZoomScale(zoom, baseZoomRef.current);
-      const newOrigin = leafletMap.getPixelOrigin();
-      // Standard Leaflet overlay positioning formula (same as L.Renderer._update)
-      const ox = basePixelOriginRef.current.x * scale - newOrigin.x;
-      const oy = basePixelOriginRef.current.y * scale - newOrigin.y;
-      transformRef.current = { scale, ox, oy };
-      setDrawTransform(`translate(${ox}px,${oy}px) scale(${scale})`);
+      const scale = leafletMap.getZoomScale(zoom, baseZoom);
+      const ox = currentPx.x - refPoint.x * scale;
+      const oy = currentPx.y - refPoint.y * scale;
+
+      // Only touch the DOM when values actually changed
+      if (ox !== lastOx || oy !== lastOy || scale !== lastScale) {
+        lastOx = ox;
+        lastOy = oy;
+        lastScale = scale;
+        transformRef.current = { scale, ox, oy };
+        if (drawingLayerRef.current) {
+          drawingLayerRef.current.style.transform =
+            ox === 0 && oy === 0 && scale === 1
+              ? ""
+              : `translate(${ox}px,${oy}px) scale(${scale})`;
+        }
+      }
+
+      rafId = requestAnimationFrame(syncTransform);
     };
 
-    leafletMap.on("zoom move zoomend moveend", updateTransform);
+    // Start the sync loop
+    rafId = requestAnimationFrame(syncTransform);
+
     return () => {
-      leafletMap.off("zoom move zoomend moveend", updateTransform);
-      setDrawTransform("");
+      cancelAnimationFrame(rafId);
+      if (drawingLayerRef.current) {
+        drawingLayerRef.current.style.transform = "";
+      }
       transformRef.current = { scale: 1, ox: 0, oy: 0 };
     };
   }, [leafletMap, visible]);
@@ -715,14 +741,11 @@ export default function DrawCanvas({
       }}
     >
 
-      {/* ── Drawing layer — zooms with the Leaflet map ──── */}
+      {/* ── Drawing layer — zooms & pans with the Leaflet map ── */}
       <div
         ref={drawingLayerRef}
         className="absolute inset-0"
-        style={{
-          transform: drawTransform || undefined,
-          transformOrigin: "0 0",
-        }}
+        style={{ transformOrigin: "0 0" }}
       >
         {/* Background layers (visible, not active) */}
         {layers

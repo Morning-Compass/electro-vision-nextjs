@@ -15,6 +15,8 @@ const pageTitles: Record<string, string> = {
   "/employees-overview/details": "Employee Details",
   "/workspaces": "Workspaces",
   "/workspaces/plans": "Workspace Plans",
+  "/workspaces/plans/tasks/details": "Task Details",
+  "/workspaces/plans/users/details": "Worker Details",
   "/workspaces/plans/editor": "Plan Editor",
   "/employees-problems": "Problems",
   "/employees-problems/details": "Problem Details",
@@ -37,7 +39,7 @@ export default function NavbarTemplate() {
   const username = User.authUser?.username ?? "";
 
   return (
-    <header className="h-14 flex items-center gap-3 px-4 md:px-6 border-b border-ev-stroke bg-ev-sidebar flex-shrink-0">
+    <header className="h-16 flex items-center gap-3 px-4 md:px-6 border-b border-ev-stroke bg-ev-sidebar flex-shrink-0">
       {/* hamburger — mobile only */}
       <button
         onClick={() => setOpen(true)}

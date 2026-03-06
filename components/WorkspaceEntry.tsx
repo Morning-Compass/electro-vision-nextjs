@@ -23,7 +23,8 @@ const WorkspaceEntry = ({
   const getSvgDataUri = (rawSvg: string): string => {
     try {
       const cleanedSvg = rawSvg.replace(/<\?xml[\s\S]*?\?>/g, "").trim();
-      if (!cleanedSvg.startsWith("<svg")) throw new Error("Invalid SVG content");
+      if (!cleanedSvg.startsWith("<svg"))
+        throw new Error("Invalid SVG content");
       return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(cleanedSvg)}`;
     } catch (error) {
       console.error("Error processing SVG:", error);
@@ -34,7 +35,10 @@ const WorkspaceEntry = ({
   const getImageSrc = () => {
     if (!workspace.coverPhoto) return "/problem.png";
     if (typeof workspace.coverPhoto === "string") {
-      if (workspace.coverPhoto.startsWith("data:") || workspace.coverPhoto.startsWith("http"))
+      if (
+        workspace.coverPhoto.startsWith("data:") ||
+        workspace.coverPhoto.startsWith("http")
+      )
         return workspace.coverPhoto;
       if (workspace.coverPhoto.trim().startsWith("<"))
         return getSvgDataUri(workspace.coverPhoto);
@@ -50,7 +54,8 @@ const WorkspaceEntry = ({
       value: {
         currentWorkspace: workspace,
         currentTask: User.workspaceData?.currentTask ?? null,
-        currentUserOverviewData: User.workspaceData?.currentUserOverviewData ?? null,
+        currentUserOverviewData:
+          User.workspaceData?.currentUserOverviewData ?? null,
         currentUserId: null,
         users: null,
       },
@@ -82,7 +87,7 @@ const WorkspaceEntry = ({
 
       {/* cover image */}
       <Link href="/workspaces/plans" prefetch={false} onClick={handleDispatch}>
-        <div className="relative aspect-video w-full overflow-hidden bg-[#0f172a]">
+        <div className="relative aspect-video w-full overflow-hidden bg-white">
           <Image
             src={imageSrc}
             alt={workspace.name}

@@ -1,8 +1,6 @@
-import Image from "next/image";
-import Input from "./Input";
 import Link from "next/link";
 import useUserContext from "@/ev-contexts/userContextProvider";
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction } from "react";
 import { WorkspaceUser } from "@/ev-types/user-types";
 
 type WorkerEntryProps = {
@@ -18,7 +16,6 @@ type WorkerEntryProps = {
 
 export default function WorkerEntry({
   username,
-  photo = undefined,
   id,
   selectable = false,
   workspaceUsers,
@@ -27,37 +24,69 @@ export default function WorkerEntry({
   role,
 }: WorkerEntryProps) {
   const { User, UserDispatch } = useUserContext();
-  const [selected, setSelected] = useState(false);
   const you = id === parseInt(User.authUser?.id ?? "-1");
+  const isSelected = selectedWorkersIds.includes(id);
 
-  return selectable ? (
-    <div>
-      <div
-        className={`flex justify-start items-center gap-2 flex-row w-full bg-ev-primary${!you ? (selected ? "border-2 border-ev-red" : "border-2 border-ev-green") : ""} shadow-md  hover:scale-110 duration-300  rounded-xl p-1 `}
-        onClick={() => {
-          if (you) {
-            return;
-          }
-          setSelectedWorkersIds((prev) =>
-            prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
-          );
-          setSelected((p) => !p);
-        }}
-      >
-        {/* <Image
-          src={photo ?? "/default-user.png"}
-          alt="Employee"
-          width={56}
-          height={56}
-          className="rounded-full m-2"
-        /> */}
-        <div className="h-14 m-2"></div>
-        <p className="text-xl text-nowrap m-2 max-sm:text-base ">
-          {id === (User.authUser?.id ?? -1) ? "(You) " + username : username}
-        </p>
+  const initials = username
+    .split(" ")
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
+  const content = (
+    <div
+      className={`flex items-center gap-3 rounded-xl p-3 border transition-all duration-150
+        ${selectable
+          ? isSelected
+            ? "bg-red-500/10 border-red-500/40 cursor-pointer"
+            : you
+              ? "bg-[#0f172a] border-[#334155] opacity-50 cursor-not-allowed"
+              : "bg-[#0f172a] border-[#334155] hover:border-[#475569] cursor-pointer"
+          : "bg-[#0f172a] border-[#334155] hover:border-ev-yellow/30"
+        }
+      `}
+      onClick={
+        selectable && !you
+          ? () =>
+              setSelectedWorkersIds((prev) =>
+                prev.includes(id)
+                  ? prev.filter((x) => x !== id)
+                  : [...prev, id],
+              )
+          : undefined
+      }
+    >
+      {/* avatar */}
+      <div className="w-9 h-9 rounded-lg bg-[#1e293b] flex items-center justify-center flex-shrink-0">
+        <span className="text-xs font-bold text-ev-yellow">{initials}</span>
       </div>
+
+      {/* info */}
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-slate-100 truncate">
+          {you ? `${username} (You)` : username}
+        </p>
+        {role && (
+          <p className="text-[10px] text-slate-500 mt-0.5 truncate">{role}</p>
+        )}
+      </div>
+
+      {/* selection checkbox */}
+      {selectable && !you && (
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={() => {}}
+          className="w-4 h-4 accent-red-500 flex-shrink-0 pointer-events-none"
+        />
+      )}
     </div>
-  ) : (
+  );
+
+  if (selectable) return <div>{content}</div>;
+
+  return (
     <Link
       onClick={() => {
         const prevData = User.workspaceData ?? {
@@ -67,7 +96,6 @@ export default function WorkerEntry({
           users: null,
           currentUserId: null,
         };
-
         UserDispatch({
           type: "setWorkspaceData",
           value: {
@@ -78,24 +106,9 @@ export default function WorkerEntry({
         });
       }}
       prefetch={false}
-      href={"/workspaces/plans/users/details"}
+      href="/workspaces/plans/users/details"
     >
-      <div className="flex justify-start items-center gap-2 flex-row w-full bg-ev-primary shadow-md  hover:scale-110 duration-300  rounded-xl p-1 ">
-        {/* <Image
-          src={photo ?? "/default-user.png"}
-          alt="Employee"
-          width={56}
-          height={56}
-          className="rounded-full m-2"
-        /> */}
-        <div className="h-14 m-2"></div>
-        <p className="text-xl text-nowrap m-2 max-sm:text-base">
-          {id === (User.authUser?.id ?? -1) ? "(You) " + username : username}
-        </p>
-        <p className="text-xl text-nowrap m-2 max-sm:text-base ml-auto pr-1">
-          {role}
-        </p>
-      </div>
+      {content}
     </Link>
   );
 }

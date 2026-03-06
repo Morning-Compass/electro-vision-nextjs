@@ -1,6 +1,6 @@
 "use client";
+
 import ContentBlock from "@/components/ContentBlock";
-import { FooterSmall } from "@/components/templates/FooterSmall";
 import NavbarTemplate from "@/components/templates/NavbarTemplate";
 import PageTemplate from "@/components/templates/PageTemplate";
 import SidebarTemplate from "@/components/templates/SidebarTemplate";
@@ -11,25 +11,16 @@ import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import Overlay from "@/components/Overlay";
-import Input from "@/components/Input";
-import FormErrorWrap from "@/components/templates/FormErrorWrap";
-import { WorkspaceUser } from "@/ev-types/user-types";
 import OLF from "@/ev-lib/ElectroVisionFetch";
 import ApiLinks from "@/ev-const/api-links";
-import { Task } from "@/ev-types/workspace-types";
 import toast from "react-hot-toast";
 import { DateTimePicker } from "@/components/datepicker/Datepicker";
+import { Upload } from "lucide-react";
 
-// Helper function to format dates
 const formatDate = (date: string | Date | null): string => {
   if (!date) return "Not Defined";
-
   const parsedDate = typeof date === "string" ? new Date(date) : date;
-
-  if (isNaN(parsedDate.getTime())) {
-    return "Invalid Date";
-  }
-
+  if (isNaN(parsedDate.getTime())) return "Invalid Date";
   return new Intl.DateTimeFormat("en-US", {
     year: "numeric",
     month: "long",
@@ -39,10 +30,7 @@ const formatDate = (date: string | Date | null): string => {
   }).format(parsedDate);
 };
 
-type EditDescriptionForm = {
-  description: string;
-};
-
+type EditDescriptionForm = { description: string };
 type EditTaskDetailsForm = {
   assignee_email: string;
   title: string;
@@ -51,23 +39,21 @@ type EditTaskDetailsForm = {
   due_date: string;
   category: string;
 };
+type EditPhotoForm = { multimedia: string };
 
-type EditPhotoForm = {
-  multimedia: string;
-};
+const inputCls =
+  "w-full bg-[#0f172a] border border-[#334155] rounded-xl text-slate-100 placeholder:text-slate-600 text-sm px-4 py-3 focus:outline-none focus:border-ev-yellow focus:ring-2 focus:ring-ev-yellow/20 transition-all";
+const selectCls =
+  "w-full bg-[#0f172a] border border-[#334155] rounded-xl text-slate-100 text-sm px-4 py-3 focus:outline-none focus:border-ev-yellow focus:ring-2 focus:ring-ev-yellow/20 transition-all appearance-none";
+const cardCls = "bg-[#1e293b] border border-[#334155] rounded-2xl p-5";
 
 export default function Page() {
   const { User, UserDispatch } = useUserContext();
-  console.log(User);
 
   const multimedia = User.workspaceData?.currentTask?.description_multimedia;
   const task = User.workspaceData?.currentTask;
-
-  console.log(task);
-
   const creator = User.workspaceData?.currentWorkspace?.role === "CREATOR";
 
-  // States for edit modes and overlays
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [isEditingDetails, setIsEditingDetails] = useState(false);
   const [isEditingPhoto, setIsEditingPhoto] = useState(false);
@@ -78,12 +64,10 @@ export default function Page() {
     task?.description_multimedia !== "" &&
     task?.description_multimedia !== null &&
     task?.description_multimedia !== undefined;
-  // Forms
+
   const { register: registerDesc, handleSubmit: handleSubmitDesc } =
     useForm<EditDescriptionForm>({
-      defaultValues: {
-        description: task?.description || "",
-      },
+      defaultValues: { description: task?.description || "" },
     });
 
   const {
@@ -102,28 +86,21 @@ export default function Page() {
   });
 
   const {
-    register: registerPhoto,
     setValue: setPhotoValue,
     watch: watchPhoto,
     handleSubmit: handleSubmitPhoto,
   } = useForm<EditPhotoForm>({
-    defaultValues: {
-      multimedia: multimedia || "",
-    },
+    defaultValues: { multimedia: multimedia || "" },
   });
 
   const imageSrc =
     watchPhoto("multimedia") ||
     (multimedia && isBase64Image(multimedia) ? multimedia : "/tasks.svg");
 
-  // Submit handlers
   const onSubmitDescription = async (data: EditDescriptionForm) => {
-    // TODO: Implement API call to update description
     try {
-      console.log("Updating description:", data);
       setIsEditingDescription(false);
-
-      const res = await OLF.put(
+      await OLF.put(
         ApiLinks.updateTask(
           User.workspaceData?.currentWorkspace?.id.toString() ?? "-1",
           User.workspaceData?.currentTask?.id.toString() ?? "-1",
@@ -140,9 +117,7 @@ export default function Page() {
           description_multimedia: null,
         },
       );
-
       toast.success("Task description updated successfully");
-
       UserDispatch({
         type: "setWorkspaceData",
         value: {
@@ -154,7 +129,6 @@ export default function Page() {
         },
       });
     } catch (error) {
-      console.error("Error creating task:", error);
       toast.error(
         error instanceof Error ? error.message : "Failed to update task",
       );
@@ -162,39 +136,30 @@ export default function Page() {
   };
 
   const onSubmitDetails = async (data: EditTaskDetailsForm) => {
-    // TODO: Implement API call to update task details
     try {
-      console.log("Updating task details:", data);
       setIsEditingDetails(false);
-
       const dueDateISO = data.due_date
         ? new Date(data.due_date).toISOString().split(".")[0]
         : null;
 
-      const payload = {
-        assigner_email: null,
-        assignee_email: data.assignee_email,
-        description: null,
-        due_date: dueDateISO,
-        status: data.status,
-        title: data.title,
-        importance: data.importance,
-        category: data.category,
-        description_multimedia: null,
-      };
-
-      console.log("Sending payload:", JSON.stringify(payload));
-
-      const res = await OLF.put(
+      await OLF.put(
         ApiLinks.updateTask(
           User.workspaceData?.currentWorkspace?.id.toString() ?? "-1",
           User.workspaceData?.currentTask?.id.toString() ?? "-1",
         ),
-        payload,
+        {
+          assigner_email: null,
+          assignee_email: data.assignee_email,
+          description: null,
+          due_date: dueDateISO,
+          status: data.status,
+          title: data.title,
+          importance: data.importance,
+          category: data.category,
+          description_multimedia: null,
+        },
       );
-
-      toast.success("Task details successfully");
-
+      toast.success("Task details updated successfully");
       UserDispatch({
         type: "setWorkspaceData",
         value: {
@@ -211,20 +176,16 @@ export default function Page() {
         },
       });
     } catch (error) {
-      console.error("Error creating task:", error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to create task",
+        error instanceof Error ? error.message : "Failed to update task",
       );
     }
   };
 
   const onSubmitPhoto = async (data: EditPhotoForm) => {
-    // TODO: Implement API call to update photo
     try {
-      console.log("Updating photo:", data);
       setIsEditingPhoto(false);
-
-      const res = await OLF.put(
+      await OLF.put(
         ApiLinks.updateTask(
           User.workspaceData?.currentWorkspace?.id.toString() ?? "-1",
           User.workspaceData?.currentTask?.id.toString() ?? "-1",
@@ -233,7 +194,7 @@ export default function Page() {
           assigner_email: null,
           assignee_email: null,
           description: null,
-          due_date: null, // backend takes naivedatetime need to fxit
+          due_date: null,
           status: null,
           title: null,
           importance: null,
@@ -241,9 +202,7 @@ export default function Page() {
           description_multimedia: data.multimedia,
         },
       );
-
-      toast.success("Task Photo successfully");
-
+      toast.success("Task photo updated successfully");
       UserDispatch({
         type: "setWorkspaceData",
         value: {
@@ -255,171 +214,23 @@ export default function Page() {
         },
       });
     } catch (error) {
-      console.error("Error creating task:", error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to create task",
+        error instanceof Error ? error.message : "Failed to update photo",
       );
     }
   };
 
+  const importanceBadge = (importance?: string) => {
+    const map: Record<string, string> = {
+      LOW: "bg-green-500/20 text-green-400",
+      MEDIUM: "bg-yellow-500/20 text-yellow-400",
+      HIGH: "bg-red-500/20 text-red-400",
+    };
+    return map[importance ?? ""] ?? "bg-slate-500/20 text-slate-400";
+  };
+
   return (
     <PageTemplate>
-      <NavbarTemplate />
-      <section className="flex flex-row items-center justify-start h-full gap-8 w-[90vw]">
-        <SidebarTemplate activeIcon="map" />
-        <ContentBlock>
-          <div className="flex flex-col items-center justify-center gap-8 h-full w-full p-4">
-            {/* Title and Back Button Row */}
-            <div className="w-full flex items-center justify-between">
-              <Link
-                href="/workspaces/plans"
-                className="text-ev-accent-text hover:text-ev-accent-text/80 text-lg font-medium flex items-center transition-colors duration-200"
-              >
-                ← Back
-              </Link>
-              <h1 className="text-4xl font-bold text-ev-text uppercase tracking-wide text-center flex-grow">
-                {task?.title ?? "Untitled Task"}
-              </h1>
-              <div className="w-16"></div> {/* Spacer for balance */}
-            </div>
-
-            {/* Description and Details (horizontal) */}
-            <div className="flex flex-row gap-8 w-full h-[45%]">
-              {/* Description */}
-              <div className="flex flex-col gap-4 w-1/2 p-6 bg-ev-primary-bg dark:bg-ev-secondary rounded-xl overflow-y-scroll shadow-md">
-                <div className="flex justify-between items-center border-b-2 border-ev-gray pb-2">
-                  <h2 className="text-2xl font-semibold  text-ev-text dark:text-ev-text">
-                    Description
-                  </h2>
-                  {creator ? (
-                    <button
-                      onClick={() => setIsEditingDescription(true)}
-                      className="text-ev-accent-text hover:text-ev-accent-text/80 text-lg font-medium transition-colors duration-200"
-                    >
-                      Edit
-                    </button>
-                  ) : null}
-                </div>
-                <p className="text-ev-text dark:text-ev-secondary-text text-lg overflow-y-auto max-h-full">
-                  {task?.description || "Description has not been set."}
-                </p>
-              </div>
-
-              {/* Photo */}
-              {isBase64Image(imageSrc) && (
-                <div className="flex flex-col gap-4 w-1/2 p-6 bg-ev-primary-bg dark:bg-ev-secondary rounded-xl shadow-md">
-                  <div className="flex justify-between items-center border-b-2 border-ev-gray pb-2">
-                    <h2 className="text-2xl font-semibold text-ev-text dark:text-ev-text">
-                      Photo
-                    </h2>
-                    {creator ? (
-                      <button
-                        onClick={() => setIsEditingPhoto(true)}
-                        className="text-ev-accent-text hover:text-ev-accent-text/80 text-lg font-medium transition-colors duration-200"
-                      >
-                        Edit
-                      </button>
-                    ) : null}
-                  </div>
-                  <div className="relative w-full h-full">
-                    <Image
-                      src={imageSrc}
-                      alt="Task"
-                      fill
-                      className="object-contain"
-                      unoptimized={isBase64Image(imageSrc)}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Details */}
-              <div className="flex flex-col gap-4 w-1/2 p-6 bg-ev-primary-bg dark:bg-ev-secondary rounded-xl overflow-y-scroll shadow-md">
-                <div className="flex justify-between items-center border-b-2 border-ev-gray pb-2">
-                  <h2
-                    className="text-2xl font-semibold text-ev-text text-
-                    dark:text-ev-text"
-                  >
-                    Details
-                  </h2>
-                  <div className=" flex flex-row items-center justify-center gap-8">
-                    {creator ? (
-                      <>
-                        {isMultimedia ? null : (
-                          <button
-                            onClick={() => setIsEditingPhoto(true)}
-                            className="text-ev-accent-text hover:text-ev-accent-text/80 text-lg font-medium transition-colors duration-200"
-                          >
-                            Add Photo
-                          </button>
-                        )}
-                      </>
-                    ) : null}
-
-                    {creator ? (
-                      <button
-                        onClick={() => setIsEditingDetails(true)}
-                        className="text-ev-accent-text hover:text-ev-accent-text/80 text-lg font-medium transition-colors duration-200"
-                      >
-                        Edit
-                      </button>
-                    ) : null}
-                  </div>
-                </div>
-                <p className="text-ev-text dark:text-ev-secondary-text text-lg overflow-y-auto max-h-full">
-                  Assigner: {task?.assigner_email}
-                </p>
-                <p className="text-ev-text dark:text-ev-secondary-text text-lg overflow-y-auto max-h-full">
-                  Assignee: {task?.assignee_email}
-                </p>
-                <p className="text-ev-text dark:text-ev-secondary-text text-lg overflow-y-auto max-h-full">
-                  Status: {task?.status.replaceAll("_", " ")}
-                </p>
-                <p className="text-ev-dark dark:text-ev-secondary-text text-lg overflow-y-auto max-h-full">
-                  Created at:{" "}
-                  {task?.created_at ? formatDate(task.created_at) : "Unknown"}
-                </p>
-                <p className="text-ev-text dark:text-ev-secondary-text text-lg overflow-y-auto max-h-full">
-                  Due:{" "}
-                  {task?.due_date ? formatDate(task.due_date) : "Not Defined"}
-                </p>
-                <p className="text-ev-text dark:text-ev-secondary-text text-lg overflow-y-auto max-h-full">
-                  Category: {isMultimedia ? task.category : "Not Defined"}
-                </p>
-                <p
-                  className={`text-ev-text dark:text-ev-secondary-text text-lg overflow-y-auto max-h-full ${
-                    task?.importance === "LOW"
-                      ? "text-green-400"
-                      : task?.importance === "MEDIUM"
-                        ? "text-yellow-500"
-                        : "text-red-600"
-                  }`}
-                >
-                  Importance: {task?.importance}
-                </p>
-              </div>
-            </div>
-
-            {/* Photo and Map Section (horizontal) */}
-            <div className="flex flex-row gap-8 w-full h-[45%]">
-              {/* Map Section */}
-              <div className="flex flex-col gap-4 w-full p-6 bg-ev-primary-bg dark:bg-ev-secondary rounded-xl shadow-md">
-                <div className="flex justify-between items-center border-b-2 border-ev-gray pb-2">
-                  <h2 className="text-2xl font-semibold text-ev-text dark:text-ev-text">
-                    Map
-                  </h2>
-                </div>
-                <div className="flex items-center justify-center bg-ev-gray dark:bg-ev-dark-gray w-full h-full rounded-lg text-ev-text dark:text-ev-secondary-text text-lg">
-                  Content
-                  {/* FUTURE MAP LINK AND PREVIEW */}
-                </div>
-              </div>
-            </div>
-          </div>
-        </ContentBlock>
-      </section>
-      <FooterSmall />
-
       {/* Edit Description Overlay */}
       <Overlay
         isOpen={isEditingDescription}
@@ -427,26 +238,25 @@ export default function Page() {
       >
         <form
           onSubmit={handleSubmitDesc(onSubmitDescription)}
-          className="flex flex-col gap-6 w-full"
+          className="flex flex-col gap-4 w-full"
         >
-          <p className="text-4xl mb-10">Edit Description</p>
-          <FormErrorWrap>
-            <div className="flex flex-col gap-4">
-              <textarea
-                {...registerDesc("description")}
-                placeholder="Task description..."
-                className="px-3 py-2 bg-ev-primary-bg text-ev-dark-gray rounded-lg w-full h-64"
-              />
-            </div>
-          </FormErrorWrap>
-          <div className="flex items-center justify-center gap-4 mt-4 w-full">
-            <button
-              type="submit"
-              className="px-4 py-2 bg-ev-blue text-white rounded-lg hover:scale-105 duration-300 w-full"
-            >
-              Save Changes
-            </button>
+          <p className="text-xl font-bold text-slate-100">Edit Description</p>
+          <div>
+            <label className="text-xs font-medium text-slate-400 block mb-1">
+              Description
+            </label>
+            <textarea
+              {...registerDesc("description")}
+              placeholder="Task description..."
+              className={`${inputCls} h-48 resize-none`}
+            />
           </div>
+          <button
+            type="submit"
+            className="w-full py-3 bg-ev-yellow text-black font-semibold rounded-xl hover:bg-ev-yellow/90 transition-colors text-sm"
+          >
+            Save Changes
+          </button>
         </form>
       </Overlay>
 
@@ -457,103 +267,89 @@ export default function Page() {
       >
         <form
           onSubmit={handleSubmitDetails(onSubmitDetails)}
-          className="flex flex-col gap-6 w-full"
+          className="flex flex-col gap-4 w-full"
         >
-          <p className="text-4xl mb-10">Edit Task Details</p>
+          <p className="text-xl font-bold text-slate-100">Edit Task Details</p>
 
-          <FormErrorWrap>
-            <div className="flex flex-col gap-4">
-              <p className="text-xl">Title</p>
-              <Input
-                placeholder="New title..."
-                type="text"
-                defaultValue={task?.title}
-                className="px-3 py-2 bg-ev-primary-bg text-ev-dark-gray rounded-lg w-full"
-                register={registerDetails("title")}
-              />
-            </div>
-          </FormErrorWrap>
-
-          <FormErrorWrap>
-            <div className="flex flex-col gap-4">
-              <p className="text-xl">Assignee Email</p>
-              <select
-                className="px-3 py-2 bg-ev-primary-bg text-ev-dark-gray rounded-lg w-full hover:scale-105 transition appearance-none"
-                {...registerDetails("assignee_email")}
-              >
-                {workspaceUsers &&
-                  workspaceUsers.map((u, i) => {
-                    return (
-                      <option key={i} value={u.email}>
-                        {u.email}
-                      </option>
-                    );
-                  })}
-              </select>
-            </div>
-          </FormErrorWrap>
-
-          <FormErrorWrap>
-            <div className="flex flex-col gap-4">
-              <p className="text-xl">Category</p>
-              <Input
-                placeholder="Category"
-                type="text"
-                className="px-3 py-2 bg-ev-primary-bg text-ev-dark-gray rounded-lg w-full"
-                register={registerDetails("category")}
-              />
-            </div>
-          </FormErrorWrap>
-
-          <FormErrorWrap>
-            <div className="flex flex-col gap-4">
-              <p className="text-xl">Status</p>
-              <select
-                className="px-3 py-2 bg-ev-primary-bg text-ev-dark-gray rounded-lg w-full hover:scale-105 transition appearance-none"
-                {...registerDetails("status")}
-              >
-                <option value="TODO">To Do</option>
-                <option value="IN_PROGRESS">In Progress</option>
-                <option value="COMPLETED">Completed</option>
-                <option value="HELP_NEEDED">Help Needed</option>
-                <option value="CANCELED">Canceled</option>
-              </select>
-            </div>
-          </FormErrorWrap>
-
-          <FormErrorWrap>
-            <div className="flex flex-col gap-4">
-              <p className="text-xl">Importance</p>
-              <select
-                className="px-3 py-2 bg-ev-primary-bg text-ev-dark-gray rounded-lg w-full hover:scale-105 transition appearance-none"
-                {...registerDetails("importance")}
-              >
-                <option value="LOW">Low</option>
-                <option value="MEDIUM">Medium</option>
-                <option value="HIGH">High</option>
-              </select>
-            </div>
-          </FormErrorWrap>
-
-          <FormErrorWrap>
-            <div className="flex flex-col gap-4">
-              <p className="text-xl">Due Date</p>
-              <DateTimePicker
-                name="due_date"
-                control={control}
-                className="px-3 py-2 bg-ev-primary-bg text-ev-dark-gray rounded-lg w-full"
-              />
-            </div>
-          </FormErrorWrap>
-
-          <div className="flex items-center justify-center gap-4 mt-4 w-full">
-            <button
-              type="submit"
-              className="px-4 py-2 bg-ev-blue text-white rounded-lg hover:scale-105 duration-300 w-full"
-            >
-              Save Changes
-            </button>
+          <div>
+            <label className="text-xs font-medium text-slate-400 block mb-1">
+              Title
+            </label>
+            <input
+              type="text"
+              placeholder="New title..."
+              defaultValue={task?.title}
+              className={inputCls}
+              {...registerDetails("title")}
+            />
           </div>
+
+          <div>
+            <label className="text-xs font-medium text-slate-400 block mb-1">
+              Assignee
+            </label>
+            <select className={selectCls} {...registerDetails("assignee_email")}>
+              {workspaceUsers?.map((u, i) => (
+                <option key={i} value={u.email}>
+                  {u.email}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-slate-400 block mb-1">
+              Category
+            </label>
+            <input
+              type="text"
+              placeholder="Category"
+              className={inputCls}
+              {...registerDetails("category")}
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-slate-400 block mb-1">
+              Status
+            </label>
+            <select className={selectCls} {...registerDetails("status")}>
+              <option value="TODO">To Do</option>
+              <option value="IN_PROGRESS">In Progress</option>
+              <option value="COMPLETED">Completed</option>
+              <option value="HELP_NEEDED">Help Needed</option>
+              <option value="CANCELED">Canceled</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-slate-400 block mb-1">
+              Importance
+            </label>
+            <select className={selectCls} {...registerDetails("importance")}>
+              <option value="LOW">Low</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="HIGH">High</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-slate-400 block mb-1">
+              Due Date
+            </label>
+            <DateTimePicker
+              name="due_date"
+              control={control}
+              className={inputCls}
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full py-3 bg-ev-yellow text-black font-semibold rounded-xl hover:bg-ev-yellow/90 transition-colors text-sm"
+          >
+            Save Changes
+          </button>
         </form>
       </Overlay>
 
@@ -561,72 +357,215 @@ export default function Page() {
       <Overlay isOpen={isEditingPhoto} onClose={() => setIsEditingPhoto(false)}>
         <form
           onSubmit={handleSubmitPhoto(onSubmitPhoto)}
-          className="flex flex-col gap-6 w-full"
+          className="flex flex-col gap-4 w-full"
         >
-          <p className="text-4xl mb-10">Edit Task Photo</p>
+          <p className="text-xl font-bold text-slate-100">Edit Task Photo</p>
 
-          <FormErrorWrap>
-            <div className="flex flex-col gap-4 items-center">
-              {imageSrc && isBase64Image(imageSrc) && (
-                <div className="relative w-64 h-64 mb-4">
+          <div className="flex flex-col gap-4 items-center">
+            {imageSrc && isBase64Image(imageSrc) && (
+              <div className="relative w-64 h-64">
+                <Image
+                  src={imageSrc}
+                  alt="Current Task Photo"
+                  fill
+                  className="object-contain rounded-xl"
+                  unoptimized={isBase64Image(imageSrc)}
+                />
+              </div>
+            )}
+
+            <label
+              htmlFor="photo-upload"
+              className="flex items-center gap-2 w-full cursor-pointer bg-[#0f172a] border border-[#334155] rounded-xl px-4 py-3 text-sm text-slate-400 hover:border-ev-yellow/40 transition-all justify-center"
+            >
+              <Upload className="w-4 h-4" />
+              {isMultimedia ? "Change Photo" : "Upload Photo"}
+            </label>
+
+            <input
+              id="photo-upload"
+              type="file"
+              accept="image/png, image/jpeg"
+              capture="environment"
+              className="hidden"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                  setPhotoValue("multimedia", reader.result as string);
+                };
+                reader.readAsDataURL(file);
+              }}
+            />
+
+            {imageSrc && isMultimedia && (
+              <button
+                type="button"
+                onClick={() => setPhotoValue("multimedia", "")}
+                className="w-full py-2 bg-red-500/20 text-red-400 rounded-xl text-sm hover:bg-red-500/30 transition-colors"
+              >
+                Remove Photo
+              </button>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            className="w-full py-3 bg-ev-yellow text-black font-semibold rounded-xl hover:bg-ev-yellow/90 transition-colors text-sm"
+          >
+            Save Changes
+          </button>
+        </form>
+      </Overlay>
+
+      {/* Main layout */}
+      <div className="flex h-screen overflow-hidden">
+        <SidebarTemplate />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <NavbarTemplate />
+          <ContentBlock blockClassName="p-4 md:p-6">
+            {/* Back link */}
+            <div className="mb-4">
+              <Link
+                href="/workspaces/plans"
+                className="text-ev-yellow text-sm hover:underline"
+              >
+                ← Back to Workspace
+              </Link>
+            </div>
+
+            {/* Task title */}
+            <h2 className="text-lg font-semibold text-slate-100 mb-4">
+              {task?.title ?? "Untitled Task"}
+            </h2>
+
+            {/* Two-column grid: description + photo left, details right */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+              {/* Description card */}
+              <div className={cardCls}>
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="text-sm font-semibold text-slate-100">
+                    Description
+                  </h3>
+                  {creator && (
+                    <button
+                      onClick={() => setIsEditingDescription(true)}
+                      className="text-xs text-ev-yellow hover:underline"
+                    >
+                      Edit
+                    </button>
+                  )}
+                </div>
+                <p className="text-sm text-slate-300 leading-relaxed">
+                  {task?.description || "Description has not been set."}
+                </p>
+              </div>
+
+              {/* Details card */}
+              <div className={cardCls}>
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="text-sm font-semibold text-slate-100">
+                    Details
+                  </h3>
+                  <div className="flex items-center gap-3">
+                    {creator && !isMultimedia && (
+                      <button
+                        onClick={() => setIsEditingPhoto(true)}
+                        className="text-xs text-ev-yellow hover:underline"
+                      >
+                        Add Photo
+                      </button>
+                    )}
+                    {creator && (
+                      <button
+                        onClick={() => setIsEditingDetails(true)}
+                        className="text-xs text-ev-yellow hover:underline"
+                      >
+                        Edit
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <dl className="flex flex-col gap-2.5">
+                  {[
+                    ["Assigner", task?.assigner_email],
+                    ["Assignee", task?.assignee_email],
+                    [
+                      "Status",
+                      task?.status?.replaceAll("_", " "),
+                    ],
+                    [
+                      "Created",
+                      task?.created_at ? formatDate(task.created_at) : "Unknown",
+                    ],
+                    [
+                      "Due",
+                      task?.due_date
+                        ? formatDate(task.due_date)
+                        : "Not Defined",
+                    ],
+                    ["Category", isMultimedia ? task?.category : "Not Defined"],
+                  ].map(([label, value]) => (
+                    <div key={label as string}>
+                      <dt className="text-slate-500 text-xs">{label}</dt>
+                      <dd className="text-slate-300 text-sm font-medium mt-0.5">
+                        {value || "—"}
+                      </dd>
+                    </div>
+                  ))}
+                  <div>
+                    <dt className="text-slate-500 text-xs">Importance</dt>
+                    <dd className="mt-0.5">
+                      <span
+                        className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full ${importanceBadge(task?.importance)}`}
+                      >
+                        {task?.importance ?? "—"}
+                      </span>
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+            </div>
+
+            {/* Photo card (if exists) */}
+            {isBase64Image(imageSrc) && (
+              <div className={`${cardCls} mb-4`}>
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="text-sm font-semibold text-slate-100">
+                    Photo
+                  </h3>
+                  {creator && (
+                    <button
+                      onClick={() => setIsEditingPhoto(true)}
+                      className="text-xs text-ev-yellow hover:underline"
+                    >
+                      Edit
+                    </button>
+                  )}
+                </div>
+                <div className="relative w-full h-64">
                   <Image
                     src={imageSrc}
-                    alt="Current Task Photo"
+                    alt="Task"
                     fill
-                    className="object-contain"
+                    className="object-contain rounded-xl"
                     unoptimized={isBase64Image(imageSrc)}
                   />
                 </div>
-              )}
+              </div>
+            )}
 
-              <label
-                htmlFor="photo-upload"
-                className="px-3 py-2 bg-ev-primary-bg text-ev-dark-gray rounded-lg cursor-pointer w-full hover:scale-105 transition text-center"
-              >
-                {isMultimedia ? "Change Photo" : "Upload Photo"}
-              </label>
-
-              <input
-                id="photo-upload"
-                type="file"
-                accept="image/png, image/jpeg"
-                capture="environment"
-                className="hidden"
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-
-                  const reader = new FileReader();
-                  reader.onloadend = () => {
-                    const base64 = reader.result as string;
-                    setPhotoValue("multimedia", base64);
-                  };
-                  reader.readAsDataURL(file);
-                }}
-              />
-
-              {imageSrc && isMultimedia && (
-                <button
-                  type="button"
-                  onClick={() => setPhotoValue("multimedia", "")}
-                  className="px-3 py-2 bg-ev-red text-white rounded-lg hover:scale-105 transition w-full"
-                >
-                  Remove Photo
-                </button>
-              )}
+            {/* Map placeholder */}
+            <div className={cardCls}>
+              <h3 className="text-sm font-semibold text-slate-100 mb-3">Map</h3>
+              <div className="flex items-center justify-center h-48 bg-[#0f172a] rounded-xl text-slate-500 text-sm">
+                Map preview coming soon
+              </div>
             </div>
-          </FormErrorWrap>
-
-          <div className="flex items-center justify-center gap-4 mt-4 w-full">
-            <button
-              type="submit"
-              className="px-4 py-2 bg-ev-blue text-white rounded-lg hover:scale-105 duration-300 w-full"
-            >
-              Save Changes
-            </button>
-          </div>
-        </form>
-      </Overlay>
+          </ContentBlock>
+        </div>
+      </div>
     </PageTemplate>
   );
 }

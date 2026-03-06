@@ -46,6 +46,7 @@ export default function WorkspaceDetails() {
     null,
   );
   const [tasks, setTasks] = useState<Task[] | null>(null);
+  const token = User.authUser?.token ?? "";
   const coverImage =
     User.workspaceData?.currentWorkspace?.coverPhoto || "/problem.png";
   const [receivedCoverImage, setReceivedCoverImage] = useState<string | null>(
@@ -101,6 +102,8 @@ export default function WorkspaceDetails() {
             due_date: data.due_date || null,
             description_multimedia: data.multimedia || null,
           },
+          undefined,
+          User.authUser?.token ?? "",
         );
         toast.success("Task created!");
         setIsTaskOpen(false);
@@ -281,11 +284,16 @@ export default function WorkspaceDetails() {
 
     const onSubmit: SubmitHandler<addWorkerFormProps> = async (data) => {
       try {
-        await OLF.post(ApiLinks.inviteWorker, {
-          workspace_id: User.workspaceData?.currentWorkspace?.id,
-          inviter_email: User.authUser?.email,
-          invited_email: data.invited_email,
-        });
+        await OLF.post(
+          ApiLinks.inviteWorker,
+          {
+            workspace_id: User.workspaceData?.currentWorkspace?.id,
+            inviter_email: User.authUser?.email,
+            invited_email: data.invited_email,
+          },
+          undefined,
+          token,
+        );
         toast.success("Worker invited");
         setIsAddOpen(false);
       } catch (e) {
@@ -346,6 +354,9 @@ export default function WorkspaceDetails() {
               User.workspaceData?.currentWorkspace?.id.toString() ?? "-1",
               id.toString(),
             ),
+            undefined,
+            undefined,
+            token,
           ),
         ),
       );
@@ -373,6 +384,8 @@ export default function WorkspaceDetails() {
           User.workspaceData?.currentWorkspace?.id.toString() ?? "-1",
         ),
         { email: User.authUser?.email },
+        undefined,
+        token,
       );
       setWorkspaceUsers(res as WorkspaceUser[]);
     } catch (e) {
@@ -388,7 +401,10 @@ export default function WorkspaceDetails() {
         ),
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify({ owner_email: User.authUser?.email }),
         },
       );
