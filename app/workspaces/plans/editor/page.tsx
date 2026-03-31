@@ -152,6 +152,7 @@ interface AddTaskFormForMapProps {
   currentUserEmail: string | undefined;
   currentWorkspaceId: string | undefined;
   workspaceUsers: WorkspaceUser[] | null;
+  token: string | undefined;
 }
 
 const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
@@ -163,6 +164,7 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
   currentUserEmail,
   currentWorkspaceId,
   workspaceUsers,
+  token,
 }) => {
   const {
     handleSubmit,
@@ -210,7 +212,7 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
         status: "TODO",
         due_date: data.due_date || null,
         description_multimedia: data.multimedia || null,
-      });
+      }, undefined, token);
       try {
         await OLF.post(ApiLinks.addPythonTask, {
           task_id: res.id,
@@ -226,6 +228,8 @@ const AddTaskFormForMap: React.FC<AddTaskFormForMapProps> = ({
         await OLF.delete(
           ApiLinks.removeTask(currentWorkspaceId.toString(), res.id.toString()),
           {},
+          undefined,
+          token,
         );
         toast.error(error instanceof Error ? error.message : "Failed to create task");
       }
@@ -329,6 +333,7 @@ interface AddTaskOverlayProps {
   currentUserEmail: string | undefined;
   currentWorkspaceId: string | undefined;
   workspaceUsers: WorkspaceUser[] | null;
+  token: string | undefined;
 }
 
 const AddTaskOverlay: React.FC<AddTaskOverlayProps> = ({
@@ -338,6 +343,7 @@ const AddTaskOverlay: React.FC<AddTaskOverlayProps> = ({
   currentUserEmail,
   currentWorkspaceId,
   workspaceUsers,
+  token,
 }) => {
   const {
     handleSubmit,
@@ -382,7 +388,7 @@ const AddTaskOverlay: React.FC<AddTaskOverlayProps> = ({
         due_date: data.due_date || null,
         description_multimedia: data.multimedia || null,
         task_type: "MAP",
-      });
+      }, undefined, token);
       try {
         await OLF.post(ApiLinks.addPythonTask, {
           task_id: res.id.toString(),
@@ -393,6 +399,9 @@ const AddTaskOverlay: React.FC<AddTaskOverlayProps> = ({
       } catch (error) {
         await OLF.delete(
           ApiLinks.removeTask(currentWorkspaceId.toString(), res.id.toString()),
+          undefined,
+          undefined,
+          token,
         );
         toast.error(error instanceof Error ? error.message : "Failed to add Python task");
         return;
@@ -538,6 +547,8 @@ function MapEditor() {
           User.workspaceData?.currentWorkspace?.id.toString() ?? "-1",
         ),
         { email: User.authUser?.email },
+        undefined,
+        User.authUser?.token,
       );
       setWorkspaceUsers(res as WorkspaceUser[]);
     } catch (error) {
@@ -557,7 +568,7 @@ function MapEditor() {
         const pythonResponse = await OLF.get(ApiLinks.listPythonTasks(workspaceId.toString()));
         const pythonTasks = pythonResponse.data;
 
-        const rustResponse = await OLF.post(ApiLinks.listTasks(workspaceId), { owner_email: ownerEmail });
+        const rustResponse = await OLF.post(ApiLinks.listTasks(workspaceId), { owner_email: ownerEmail }, undefined, User.authUser?.token);
         const rustTasks = rustResponse;
 
         const matchedTasks = pythonTasks
@@ -637,7 +648,7 @@ function MapEditor() {
       if (!workspaceId) { toast.error("Workspace ID not found."); return; }
       const ownerEmail = User.authUser?.email;
       if (!ownerEmail) { toast.error("User email not found."); return; }
-      const response = await OLF.post(ApiLinks.listTasks(workspaceId), { owner_email: ownerEmail });
+      const response = await OLF.post(ApiLinks.listTasks(workspaceId), { owner_email: ownerEmail }, undefined, User.authUser?.token);
       const mapTasks: TaskNodeData[] = response
         .filter((task: any) => task.task_type === "MAP")
         .map((task: any) => ({
@@ -699,7 +710,7 @@ function MapEditor() {
             due_date: null,
             description_multimedia: taskToMove.image,
             task_type: "DEFAULT",
-          });
+          }, undefined, User.authUser?.token);
 
           const newTaskId = rustRes.id.toString();
           const newTaskOnMap: TaskNodeData = { ...taskToMove, id: newTaskId, position };
@@ -714,7 +725,7 @@ function MapEditor() {
               offset_y: position[1],
             });
           } catch (error: any) {
-            await OLF.delete(ApiLinks.removeTask(workspaceId.toString(), newTaskId));
+            await OLF.delete(ApiLinks.removeTask(workspaceId.toString(), newTaskId), undefined, undefined, User.authUser?.token);
             setTasks((prev) => prev.filter((t) => t.id !== newTaskId));
             toast.error(error instanceof Error ? error.message : "Failed to register task position.");
           }
@@ -760,6 +771,8 @@ function MapEditor() {
       const task = await OLF.delete(
         ApiLinks.removeTask(workspaceId.toString(), taskId.toString()),
         {},
+        undefined,
+        User.authUser?.token,
       );
       try {
         await OLF.delete(
@@ -778,7 +791,7 @@ function MapEditor() {
           status: task.status,
           due_date: task.due_date,
           description_multimedia: task.description_multimedia,
-        });
+        }, undefined, User.authUser?.token);
       }
       setTasks((prev) => prev.filter((task) => task.id !== selectedTaskId));
       setConnections((prev) =>
@@ -842,6 +855,7 @@ function MapEditor() {
         currentUserEmail={User.authUser?.email ?? undefined}
         currentWorkspaceId={User.workspaceData?.currentWorkspace?.id?.toString()}
         workspaceUsers={workspaceUsers}
+        token={User.authUser?.token}
       />
       <AddTaskFormForMap
         isOpen={isNewTaskFormOpen}
@@ -852,6 +866,7 @@ function MapEditor() {
         currentUserEmail={User.authUser?.email ?? undefined}
         currentWorkspaceId={User.workspaceData?.currentWorkspace?.id?.toString()}
         workspaceUsers={workspaceUsers}
+        token={User.authUser?.token}
       />
 
       <div className="flex h-screen overflow-hidden">

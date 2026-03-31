@@ -78,6 +78,10 @@ const ApiLinks = {
       rustHost + "/workspace/" + workspaceId + "/drawings/" + layerId + "/save",
     getImage: (workspaceId: string, layerId: string) =>
       rustHost + "/workspace/" + workspaceId + "/drawings/" + layerId + "/image",
+    georefSave: (workspaceId: string) =>
+      rustHost + "/workspace/" + workspaceId + "/drawings/georef/save",
+    georefLoad: (workspaceId: string) =>
+      rustHost + "/workspace/" + workspaceId + "/drawings/georef",
   },
 } as const;
 
